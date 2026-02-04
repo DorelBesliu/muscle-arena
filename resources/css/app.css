@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide until Alpine.js is ready (prevents jump on init) */
+[x-cloak] {
+    display: none !important;
+}
