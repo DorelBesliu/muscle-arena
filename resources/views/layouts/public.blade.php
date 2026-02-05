@@ -11,6 +11,11 @@
 
         <title>@yield('title', __('ui.meta_title'))</title>
 
+        {{-- Favicon --}}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+
         @stack('meta')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
