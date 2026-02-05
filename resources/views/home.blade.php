@@ -396,10 +396,441 @@
     </section>
     {{-- End About Section --}}
 
+    {{-- Start Investment/Contribution Section --}}
+    <section
+        id="investment"
+        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
+        x-data="{
+            selectedDonationType: null,
+            isDialogOpen: false,
+            submitted: false,
+            expandedOption: null,
+            formData: {
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                amount: '',
+                donationType: 'membership',
+                showInDonorList: false
+            },
+            errors: {},
+            donorProfile: null,
+            init() {
+                // Watch for email/phone changes to load donor profile
+                this.$watch('formData.email', () => this.loadDonorProfile());
+                this.$watch('formData.phone', () => this.loadDonorProfile());
+                // Set donation type when dialog opens
+                this.$watch('isDialogOpen', (value) => {
+                    if (value && this.selectedDonationType) {
+                        this.formData.donationType = this.selectedDonationType;
+                    }
+                });
+            },
+            loadDonorProfile() {
+                // This would typically load from backend, for now placeholder
+                // In real implementation, this would make an API call
+                this.donorProfile = null;
+            },
+            validateForm() {
+                this.errors = {};
+                if (!this.formData.firstName.trim()) {
+                    this.errors.firstName = '{{ __('ui.donation_form_required') }}';
+                }
+                if (!this.formData.lastName.trim()) {
+                    this.errors.lastName = '{{ __('ui.donation_form_required') }}';
+                }
+                if (!this.formData.phone.trim()) {
+                    this.errors.phone = '{{ __('ui.donation_form_required') }}';
+                } else if (!/^\+?[\d\s\-()]+$/.test(this.formData.phone)) {
+                    this.errors.phone = '{{ __('ui.donation_form_invalid_phone') }}';
+                }
+                if (!this.formData.email.trim()) {
+                    this.errors.email = '{{ __('ui.donation_form_required') }}';
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.formData.email)) {
+                    this.errors.email = '{{ __('ui.donation_form_invalid_email') }}';
+                }
+                if (!this.formData.amount || parseFloat(this.formData.amount) <= 0) {
+                    this.errors.amount = '{{ __('ui.donation_form_required') }}';
+                }
+                return Object.keys(this.errors).length === 0;
+            },
+            submitDonation() {
+                if (this.validateForm()) {
+                    console.log('Donation submitted:', this.formData);
+                    this.submitted = true;
+                    setTimeout(() => {
+                        this.submitted = false;
+                        this.formData = {
+                            firstName: '',
+                            lastName: '',
+                            phone: '',
+                            email: '',
+                            amount: '',
+                            donationType: this.selectedDonationType || 'membership',
+                            showInDonorList: false
+                        };
+                        this.errors = {};
+                        this.donorProfile = null;
+                        this.isDialogOpen = false;
+                        this.selectedDonationType = null;
+                    }, 5000);
+                }
+            },
+            clearError(field) {
+                if (this.errors[field]) {
+                    delete this.errors[field];
+                }
+            }
+        }"
+    >
+        {{-- Background decoration --}}
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/2 left-0 w-96 h-96 bg-[#F97316] rounded-full blur-3xl opacity-5"></div>
+            <div class="absolute top-1/2 right-0 w-96 h-96 bg-[#F97316] rounded-full blur-3xl opacity-5"></div>
+        </div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
+                        {{ __('ui.why_donate_title') }}
+                    </h2>
+
+                    {{-- Description --}}
+                    <p class="text-sm md:text-xl text-[#CCCCCC] mb-8 leading-relaxed">
+                        {{ __('ui.why_donate_description') }}
+                    </p>
+                </div>
+
+                <p class="text-base md:text-xl text-[#CCCCCC] max-w-2xl mb-8">
+                    {{ __('ui.why_donate_subtitle') }}
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    {{-- Membership Credit Card - Featured --}}
+                    <div
+                        @click="selectedDonationType = 'membership'; formData.donationType = 'membership'; isDialogOpen = true"
+                        class="bg-[#111111] border-2 border-[#333333] rounded-3xl p-6 md:p-8 hover:border-[#F97316] transition-all hover:scale-105 group cursor-pointer"
+                    >
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 md:w-16 md:h-16 bg-[#F97316]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#F97316]/20 transition-colors flex-shrink-0">
+                                <x-lucide-hand-coins class="w-6 h-6 md:w-8 md:h-8 text-[#F97316] group-hover:text-white transition-colors" />
+                            </div>
+                            <h3 class="text-lg md:text-2xl font-black text-white">
+                                {{ __('ui.membership_option') }}
+                            </h3>
+                        </div>
+                        <p class="text-sm md:text-base text-[#CCCCCC] leading-relaxed">
+                            {{ __('ui.membership_desc') }}
+                        </p>
+                    </div>
+
+                    {{-- Refundable Card --}}
+                    <div
+                        @click="selectedDonationType = 'refundable'; formData.donationType = 'refundable'; isDialogOpen = true"
+                        class="bg-[#111111] border-2 border-[#333333] rounded-3xl p-6 md:p-8 hover:border-[#F97316] transition-all hover:scale-105 group cursor-pointer"
+                    >
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 md:w-16 md:h-16 bg-[#F97316]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#F97316]/20 transition-colors flex-shrink-0">
+                                <x-lucide-banknote-arrow-down class="w-6 h-6 md:w-8 md:h-8 text-[#F97316] group-hover:text-white transition-colors" />
+                            </div>
+                            <h3 class="text-lg md:text-2xl font-black text-white">
+                                {{ __('ui.refundable_option') }}
+                            </h3>
+                        </div>
+                        <p class="text-sm md:text-base text-[#CCCCCC] leading-relaxed">
+                            {{ __('ui.refundable_desc') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Donation Dialog --}}
+        <div
+            x-show="isDialogOpen"
+            x-cloak
+            class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-0 md:p-4"
+            role="dialog"
+            aria-modal="true"
+            style="display: none;"
+        >
+            <div class="bg-[#111111] border-2 border-[#333333] rounded-none md:rounded-3xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+                {{-- Header --}}
+                <div class="sticky top-0 bg-[#111111] border-b border-[#333333] p-6 flex items-center justify-between">
+                    <h2 class="text-xl md:text-3xl font-black text-white">
+                        {{ __('ui.donate_button') }}
+                    </h2>
+                    <button
+                        type="button"
+                        @click="isDialogOpen = false; selectedDonationType = null"
+                        class="text-[#CCCCCC] hover:text-white transition-colors p-2 hover:bg-[#333333] rounded-full"
+                        aria-label="{{ __('ui.close') }}"
+                    >
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                {{-- Form Content --}}
+                <div class="p-6">
+                    <template x-if="submitted">
+                        <div class="bg-green-500/10 border border-green-500 rounded-xl p-8 text-center">
+                            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <x-lucide-check class="w-8 h-8 text-white" />
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-2">
+                                {{ __('ui.donation_form_success') }}
+                            </h3>
+                            <p class="text-[#CCCCCC]">{{ __('ui.donation_form_success_message') }}</p>
+                        </div>
+                    </template>
+                    <template x-if="!submitted">
+                        <div class="space-y-6">
+                            {{-- Donor History Card --}}
+                            <template x-if="donorProfile && donorProfile.donations && donorProfile.donations.length > 0">
+                                <div class="bg-[#F97316]/10 border border-[#F97316] rounded-xl p-6">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <x-lucide-history class="w-5 h-5 text-[#F97316]" />
+                                        <h3 class="text-lg font-bold text-white">
+                                            {{ __('ui.donation_form_welcome_back') }}, <span x-text="donorProfile.firstName"></span>!
+                                        </h3>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-sm text-[#CCCCCC]">
+                                                {{ __('ui.donation_form_total_donated') }}
+                                            </p>
+                                            <p class="text-2xl font-bold text-white" x-text="'€' + donorProfile.totalAmount"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-[#CCCCCC]">
+                                                {{ __('ui.donation_form_previous_donations') }}
+                                            </p>
+                                            <p class="text-2xl font-bold text-white" x-text="donorProfile.donations.length"></p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <p class="text-sm font-medium text-[#CCCCCC]">
+                                            {{ __('ui.donation_form_donation_history') }}:
+                                        </p>
+                                        <template x-for="donation in donorProfile.donations.slice(-3).reverse()" :key="donation.id">
+                                            <div class="flex justify-between items-center text-sm bg-[#333333] rounded px-3 py-2">
+                                                <span class="text-[#CCCCCC]" x-text="new Date(donation.date).toLocaleDateString('{{ app()->getLocale() === 'ro' ? 'ro-RO' : (app()->getLocale() === 'ru' ? 'ru-RU' : 'en-US') }}')"></span>
+                                                <span class="text-white font-medium" x-text="'€' + donation.amount"></span>
+                                                <span class="text-xs text-[#CCCCCC]" x-text="donation.donationType === 'membership' ? '{{ __('ui.donation_form_membership') }}'.split(' ')[0] : '{{ __('ui.donation_form_refundable') }}'.split(' ')[0]"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {{-- Donation Form --}}
+                            <form @submit.prevent="submitDonation()" class="space-y-6">
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    {{-- First Name --}}
+                                    <div>
+                                        <label for="donationFirstName" class="block text-sm font-medium text-[#CCCCCC] mb-2">
+                                            {{ __('ui.donation_form_first_name') }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="donationFirstName"
+                                            x-model="formData.firstName"
+                                            @input="clearError('firstName')"
+                                            :class="errors.firstName ? 'border-[#EF4444]' : 'border-[#333333]'"
+                                            class="w-full px-4 py-3 bg-[#333333] border rounded-lg text-white placeholder-[#CCCCCC]/50 focus:outline-none focus:border-[#F97316] transition-colors"
+                                        />
+                                        <p x-show="errors.firstName" x-text="errors.firstName" class="text-[#EF4444] text-sm mt-1"></p>
+                                    </div>
+
+                                    {{-- Last Name --}}
+                                    <div>
+                                        <label for="donationLastName" class="block text-sm font-medium text-[#CCCCCC] mb-2">
+                                            {{ __('ui.donation_form_last_name') }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="donationLastName"
+                                            x-model="formData.lastName"
+                                            @input="clearError('lastName')"
+                                            :class="errors.lastName ? 'border-[#EF4444]' : 'border-[#333333]'"
+                                            class="w-full px-4 py-3 bg-[#333333] border rounded-lg text-white placeholder-[#CCCCCC]/50 focus:outline-none focus:border-[#F97316] transition-colors"
+                                        />
+                                        <p x-show="errors.lastName" x-text="errors.lastName" class="text-[#EF4444] text-sm mt-1"></p>
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    {{-- Phone --}}
+                                    <div>
+                                        <label for="donationPhone" class="block text-sm font-medium text-[#CCCCCC] mb-2">
+                                            {{ __('ui.donation_form_phone') }}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            id="donationPhone"
+                                            x-model="formData.phone"
+                                            @input="clearError('phone')"
+                                            :class="errors.phone ? 'border-[#EF4444]' : 'border-[#333333]'"
+                                            class="w-full px-4 py-3 bg-[#333333] border rounded-lg text-white placeholder-[#CCCCCC]/50 focus:outline-none focus:border-[#F97316] transition-colors"
+                                        />
+                                        <p x-show="errors.phone" x-text="errors.phone" class="text-[#EF4444] text-sm mt-1"></p>
+                                    </div>
+
+                                    {{-- Email --}}
+                                    <div>
+                                        <label for="donationEmail" class="block text-sm font-medium text-[#CCCCCC] mb-2">
+                                            {{ __('ui.donation_form_email') }}
+                                        </label>
+                                        <input
+                                            type="email"
+                                            id="donationEmail"
+                                            x-model="formData.email"
+                                            @input="clearError('email')"
+                                            :class="errors.email ? 'border-[#EF4444]' : 'border-[#333333]'"
+                                            class="w-full px-4 py-3 bg-[#333333] border rounded-lg text-white placeholder-[#CCCCCC]/50 focus:outline-none focus:border-[#F97316] transition-colors"
+                                        />
+                                        <p x-show="errors.email" x-text="errors.email" class="text-[#EF4444] text-sm mt-1"></p>
+                                    </div>
+                                </div>
+
+                                {{-- Amount --}}
+                                <div>
+                                    <label for="donationAmount" class="block text-sm font-medium text-[#CCCCCC] mb-2">
+                                        {{ __('ui.donation_form_amount') }}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="donationAmount"
+                                        min="1"
+                                        step="1"
+                                        x-model="formData.amount"
+                                        @input="clearError('amount')"
+                                        :class="errors.amount ? 'border-[#EF4444]' : 'border-[#333333]'"
+                                        class="w-full px-4 py-3 bg-[#333333] border rounded-lg text-white placeholder-[#CCCCCC]/50 focus:outline-none focus:border-[#F97316] transition-colors"
+                                    />
+                                    <p x-show="errors.amount" x-text="errors.amount" class="text-[#EF4444] text-sm mt-1"></p>
+                                </div>
+
+                                {{-- Donation Type --}}
+                                <div>
+                                    <label class="block text-sm font-medium text-[#CCCCCC] mb-4">
+                                        {{ __('ui.donation_form_type') }}
+                                    </label>
+                                    <div class="space-y-3">
+                                        {{-- Membership Option --}}
+                                        <div class="border border-[#333333] rounded-lg p-4 hover:border-[#F97316] transition-colors">
+                                            <label class="flex items-start cursor-pointer group">
+                                                <input
+                                                    type="radio"
+                                                    name="donationType"
+                                                    value="membership"
+                                                    x-model="formData.donationType"
+                                                    class="mt-1 w-5 h-5 text-[#F97316] bg-[#333333] border-[#333333] focus:ring-[#F97316] flex-shrink-0"
+                                                />
+                                                <div class="ml-3 flex-1">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="text-white font-medium">
+                                                            {{ __('ui.donation_form_membership') }}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            @click="expandedOption = expandedOption === 'membership' ? null : 'membership'"
+                                                            class="md:hidden text-[#F97316] hover:text-[#EF4444] transition-colors p-1"
+                                                            aria-label="{{ __('ui.donationFormType') }}"
+                                                        >
+                                                            <x-lucide-info class="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-sm text-[#CCCCCC] mt-1 hidden md:block">
+                                                        {{ __('ui.donation_form_membership_desc') }}
+                                                    </p>
+                                                    <p x-show="expandedOption === 'membership'" class="text-sm text-[#CCCCCC] mt-2 md:hidden bg-[#333333] p-3 rounded-lg">
+                                                        {{ __('ui.donation_form_membership_desc') }}
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        {{-- Refundable Option --}}
+                                        <div class="border border-[#333333] rounded-lg p-4 hover:border-[#F97316] transition-colors">
+                                            <label class="flex items-start cursor-pointer group">
+                                                <input
+                                                    type="radio"
+                                                    name="donationType"
+                                                    value="refundable"
+                                                    x-model="formData.donationType"
+                                                    class="mt-1 w-5 h-5 text-[#F97316] bg-[#333333] border-[#333333] focus:ring-[#F97316] flex-shrink-0"
+                                                />
+                                                <div class="ml-3 flex-1">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="text-white font-medium">
+                                                            {{ __('ui.donation_form_refundable') }}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            @click="expandedOption = expandedOption === 'refundable' ? null : 'refundable'"
+                                                            class="md:hidden text-[#F97316] hover:text-[#EF4444] transition-colors p-1"
+                                                            aria-label="{{ __('ui.donationFormType') }}"
+                                                        >
+                                                            <x-lucide-info class="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-sm text-[#CCCCCC] mt-1 hidden md:block">
+                                                        {{ __('ui.donation_form_refundable_desc') }}
+                                                    </p>
+                                                    <p x-show="expandedOption === 'refundable'" class="text-sm text-[#CCCCCC] mt-2 md:hidden bg-[#333333] p-3 rounded-lg">
+                                                        {{ __('ui.donation_form_refundable_desc') }}
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Show in Donor List Checkbox --}}
+                                <div class="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="showInDonorList"
+                                        x-model="formData.showInDonorList"
+                                        class="w-5 h-5 text-[#F97316] bg-[#333333] border-[#333333] focus:ring-[#F97316]"
+                                    />
+                                    <label for="showInDonorList" class="ml-2 text-sm text-[#CCCCCC]">
+                                        {{ __('ui.donation_form_show_in_donor_list') }}
+                                    </label>
+                                </div>
+
+                                {{-- Privacy Agreement --}}
+                                <p class="text-sm text-[#CCCCCC] mt-2">
+                                    {{ __('ui.donation_form_privacy_agreement') }}
+                                    <a href="#privacy" class="text-[#F97316] hover:text-[#EF4444] underline underline-offset-2 transition-colors">
+                                        {{ __('ui.donation_form_privacy_policy') }}
+                                    </a>.
+                                </p>
+
+                                {{-- Submit Button --}}
+                                <button
+                                    type="submit"
+                                    class="w-full bg-[#F97316] hover:bg-[#EF4444] text-white font-medium py-4 rounded-lg transition-colors"
+                                >
+                                    {{ __('ui.donation_form_submit') }}
+                                </button>
+                            </form>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+    {{-- End Investment/Contribution Section --}}
+
     {{-- Start Timeline Section --}}
     <section
         id="timeline"
-        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
+        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
     >
         {{-- Background pattern --}}
         <div
@@ -519,7 +950,7 @@
     {{-- Start Contact Section --}}
     <section
         id="contact"
-        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
+        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
         x-data="{
             proposalDialogOpen: false,
             proposalFormData: {
