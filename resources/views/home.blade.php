@@ -14,7 +14,7 @@
 @section('content')
 <main>
     {{-- Start Hero Section --}}
-    <section id="hero" class="bg-[#111111] relative overflow-hidden scroll-mt-[72px] pt-[72px]">
+    <section id="hero" class="bg-[#111111] relative overflow-hidden scroll-mt-[72px] pt-[32px]">
         {{-- Background decoration --}}
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-1/2 left-0 w-96 h-96 bg-[#F97316] rounded-full blur-3xl opacity-5"></div>
@@ -397,11 +397,246 @@
     {{-- End About Section --}}
 
     {{-- Start Timeline Section --}}
-    <section id="timeline" class="scroll-mt-[72px] py-16 container mx-auto px-4"><h2 class="text-2xl font-bold text-white">{{ __('ui.section_timeline_title') }}</h2><p class="text-secondary mt-2">{{ __('ui.section_placeholder') }}</p></section>
+    <section
+        id="timeline"
+        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
+    >
+        {{-- Background pattern --}}
+        <div
+            class="absolute inset-0 opacity-5"
+            style="background-image: radial-gradient(circle at 2px 2px, #F97316 1px, transparent 0); background-size: 40px 40px;"
+        ></div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
+                        {{ __('ui.projectTimelineTitle') }}
+                    </h2>
+                    <p class="text-base md:text-xl text-[#CCCCCC]">
+                        {{ __('ui.projectTimelineDescription') }}
+                    </p>
+                </div>
+                {{-- Timeline steps --}}
+                @php
+                    $timelineSteps = [
+                        [
+                            'title' => __('ui.timeline_step1_title'),
+                            'description' => __('ui.timeline_step1_description'),
+                            'date' => __('ui.timeline_step1_date'),
+                            'status' => 'current'
+                        ],
+                        [
+                            'title' => __('ui.timeline_step2_title'),
+                            'description' => __('ui.timeline_step2_description'),
+                            'date' => __('ui.timeline_step2_date'),
+                            'status' => 'upcoming'
+                        ],
+                        [
+                            'title' => __('ui.timeline_step3_title'),
+                            'description' => __('ui.timeline_step3_description'),
+                            'date' => __('ui.timeline_step3_date'),
+                            'status' => 'upcoming'
+                        ],
+                        [
+                            'title' => __('ui.timeline_step4_title'),
+                            'description' => __('ui.timeline_step4_description'),
+                            'date' => __('ui.timeline_step4_date'),
+                            'status' => 'upcoming'
+                        ],
+                    ];
+                @endphp
+                <div class="max-w-4xl mx-auto">
+                    <div class="space-y-8">
+                        @foreach ($timelineSteps as $index => $step)
+                            @php
+                                $status = $step['status'] ?? 'upcoming';
+                                $title = $step['title'] ?? '';
+                                $description = $step['description'] ?? '';
+                                $date = $step['date'] ?? '';
+
+                                $iconClass = match($status) {
+                                    'completed' => 'bg-green-500/10 text-green-500',
+                                    'current' => 'bg-[#F97316]/10 text-[#F97316]',
+                                    default => 'bg-[#333333] text-[#CCCCCC]',
+                                };
+
+                                $badgeClass = match($status) {
+                                    'completed' => 'bg-green-500/10 text-green-500',
+                                    'current' => 'bg-[#F97316]/10 text-[#F97316]',
+                                    default => 'bg-[#333333] text-[#CCCCCC]',
+                                };
+
+                                $badgeText = match($status) {
+                                    'completed' => __('ui.timeline_status_completed'),
+                                    'current' => __('ui.timeline_status_current'),
+                                    default => __('ui.timeline_status_upcoming'),
+                                };
+                            @endphp
+                            <div class="relative">
+                                {{-- Timeline line --}}
+                                @if($index !== count($timelineSteps) - 1)
+                                    <div class="absolute left-6 top-14 w-0.5 h-full bg-[#333333]"></div>
+                                @endif
+
+                                <div class="flex gap-6">
+                                    {{-- Icon --}}
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center {{ $iconClass }}">
+                                            @if($status === 'completed')
+                                                <x-lucide-check-circle-2 class="w-6 h-6" />
+                                            @elseif($status === 'current')
+                                                <x-lucide-clock class="w-6 h-6" />
+                                            @else
+                                                <x-lucide-circle class="w-6 h-6" />
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Content --}}
+                                    <div class="flex-1 bg-[#111111] border border-[#333333] rounded-xl p-6 shadow-sm hover:border-[#F97316] transition-colors">
+                                        <div class="flex items-start justify-between gap-4 mb-2">
+                                            <h3 class="text-xl font-bold text-white">{{ $title }}</h3>
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
+                                                {{ $badgeText }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-[#CCCCCC] mb-3">{{ $date }}</p>
+                                        <p class="text-[#CCCCCC] leading-relaxed">
+                                            {{ $description }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     {{-- End Timeline Section --}}
 
     {{-- Start Contact Section --}}
-    <section id="contact" class="scroll-mt-[72px] py-16 container mx-auto px-4"><h2 class="text-2xl font-bold text-white">{{ __('ui.section_contact_title') }}</h2><p class="text-secondary mt-2">{{ __('ui.section_placeholder') }}</p></section>
+    <section
+        id="contact"
+        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
+        x-data="{ proposalDialogOpen: false }"
+    >
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
+                        {{ __('ui.contactTitle') }}
+                    </h2>
+                    <p class="text-base md:text-xl text-[#CCCCCC]">
+                        {{ __('ui.contactDescription') }}
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    {{-- Phone --}}
+                    <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                <x-lucide-phone class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
+                                    {{ __('ui.contactPhone') }}
+                                </h3>
+                                <a
+                                    href="tel:+37360123456"
+                                    class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
+                                >
+                                    +373 60 123 456
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Email --}}
+                    <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                <x-lucide-mail class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
+                                    {{ __('ui.contactEmail') }}
+                                </h3>
+                                <a
+                                    href="mailto:info@musclearena.md"
+                                    class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
+                                >
+                                    info@musclearena.md
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Proposal --}}
+                    <button
+                        @click="proposalDialogOpen = true"
+                        class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group text-left"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                <x-lucide-message-square class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                            </div>
+                            <div class="flex flex-col">
+                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
+                                    {{ __('ui.contactProposal') }}
+                                </h3>
+                                <span class="text-sm md:text-base text-[#CCCCCC] group-hover:text-[#F97316] transition-colors">
+                                    {{ __('ui.contactProposalText') }}
+                                </span>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Proposal Dialog --}}
+        <div
+            x-show="proposalDialogOpen"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            @click.self="proposalDialogOpen = false"
+            style="display: none;"
+        >
+            <div class="absolute inset-0 bg-black/70" aria-hidden="true"></div>
+            <div class="gym3d-dialog-container relative z-10" @click.stop>
+                <div class="flex items-center justify-between gap-4 mb-4">
+                    <h3 class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
+                        <x-lucide-message-square class="w-5 h-5 shrink-0" />
+                        {{ __('ui.contactProposal') }}
+                    </h3>
+                    <button
+                        type="button"
+                        @click="proposalDialogOpen = false"
+                        class="gym3d-close-btn"
+                        aria-label="{{ __('ui.close') }}"
+                    >
+                        <x-lucide-x class="w-5 h-5" />
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-secondary text-sm leading-relaxed">
+                        {{ __('ui.section_placeholder') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
     {{-- End Contact Section --}}
 </main>
 @endsection
