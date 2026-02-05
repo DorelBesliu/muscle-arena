@@ -140,4 +140,8 @@ return [
 
     'meta_title' => 'Muscle Arena – Sîngerei, Moldova',
     'meta_description' => 'Centru de fitness în Sîngerei, Moldova. Ne antrenăm împreună, creștem împreună.',
+
+    'footerText' => '© 2026 Muscle Arena. Toate drepturile rezervate.',
+    'privacyPolicy' => 'Politica de confidențialitate',
+    'termsConditions' => 'Termeni și condiții',
 ];

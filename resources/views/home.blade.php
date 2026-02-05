@@ -399,7 +399,7 @@
     {{-- Start Timeline Section --}}
     <section
         id="timeline"
-        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
+        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
     >
         {{-- Background pattern --}}
         <div
@@ -519,7 +519,7 @@
     {{-- Start Contact Section --}}
     <section
         id="contact"
-        class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
+        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
         x-data="{
             proposalDialogOpen: false,
             proposalFormData: {
@@ -558,10 +558,10 @@
                                     {{ __('ui.contactPhone') }}
                                 </h3>
                                 <a
-                                    href="tel:+37360123456"
+                                    href="tel:{{ $contactPhone ?? '+37360123456' }}"
                                     class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
                                 >
-                                    +373 60 123 456
+                                    {{ $contactPhone ?? '+373 60 123 456' }}
                                 </a>
                             </div>
                         </div>
@@ -578,10 +578,10 @@
                                     Email
                                 </h3>
                                 <a
-                                    href="mailto:info@musclearena.md"
+                                    href="mailto:{{ $contactEmail ?? 'info@musclearena.md' }}"
                                     class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
                                 >
-                                    info@musclearena.md
+                                    {{ $contactEmail ?? 'info@musclearena.md' }}
                                 </a>
                             </div>
                         </div>
@@ -692,6 +692,31 @@
         </div>
     </section>
     {{-- End Contact Section --}}
+
+    {{-- Footer --}}
+    <footer class="bg-[#111111] border-t border-[#333333] py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-[#CCCCCC]">
+                    {{ __('ui.footerText') }}
+                </p>
+                <div class="flex items-center gap-6">
+                    <a
+                        href="#privacy"
+                        class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
+                    >
+                        {{ __('ui.privacyPolicy') }}
+                    </a>
+                    <a
+                        href="#terms"
+                        class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
+                    >
+                        {{ __('ui.termsConditions') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </main>
 @endsection
 
