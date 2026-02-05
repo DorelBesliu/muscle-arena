@@ -187,7 +187,7 @@
                              aria-modal="true"
                              aria-labelledby="gym3d-help-title-mobile"
                              @click.self="$store.gym3d.helpOpen = false">
-                            <div class="absolute inset-0 bg-black/70" aria-hidden="true"></div>
+                            <div class="absolute inset-0" aria-hidden="true"></div>
                             <div class="gym3d-dialog-container" @click.stop>
                             <div class="flex items-center justify-between gap-4 mb-4">
                                 <h3 id="gym3d-help-title-mobile" class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
@@ -266,7 +266,7 @@
                  aria-modal="true"
                  aria-labelledby="gym3d-help-title-desktop"
                  @click.self="$store.gym3d.helpOpen = false">
-                <div class="absolute inset-0 bg-black/70" aria-hidden="true"></div>
+                <div class="absolute inset-0" aria-hidden="true"></div>
                 <div class="gym3d-dialog-container" @click.stop>
                     <div class="flex items-center justify-between gap-4 mb-4">
                         <h3 id="gym3d-help-title-desktop" class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
@@ -520,7 +520,19 @@
     <section
         id="contact"
         class="bg-[#111111] py-8 md:py-16 relative scroll-mt-[72px]"
-        x-data="{ proposalDialogOpen: false }"
+        x-data="{
+            proposalDialogOpen: false,
+            proposalFormData: {
+                title: '',
+                message: ''
+            },
+            submitProposal() {
+                console.log('Proposal submitted:', this.proposalFormData);
+                alert('{{ __('ui.proposalFormSuccess') }}');
+                this.proposalFormData = { title: '', message: '' };
+                this.proposalDialogOpen = false;
+            }
+        }"
     >
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto">
@@ -562,7 +574,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <h3 class="text-lg md:text-xl font-bold text-white mb-1">
-                                    {{ __('ui.contactEmail') }}
+                                    Email
                                 </h3>
                                 <a
                                     href="mailto:info@musclearena.md"
@@ -601,38 +613,79 @@
         <div
             x-show="proposalDialogOpen"
             x-cloak
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-0 md:p-4"
             role="dialog"
             aria-modal="true"
-            @click.self="proposalDialogOpen = false"
             style="display: none;"
         >
-            <div class="absolute inset-0 bg-black/70" aria-hidden="true"></div>
-            <div class="gym3d-dialog-container relative z-10" @click.stop>
-                <div class="flex items-center justify-between gap-4 mb-4">
-                    <h3 class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
-                        <x-lucide-message-square class="w-5 h-5 shrink-0" />
-                        {{ __('ui.contactProposal') }}
-                    </h3>
+            <div class="bg-[#111111] border-2 border-[#333333] rounded-none md:rounded-3xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+                {{-- Header --}}
+                <div class="sticky top-0 bg-[#111111] border-b border-[#333333] p-6 flex items-center justify-between">
+                    <h2 class="text-xl md:text-3xl font-black text-white">
+                        {{ __('ui.proposalDialogTitle') }}
+                    </h2>
                     <button
                         type="button"
-                        @click="proposalDialogOpen = false"
-                        class="gym3d-close-btn"
+                        @click="proposalDialogOpen = false; proposalFormData = { title: '', message: '' }"
+                        class="text-[#CCCCCC] hover:text-white transition-colors p-2 hover:bg-[#333333] rounded-full"
                         aria-label="{{ __('ui.close') }}"
                     >
-                        <x-lucide-x class="w-5 h-5" />
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
-                <div class="space-y-4">
-                    <p class="text-secondary text-sm leading-relaxed">
-                        {{ __('ui.section_placeholder') }}
-                    </p>
+
+                {{-- Form --}}
+                <div class="p-6">
+                    <form
+                        @submit.prevent="submitProposal()"
+                        class="space-y-6"
+                    >
+                        {{-- Title Field --}}
+                        <div>
+                            <label
+                                for="proposalTitle"
+                                class="block text-sm font-medium text-white mb-2"
+                            >
+                                {{ __('ui.proposalFormTitle') }}
+                            </label>
+                            <input
+                                type="text"
+                                id="proposalTitle"
+                                x-model="proposalFormData.title"
+                                class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors"
+                                :placeholder="'{{ __('ui.proposalFormTitlePlaceholder') }}'"
+                                required
+                            />
+                        </div>
+
+                        {{-- Message Field --}}
+                        <div>
+                            <label
+                                for="proposalMessage"
+                                class="block text-sm font-medium text-white mb-2"
+                            >
+                                {{ __('ui.proposalFormMessage') }}
+                            </label>
+                            <textarea
+                                id="proposalMessage"
+                                x-model="proposalFormData.message"
+                                rows="8"
+                                class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors resize-none"
+                                :placeholder="'{{ __('ui.proposalFormMessagePlaceholder') }}'"
+                                required
+                            ></textarea>
+                        </div>
+
+                        {{-- Submit Button --}}
+                        <button
+                            type="submit"
+                            class="w-full bg-[#F97316] hover:bg-[#EF4444] text-white font-bold py-4 rounded-xl transition-all hover:scale-105 shadow-xl"
+                        >
+                            {{ __('ui.proposalFormSubmit') }}
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
