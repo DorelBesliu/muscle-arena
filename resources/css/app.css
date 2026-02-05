@@ -1,3 +1,54 @@
+/* Local fonts – Inter & Oswald (from public/fonts) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-700-normal.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,3 +57,244 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* Gym3D control button - reusable style for icon buttons */
+.gym3d-control-btn {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg bg-[#111111]/90 border border-[#333333] text-[#F97316] hover:border-[#F97316] hover:bg-[#1a1a1a] transition-colors cursor-pointer;
+}
+
+/* Ensure hidden/md:flex works correctly - override flex when hidden */
+.gym3d-control-btn.hidden {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .gym3d-control-btn.hidden.md\:flex {
+        display: flex !important;
+    }
+}
+
+/* Ensure md:hidden works correctly - override flex on desktop */
+@media (min-width: 768px) {
+    .gym3d-control-btn.md\:hidden {
+        display: none !important;
+    }
+}
+
+/* Common text color - gray secondary text */
+.text-secondary {
+    @apply text-[#CCCCCC];
+}
+
+/* Dialog container - dark background with orange border */
+.gym3d-dialog-container {
+    @apply relative bg-[#111111] border-2 border-[#F97316] rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto;
+}
+
+/* Close button style */
+.gym3d-close-btn {
+    @apply p-1.5 rounded-lg text-[#CCCCCC] hover:text-white hover:bg-[#333333] transition-colors;
+}
+
+/* Help dialog item layout */
+.gym3d-help-item {
+    @apply flex items-start gap-3;
+}
+
+/* Help dialog icon style */
+.gym3d-help-icon {
+    @apply w-4 h-4 shrink-0 text-[#F97316] mt-0.5;
+}
+
+/* Gym3D wrapper container */
+.gym3d-wrapper {
+    @apply bg-[#111111] border-2 border-[#333333] rounded-3xl overflow-hidden hover:border-[#F97316] transition-all relative;
+}
+
+/* Overlay card style */
+.gym3d-overlay-card {
+    @apply bg-[#111111]/90 border border-[#F97316] rounded-lg px-4 py-3 mx-4 text-center max-w-sm pointer-events-none;
+}
+
+/* Ensure overlay is visible by default on mobile (before Alpine processes x-show) */
+#gym3d-overlay {
+    display: flex;
+}
+
+/* Hide on desktop */
+@media (min-width: 768px) {
+    #gym3d-overlay {
+        display: none !important;
+    }
+}
+
+/* Gym 3D viewer (About section) */
+#canvas-container {
+    width: 100%;
+    height: 100%;
+    min-height: 50vh;
+}
+#canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.gym3d-controls-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+/* Desktop: controls bar below canvas (static position) */
+.gym3d-controls-bar-desktop {
+    position: static;
+    padding: 0.75rem 0;
+    background: transparent;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+/* Ensure desktop controls are hidden on mobile */
+@media (max-width: 767px) {
+    .gym3d-controls-bar-desktop {
+        display: none !important;
+    }
+}
+
+/* Mobile: controls bar as overlay in fullscreen */
+.gym3d-controls-bar-mobile {
+    display: flex;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    background: rgba(17, 17, 17, 0.95);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    backdrop-filter: blur(8px);
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    pointer-events: auto;
+    width: calc(100% - 2rem);
+    max-width: 100%;
+}
+
+/* Arrange buttons in 2 rows on mobile (5 buttons per row = 20% width each) */
+.gym3d-controls-bar-mobile button {
+    flex: 0 0 calc(20% - 0.4rem);
+    min-width: calc(20% - 0.4rem);
+    max-width: calc(20% - 0.4rem);
+    box-sizing: border-box;
+}
+.gym3d-controls-bar button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background: #333;
+    border: 1px solid #F97316;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+}
+.gym3d-controls-bar button:hover {
+    background: #444;
+}
+.gym3d-controls-bar button:active {
+    transform: scale(0.98);
+}
+
+/* Fullscreen mode for mobile 3D viewer */
+#gym3d-container:fullscreen,
+#gym3d-container:-webkit-fullscreen,
+#gym3d-container:-moz-full-screen,
+#gym3d-container:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a;
+    position: relative;
+}
+
+#gym3d-container:fullscreen #canvas-container,
+#gym3d-container:-webkit-fullscreen #canvas-container,
+#gym3d-container:-moz-full-screen #canvas-container,
+#gym3d-container:-ms-fullscreen #canvas-container {
+    width: 100%;
+    height: 100%;
+}
+#floor-info,
+#bench-info,
+#vestiary-boys-info,
+#vestiary-girls-info {
+    display: none;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 1.25rem;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #F97316;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+#floor-info { min-width: 280px; }
+#bench-info { min-width: 340px; }
+#vestiary-boys-info,
+#vestiary-girls-info { min-width: 340px; }
+#floor-info.visible,
+#bench-info.visible,
+#vestiary-boys-info.visible,
+#vestiary-girls-info.visible { display: block; }
+#floor-info .title,
+#bench-info .title,
+#vestiary-boys-info .title,
+#vestiary-girls-info .title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #F97316;
+}
+#floor-info dl,
+#bench-info dl,
+#vestiary-boys-info dl,
+#vestiary-girls-info dl { margin: 0; }
+#floor-info dt,
+#bench-info dt,
+#vestiary-boys-info dt,
+#vestiary-girls-info dt { float: left; margin-right: 0.5rem; font-weight: 600; }
+#floor-info dd,
+#bench-info dd,
+#vestiary-boys-info dd,
+#vestiary-girls-info dd { margin: 0 0 0.25rem 0; }
+.gym3d-bench-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: #F97316;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.gym3d-bench-link:hover { text-decoration: underline; }
+.gym3d-drag-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #aaa;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.gym3d-drag-info strong { color: #ccc; }
