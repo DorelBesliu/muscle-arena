@@ -120,6 +120,13 @@ return [
     'contactEmail' => 'Email',
     'contactProposal' => 'Предложение',
     'contactProposalText' => 'Отправьте нам свою идею',
+    'proposalDialogTitle' => 'Отправьте нам предложение',
+    'proposalFormTitle' => 'Заголовок',
+    'proposalFormTitlePlaceholder' => 'Введите заголовок предложения',
+    'proposalFormMessage' => 'Сообщение',
+    'proposalFormMessagePlaceholder' => 'Поделитесь своими идеями, предложениями или отзывами...',
+    'proposalFormSubmit' => 'Отправить предложение',
+    'proposalFormSuccess' => 'Спасибо за ваше предложение!',
     'section_placeholder' => 'Раздел в разработке.',
 
     'feature1' => 'Современное оборудование',
