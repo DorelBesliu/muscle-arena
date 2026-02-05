@@ -120,6 +120,13 @@ return [
     'contactEmail' => 'Email',
     'contactProposal' => 'Proposal',
     'contactProposalText' => 'Send us your idea',
+    'proposalDialogTitle' => 'Send us a proposal',
+    'proposalFormTitle' => 'Title',
+    'proposalFormTitlePlaceholder' => 'Enter proposal title',
+    'proposalFormMessage' => 'Message',
+    'proposalFormMessagePlaceholder' => 'Share your ideas, suggestions, or feedback...',
+    'proposalFormSubmit' => 'Send proposal',
+    'proposalFormSuccess' => 'Thank you for your proposal!',
     'section_placeholder' => 'Section under construction.',
 
     'feature1' => 'Modern equipment',
