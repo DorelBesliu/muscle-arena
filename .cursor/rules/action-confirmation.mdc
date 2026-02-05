@@ -1,0 +1,45 @@
+---
+description: Always list actions before executing and ask for confirmation
+alwaysApply: true
+---
+
+# Action Confirmation Rule
+
+Before executing any code changes or tool calls, you MUST:
+
+1. **List all actions** you plan to take in a clear, numbered list
+2. **Ask for confirmation** before proceeding
+3. **Wait for user approval** before executing any tools
+
+## When to Apply
+
+This rule applies to ALL actions, including:
+- File edits (create, modify, delete)
+- Running terminal commands
+- Searching codebase
+- Any tool calls that modify the project
+
+## Exception
+
+Only skip confirmation if:
+- The user explicitly says "proceed", "go ahead", "yes", or similar approval
+- The user asks you to "fix" something without asking for a plan first (they're already approving the fix)
+
+## Example
+
+**Before executing:**
+```
+I'll help you fix that issue. Here's what I plan to do:
+
+1. Read the file `resources/views/home.blade.php` to understand the current structure
+2. Update the CSS class in `resources/css/app.css` to fix the styling issue
+3. Verify the changes work correctly
+
+Should I proceed with these changes?
+```
+
+**After confirmation:**
+```
+Proceeding with the changes...
+[executes tools]
+```
