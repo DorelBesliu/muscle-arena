@@ -12,6 +12,18 @@ Route::get('/{locale}', fn () => view('home'))
     ->middleware(SetLocale::class)
     ->name('home');
 
+// Privacy Policy page
+Route::get('/{locale}/privacy', fn () => view('privacy'))
+    ->where('locale', 'ro|ru|en')
+    ->middleware(SetLocale::class)
+    ->name('privacy');
+
+// Terms & Conditions page
+Route::get('/{locale}/terms', fn () => view('terms'))
+    ->where('locale', 'ro|ru|en')
+    ->middleware(SetLocale::class)
+    ->name('terms');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
