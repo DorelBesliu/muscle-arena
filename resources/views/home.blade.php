@@ -702,13 +702,13 @@
                 </p>
                 <div class="flex items-center gap-6">
                     <a
-                        href="#privacy"
+                        href="{{ route('privacy', ['locale' => app()->getLocale()]) }}"
                         class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
                     >
                         {{ __('ui.privacyPolicy') }}
                     </a>
                     <a
-                        href="#terms"
+                        href="{{ route('terms', ['locale' => app()->getLocale()]) }}"
                         class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
                     >
                         {{ __('ui.termsConditions') }}
