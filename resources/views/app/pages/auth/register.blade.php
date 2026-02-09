@@ -8,7 +8,7 @@ use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
+new #[Layout('layouts.public')] class extends Component
 {
     public string $name = '';
     public string $email = '';
@@ -38,6 +38,7 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <form wire:submit="register">
+        @csrf
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />

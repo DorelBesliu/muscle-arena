@@ -5,7 +5,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
+new #[Layout('layouts.public')] class extends Component
 {
     public string $password = '';
 
@@ -39,6 +39,7 @@ new #[Layout('layouts.guest')] class extends Component
     </div>
 
     <form wire:submit="confirmPassword">
+        @csrf
         <!-- Password -->
         <div>
             <x-input-label for="password" :value="__('Password')" />
