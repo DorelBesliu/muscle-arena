@@ -10,7 +10,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
+new #[Layout('layouts.public')] class extends Component
 {
     #[Locked]
     public string $token = '';
@@ -71,6 +71,7 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <form wire:submit="resetPassword">
+        @csrf
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />

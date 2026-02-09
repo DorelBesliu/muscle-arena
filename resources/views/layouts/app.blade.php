@@ -15,31 +15,63 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('scripts')
     </head>
-    <body class="font-sans antialiased" x-cloak>
-        <div class="min-h-screen bg-gray-100">
-            <livewire:layout.navigation />
+    <body class="font-sans antialiased bg-[#000000] text-white" x-cloak data-layout="app">
+        {{-- Toast container (top right) --}}
+        <div
+            class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+            x-data="toastContainer(@js(__('ui.profile_saved')))"
+            x-on:profile-updated.window="addToast(savedMessage)"
+            x-on:password-updated.window="addToast(savedMessage)"
+        >
+            <template x-for="toast in toasts" :key="toast.id">
+                <div
+                    x-show="true"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-x-8"
+                    class="pointer-events-auto px-4 py-3 rounded-lg bg-[#1e1e1e] border border-[#444444] shadow-lg text-sm text-white flex items-center gap-2"
+                >
+                    <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
+                    <span x-text="toast.message"></span>
+                </div>
+            </template>
+        </div>
 
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @elseif(View::hasSection('header'))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        @yield('header')
-                    </div>
-                </header>
-            @endif
+        <div
+            class="flex min-h-screen bg-[#000000]"
+            x-data="{ sidebarOpen: false }"
+            x-on:open-sidebar.window="sidebarOpen = true"
+        >
+            @include('app.components.sidebar')
 
-            <main>
-                @isset($slot)
-                    {{ $slot }}
-                @else
-                    @yield('content')
-                @endisset
-            </main>
+            <div class="flex-1 flex flex-col min-w-0">
+                <livewire:components.topbar />
+
+                @if (isset($header))
+                    <header class="bg-[#111111] border-b border-[#333333]">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @elseif(View::hasSection('header'))
+                    <header class="bg-[#111111] border-b border-[#333333]">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            @yield('header')
+                        </div>
+                    </header>
+                @endif
+
+                <main class="flex-1">
+                    @isset($slot)
+                        {{ $slot }}
+                    @else
+                        @yield('content')
+                    @endisset
+                </main>
+            </div>
         </div>
     </body>
 </html>

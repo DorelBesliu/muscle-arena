@@ -24,7 +24,7 @@
         </style>
         @stack('styles')
     </head>
-    <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak>
+    <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak data-layout="public">
         {{-- Topbar --}}
         <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-50" aria-label="Principal">
             <div class="container mx-auto px-4">
@@ -62,14 +62,14 @@
                             </div>
                         </div>
 
-                        @if (Route::has('login'))
+                        @if (Route::has('signin'))
                             @auth
                                 <a href="{{ url('/dashboard') }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
                                     <x-lucide-user class="w-4 h-4 shrink-0" />
                                     <span class="hidden md:inline">{{ __('ui.dashboard') }}</span>
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
+                                <a href="{{ route('signin', ['locale' => $locale]) }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
                                     <x-lucide-log-in class="w-4 h-4 shrink-0" />
                                     <span class="hidden md:inline">{{ __('ui.sign_in') }}</span>
                                 </a>
@@ -109,7 +109,7 @@
                                         </button>
                                         <div class="h-px bg-[#333333] my-2"></div>
                                         @guest
-                                            <a href="{{ route('login') }}" @click="$store.public.mobileMenuOpen = false" class="w-full px-4 py-3 text-left text-base font-medium text-[#F97316] hover:text-white hover:bg-[#333333] rounded-lg transition-all flex items-center gap-3">
+                                            <a href="{{ route('signin', ['locale' => $locale]) }}" @click="$store.public.mobileMenuOpen = false" class="w-full px-4 py-3 text-left text-base font-medium text-[#F97316] hover:text-white hover:bg-[#333333] rounded-lg transition-all flex items-center gap-3">
                                                 <x-lucide-log-in class="w-5 h-5 shrink-0" />
                                                 {{ __('ui.sign_in') }}
                                             </a>
