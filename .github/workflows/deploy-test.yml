@@ -44,9 +44,15 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd testing
             git fetch origin
             git checkout ${{ github.ref_name }}
             git pull origin ${{ github.ref_name }}
+            chmod -R 775 storage bootstrap/cache
             php artisan optimize
+            
+            # Create symlink if it doesn't exist
+            if [ ! -L ~/public_html/test.muscle-arena.md ]; then
+              ln -s ~/testing/public ~/public_html/test.muscle-arena.md
+            fi
           EOF
