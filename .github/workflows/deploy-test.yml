@@ -1,3 +1,5 @@
+name: Deploy test
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
