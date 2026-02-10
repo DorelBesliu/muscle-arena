@@ -1,4 +1,4 @@
-name: Deploy to test.muscle-arena.md
+name: Deploy test
 
 on:
   workflow_dispatch:
@@ -8,8 +8,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (for context only)
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, dom, filter, gd, json, zip
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
 
       - name: Setup SSH
         run: |
@@ -26,6 +48,5 @@ jobs:
             git fetch origin
             git checkout ${{ github.ref_name }}
             git pull origin ${{ github.ref_name }}
-            composer install --no-dev --optimize-autoloader
             php artisan optimize
           EOF
