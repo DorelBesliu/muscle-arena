@@ -23,34 +23,70 @@ if (isPublicLayout) {
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         const useCSS = isIOS || (isSafari && !document.fullscreenEnabled);
         
+        console.log('[Gym3D] Browser detection:', { 
+            userAgent: navigator.userAgent, 
+            isIOS, 
+            isSafari, 
+            useCSS,
+            fullscreenEnabled: document.fullscreenEnabled
+        });
+        
         window.toggleGym3dFullscreen = function(isFullscreen) {
+            console.log('[Gym3D] toggleGym3dFullscreen called', { isFullscreen });
+            
             const container = document.getElementById('gym3d-container');
-            if (!container) return;
+            if (!container) {
+                console.error('[Gym3D] Container not found!');
+                return;
+            }
             
             // iOS and some Safari versions don't support Fullscreen API
             // Use CSS-based fullscreen instead
             if (useCSS) {
-                console.log('Using CSS fullscreen (iOS/Safari)', { isFullscreen, useCSS, isIOS, isSafari });
+                console.log('[Gym3D] Using CSS fullscreen (iOS/Safari)', { 
+                    isFullscreen, 
+                    willEnter: !isFullscreen,
+                    containerClasses: container.className
+                });
+                
                 if (isFullscreen) {
                     // Exit fullscreen
+                    console.log('[Gym3D] Exiting CSS fullscreen');
                     container.classList.remove('gym3d-ios-fullscreen');
+                    document.body.classList.remove('gym3d-fullscreen-active');
                     document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.height = '';
+                    document.body.style.top = '';
+                    document.body.style.left = '';
                     document.documentElement.style.overflow = '';
                 } else {
                     // Enter fullscreen
+                    console.log('[Gym3D] Entering CSS fullscreen');
                     container.classList.add('gym3d-ios-fullscreen');
+                    document.body.classList.add('gym3d-fullscreen-active');
                     document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
+                    document.body.style.height = '100%';
+                    document.body.style.top = '0';
+                    document.body.style.left = '0';
                     document.documentElement.style.overflow = 'hidden';
                     // Scroll to top to ensure fullscreen starts at top
                     window.scrollTo(0, 0);
+                    
+                    console.log('[Gym3D] CSS fullscreen applied, classes:', container.className);
                 }
+                
                 // Trigger manual fullscreen state change
                 const event = new Event('gym3d-fullscreen-change');
                 event.isFullscreen = !isFullscreen;
                 document.dispatchEvent(event);
+                console.log('[Gym3D] Dispatched gym3d-fullscreen-change event', { newState: !isFullscreen });
             } else {
                 // Standard Fullscreen API for other browsers
-                console.log('Using native fullscreen API', { isFullscreen });
+                console.log('[Gym3D] Using native fullscreen API', { isFullscreen });
                 if (isFullscreen) {
                     if (document.exitFullscreen) document.exitFullscreen();
                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -72,8 +108,10 @@ if (isPublicLayout) {
                     return !this.gym3dFullscreen;
                 },
                 init() {
+                    console.log('[Gym3D] gym3dData init called');
                     const container = document.getElementById('gym3d-container');
                     if (!container) {
+                        console.error('[Gym3D] Container not found in init!');
                         this.gym3dFullscreen = false;
                         return;
                     }
@@ -82,10 +120,16 @@ if (isPublicLayout) {
                     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
                     const useCSS = isIOS || (isSafari && !document.fullscreenEnabled);
                     
+                    console.log('[Gym3D] Init with:', { isIOS, isSafari, useCSS });
+                    
                     const checkFullscreen = () => {
                         if (useCSS) {
                             // For iOS/Safari, check the CSS class
+                            const wasFullscreen = self.gym3dFullscreen;
                             self.gym3dFullscreen = container.classList.contains('gym3d-ios-fullscreen');
+                            if (wasFullscreen !== self.gym3dFullscreen) {
+                                console.log('[Gym3D] Fullscreen state changed (CSS):', self.gym3dFullscreen);
+                            }
                         } else {
                             // For other browsers, use standard API
                             const isFullscreen = !!(
@@ -106,14 +150,18 @@ if (isPublicLayout) {
                     
                     // Listen for custom CSS fullscreen event
                     document.addEventListener('gym3d-fullscreen-change', (e) => {
+                        console.log('[Gym3D] Received gym3d-fullscreen-change event:', e.isFullscreen);
                         if (useCSS) {
                             self.gym3dFullscreen = e.isFullscreen;
+                            console.log('[Gym3D] Updated gym3dFullscreen to:', self.gym3dFullscreen);
                         }
                     });
                     
                     checkFullscreen();
+                    console.log('[Gym3D] Initial fullscreen state:', self.gym3dFullscreen);
                 },
                 toggleFullscreen() {
+                    console.log('[Gym3D] toggleFullscreen method called, current state:', this.gym3dFullscreen);
                     toggleGym3dFullscreen(this.gym3dFullscreen);
                 },
                 openHelp() {
