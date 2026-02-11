@@ -2,6 +2,9 @@ name: Deploy test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - testing
 
 jobs:
   deploy:
@@ -15,8 +18,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, dom, filter, gd, json, zip
-          coverage: none
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, zip
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,19 +42,20 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to test.muscle-arena.md
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            --exclude=".git" \
+            --exclude="node_modules" \
+            --exclude="tests" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/testing
+
+      - name: Finalize on server
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
-            cd testing
-            git fetch origin
-            git checkout ${{ github.ref_name }}
-            git pull origin ${{ github.ref_name }}
+            cd ~/testing
             chmod -R 775 storage bootstrap/cache
             php artisan optimize
-            
-            # Create symlink if it doesn't exist
-            if [ ! -L ~/public_html/test.muscle-arena.md ]; then
-              ln -s ~/testing/public ~/public_html/test.muscle-arena.md
-            fi
           EOF
