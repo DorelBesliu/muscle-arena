@@ -23,8 +23,8 @@ return [
     'sidebar_privacy' => 'Privacy Policy',
     'sidebar_terms' => 'Terms & Conditions',
 
-    'hero_title_line1' => 'WE TRAIN TOGETHER.',
-    'hero_title_line2' => 'WE GROW TOGETHER.',
+    'hero_title_line1' => 'TRAIN TOGETHER.',
+    'hero_title_line2' => 'GROW TOGETHER.',
     'hero_description' => 'We are a team of fitness enthusiasts and local entrepreneurs dedicated to bringing an accessible, modern and comfortable fitness centre.',
     'hero_image_alt' => 'Man and woman doing kettlebell exercises in the gym.',
 
@@ -147,7 +147,7 @@ return [
     'feature5Desc' => 'Open Monday through Sunday, to fit your schedule.',
 
     'meta_title' => 'Muscle Arena – Sîngerei, Moldova',
-    'meta_description' => 'Fitness centre in Sîngerei, Moldova. We train together, we grow together.',
+    'meta_description' => 'Fitness centre in Sîngerei, Moldova. Train together, grow together.',
 
     'footerText' => '© 2026 Muscle Arena. All rights reserved.',
     'privacyPolicy' => 'Privacy Policy',
