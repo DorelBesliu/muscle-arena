@@ -110,17 +110,16 @@
                             </div>
                         </template>
                         {{-- Info icon: opens dialog with drag hint (desktop only) --}}
-                        <button type="button" @click="$store.gym3d.helpOpen = true" class="gym3d-control-btn hidden md:flex absolute top-4 left-4 z-20" aria-label="{{ __('ui.gym3d_drag_hint') }}" style="display: none;">
+                        <button type="button" @click="$store.gym3d.helpOpen = true" class="gym3d-control-btn hidden md:flex absolute top-4 left-4 z-20" aria-label="{{ __('ui.gym3d_drag_hint') }}">
                             <x-lucide-info class="w-5 h-5" />
                         </button>
                         {{-- Info icon: opens dialog with drag hint (mobile fullscreen only) --}}
                         <button x-show="gym3dFullscreen === true"
                                 x-cloak
                                 type="button"
-                                @click="$store.gym3d.helpOpen = true"
-                                class="gym3d-control-btn md:hidden absolute top-4 left-4 z-50"
-                                aria-label="{{ __('ui.gym3d_drag_hint') }}"
-                                style="display: none;">
+                                @click.stop="$store.gym3d.helpOpen = !$store.gym3d.helpOpen"
+                                class="gym3d-control-btn md:hidden absolute top-4 left-4 z-[60]"
+                                aria-label="{{ __('ui.gym3d_drag_hint') }}">
                             <x-lucide-info class="w-5 h-5" />
                         </button>
                         {{-- Expand/Minimize icon: toggles fullscreen (mobile only) --}}

@@ -177,8 +177,13 @@ export function initGym3d(container, options = {}) {
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.addEventListener('mozfullscreenchange', handleFullscreenChange);
   document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-  // Listen for iOS fullscreen changes
+  // Listen for iOS/CSS fullscreen changes
   document.addEventListener('gym3d-fullscreen-change', handleFullscreenChange);
+  
+  // Handle orientation changes on mobile
+  window.addEventListener('orientationchange', () => {
+    setTimeout(handleFullscreenChange, 100);
+  });
 
   // ---- Lights ----
   const ambient = new THREE.AmbientLight(0xffffff, 0.7);

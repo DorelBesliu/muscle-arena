@@ -43,10 +43,10 @@
                     </a>
 
                     <div class="hidden lg:flex items-center gap-1" x-data>
-                        <a href="#hero" data-scroll-section :class="$store.public.activeSection === 'hero' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_home') }}</a>
-                        <a href="#about" data-scroll-section :class="$store.public.activeSection === 'about' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_about') }}</a>
-                        <a href="#timeline" data-scroll-section :class="$store.public.activeSection === 'timeline' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_timeline') }}</a>
-                        <a href="#contact" data-scroll-section :class="$store.public.activeSection === 'contact' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_contact') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#hero" data-scroll-section :class="$store.public.activeSection === 'hero' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_home') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#about" data-scroll-section :class="$store.public.activeSection === 'about' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_about') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#timeline" data-scroll-section :class="$store.public.activeSection === 'timeline' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_timeline') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#contact" data-scroll-section :class="$store.public.activeSection === 'contact' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_contact') }}</a>
                     </div>
 
                     <div class="flex items-center gap-2 md:gap-4" x-data>
