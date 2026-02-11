@@ -127,7 +127,11 @@ export function initGym3d(container, options = {}) {
     const container = document.getElementById('gym3d-container');
     if (!container) return;
 
-    const isFullscreen = document.fullscreenElement === container ||
+    // Check for iOS fullscreen (CSS-based)
+    const isIOSFullscreen = container.classList.contains('gym3d-ios-fullscreen');
+    
+    const isFullscreen = isIOSFullscreen ||
+                         document.fullscreenElement === container ||
                          document.webkitFullscreenElement === container ||
                          document.mozFullScreenElement === container ||
                          document.msFullscreenElement === container;
@@ -173,6 +177,8 @@ export function initGym3d(container, options = {}) {
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.addEventListener('mozfullscreenchange', handleFullscreenChange);
   document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+  // Listen for iOS fullscreen changes
+  document.addEventListener('gym3d-fullscreen-change', handleFullscreenChange);
 
   // ---- Lights ----
   const ambient = new THREE.AmbientLight(0xffffff, 0.7);
