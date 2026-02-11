@@ -121,6 +121,136 @@ export function initGym3d(container, options = {}) {
     panEl.releasePointerCapture(e.pointerId);
   });
 
+  // ---- Mobile Touch Gestures (for fullscreen mode) ----
+  let touches = {};
+  let lastTouchDistance = 0;
+  let lastTouchAngle = 0;
+  let lastTouchCenter = { x: 0, y: 0 };
+  let isMultiTouch = false;
+
+  function getTouchDistance(touch1, touch2) {
+    const dx = touch2.clientX - touch1.clientX;
+    const dy = touch2.clientY - touch1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function getTouchAngle(touch1, touch2) {
+    return Math.atan2(touch2.clientY - touch1.clientY, touch2.clientX - touch1.clientX);
+  }
+
+  function getTouchCenter(touch1, touch2) {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  }
+
+  panEl.addEventListener('touchstart', (e) => {
+    // Store all touches
+    for (let i = 0; i < e.touches.length; i++) {
+      touches[e.touches[i].identifier] = e.touches[i];
+    }
+
+    const touchArray = Object.values(touches);
+
+    if (touchArray.length === 2) {
+      // Two-finger gesture: rotation
+      e.preventDefault();
+      isMultiTouch = true;
+      controls.enabled = false;
+
+      lastTouchDistance = getTouchDistance(touchArray[0], touchArray[1]);
+      lastTouchAngle = getTouchAngle(touchArray[0], touchArray[1]);
+      lastTouchCenter = getTouchCenter(touchArray[0], touchArray[1]);
+    } else if (touchArray.length === 1) {
+      // Single finger: will be handled by existing pointer events unless multi-touch was active
+      isMultiTouch = false;
+      lastTouchCenter = { x: touchArray[0].clientX, y: touchArray[0].clientY };
+    }
+  }, { passive: false });
+
+  panEl.addEventListener('touchmove', (e) => {
+    const touchArray = Object.values(touches);
+
+    if (touchArray.length === 2 && isMultiTouch) {
+      // Two-finger gesture: rotate camera
+      e.preventDefault();
+
+      const currentDistance = getTouchDistance(touchArray[0], touchArray[1]);
+      const currentAngle = getTouchAngle(touchArray[0], touchArray[1]);
+      const currentCenter = getTouchCenter(touchArray[0], touchArray[1]);
+
+      // Rotation
+      const angleDelta = currentAngle - lastTouchAngle;
+      if (Math.abs(angleDelta) > 0.01) {
+        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+        offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), -angleDelta);
+        camera.position.copy(controls.target).add(offset);
+      }
+
+      // Zoom (pinch)
+      const distanceDelta = currentDistance - lastTouchDistance;
+      if (Math.abs(distanceDelta) > 2) {
+        const dir = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+        const currentDist = camera.position.distanceTo(controls.target);
+        const zoomFactor = -distanceDelta * 0.01;
+        const newDist = Math.max(controls.minDistance, Math.min(controls.maxDistance, currentDist + zoomFactor));
+        camera.position.copy(controls.target).add(dir.multiplyScalar(newDist));
+      }
+
+      lastTouchDistance = currentDistance;
+      lastTouchAngle = currentAngle;
+      lastTouchCenter = currentCenter;
+    } else if (touchArray.length === 1 && !isMultiTouch) {
+      // Single finger: pan camera
+      e.preventDefault();
+
+      const touch = touchArray[0];
+      const dx = touch.clientX - lastTouchCenter.x;
+      const dy = touch.clientY - lastTouchCenter.y;
+
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        const dist = camera.position.distanceTo(controls.target);
+        const scale = dist * 0.002;
+        const forward = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
+        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+        const forwardXZ = new THREE.Vector3(forward.x, 0, forward.z).normalize();
+        const offset = new THREE.Vector3()
+          .addScaledVector(right, -dx * scale)
+          .addScaledVector(forwardXZ, dy * scale);
+        offset.y = 0;
+        controls.target.add(offset);
+        camera.position.add(offset);
+      }
+
+      lastTouchCenter = { x: touch.clientX, y: touch.clientY };
+    }
+  }, { passive: false });
+
+  panEl.addEventListener('touchend', (e) => {
+    // Remove ended touches
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      delete touches[e.changedTouches[i].identifier];
+    }
+
+    const touchArray = Object.values(touches);
+
+    if (touchArray.length < 2) {
+      isMultiTouch = false;
+      controls.enabled = true;
+    }
+
+    if (touchArray.length === 1) {
+      lastTouchCenter = { x: touchArray[0].clientX, y: touchArray[0].clientY };
+    }
+  });
+
+  panEl.addEventListener('touchcancel', (e) => {
+    touches = {};
+    isMultiTouch = false;
+    controls.enabled = true;
+  });
+
 
   // Listen for fullscreen changes to update renderer size
   const handleFullscreenChange = () => {
@@ -129,7 +259,7 @@ export function initGym3d(container, options = {}) {
 
     // Check for iOS fullscreen (CSS-based)
     const isIOSFullscreen = container.classList.contains('gym3d-ios-fullscreen');
-    
+
     const isFullscreen = isIOSFullscreen ||
                          document.fullscreenElement === container ||
                          document.webkitFullscreenElement === container ||
@@ -179,7 +309,7 @@ export function initGym3d(container, options = {}) {
   document.addEventListener('MSFullscreenChange', handleFullscreenChange);
   // Listen for iOS/CSS fullscreen changes
   document.addEventListener('gym3d-fullscreen-change', handleFullscreenChange);
-  
+
   // Handle orientation changes on mobile
   window.addEventListener('orientationchange', () => {
     setTimeout(handleFullscreenChange, 100);
