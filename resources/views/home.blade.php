@@ -37,7 +37,7 @@
                         {{ __('ui.hero_description') }}
                     </p>
 
-                    @guest
+                    {{-- @guest
                         <a href="{{ route('register') }}" class="bg-[#F97316] hover:bg-[#EF4444] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl transition-all hover:scale-105 shadow-xl inline-flex items-center text-base md:text-lg gap-2 md:gap-3">
                             {{ __('ui.cta_join') }}
                             <x-lucide-target class="w-4 h-4 md:w-5 md:h-5 shrink-0" />
@@ -47,7 +47,7 @@
                             {{ __('ui.cta_dashboard') }}
                             <x-lucide-target class="w-4 h-4 md:w-5 md:h-5 shrink-0" />
                         </a>
-                    @endguest
+                    @endguest --}}
                 </div>
             </div>
         </div>
