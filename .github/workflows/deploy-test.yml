@@ -56,7 +56,6 @@ jobs:
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd ~/testing
-            cp .env.test .env
             chmod -R 775 storage bootstrap/cache
             php artisan optimize
           EOF
