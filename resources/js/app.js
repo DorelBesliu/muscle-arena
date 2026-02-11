@@ -1,6 +1,19 @@
 import './bootstrap';
 import './toast.js';
 
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('[PWA] Service Worker registered successfully:', registration.scope);
+            })
+            .catch(error => {
+                console.error('[PWA] Service Worker registration failed:', error);
+            });
+    });
+}
+
 // Only run our Alpine (stores + start) on public layout. App layout uses Livewire's Alpine.
 const isPublicLayout = document.body?.dataset?.layout === 'public';
 
@@ -18,37 +31,70 @@ if (isPublicLayout) {
             helpOpen: false,
         });
 
-        // Detect iOS/Safari - more comprehensive detection
+        // iOS PWA Install Prompt
+        window.iosInstallPrompt = function() {
+            return {
+                showBanner: false,
+                init() {
+                    // Check if iOS
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    // Check if already installed (standalone mode)
+                    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                                       window.navigator.standalone === true;
+                    // Check if user dismissed before
+                    const wasDismissed = localStorage.getItem('ios-pwa-dismissed') === 'true';
+                    
+                    console.log('[iOS Install]', { isIOS, isInstalled, wasDismissed });
+                    
+                    // Show banner if iOS, not installed, and not dismissed
+                    if (isIOS && !isInstalled && !wasDismissed) {
+                        // Delay banner appearance by 3 seconds for better UX
+                        setTimeout(() => {
+                            this.showBanner = true;
+                        }, 3000);
+                    }
+                },
+                dismiss() {
+                    this.showBanner = false;
+                    localStorage.setItem('ios-pwa-dismissed', 'true');
+                    console.log('[iOS Install] Banner dismissed');
+                }
+            };
+        };
+
+        // Detect iOS - ALWAYS use CSS-based fullscreen for iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        // Force CSS fullscreen for all iOS devices, regardless of fullscreenEnabled
         const useCSS = isIOS || (isSafari && !document.fullscreenEnabled);
-        
-        console.log('[Gym3D] Browser detection:', { 
-            userAgent: navigator.userAgent, 
-            isIOS, 
-            isSafari, 
+
+        console.log('[Gym3D] Browser detection:', {
+            userAgent: navigator.userAgent,
+            isIOS,
+            isSafari,
             useCSS,
-            fullscreenEnabled: document.fullscreenEnabled
+            fullscreenEnabled: document.fullscreenEnabled,
+            willUseCSS: useCSS ? 'YES - CSS Fullscreen' : 'NO - Native API'
         });
-        
+
         window.toggleGym3dFullscreen = function(isFullscreen) {
-            console.log('[Gym3D] toggleGym3dFullscreen called', { isFullscreen });
-            
+            console.log('[Gym3D] toggleGym3dFullscreen called', { isFullscreen, isIOS, useCSS });
+
             const container = document.getElementById('gym3d-container');
             if (!container) {
                 console.error('[Gym3D] Container not found!');
                 return;
             }
-            
-            // iOS and some Safari versions don't support Fullscreen API
-            // Use CSS-based fullscreen instead
-            if (useCSS) {
-                console.log('[Gym3D] Using CSS fullscreen (iOS/Safari)', { 
-                    isFullscreen, 
+
+            // iOS ALWAYS uses CSS-based fullscreen (never requestFullscreen)
+            if (isIOS || useCSS) {
+                console.log('[Gym3D] Using CSS fullscreen (iOS/Safari)', {
+                    isFullscreen,
                     willEnter: !isFullscreen,
+                    isIOS,
                     containerClasses: container.className
                 });
-                
+
                 if (isFullscreen) {
                     // Exit fullscreen
                     console.log('[Gym3D] Exiting CSS fullscreen');
@@ -75,29 +121,31 @@ if (isPublicLayout) {
                     document.documentElement.style.overflow = 'hidden';
                     // Scroll to top to ensure fullscreen starts at top
                     window.scrollTo(0, 0);
-                    
+
                     console.log('[Gym3D] CSS fullscreen applied, classes:', container.className);
                 }
-                
+
                 // Trigger manual fullscreen state change
                 const event = new Event('gym3d-fullscreen-change');
                 event.isFullscreen = !isFullscreen;
                 document.dispatchEvent(event);
                 console.log('[Gym3D] Dispatched gym3d-fullscreen-change event', { newState: !isFullscreen });
+
+                return; // Exit early - NEVER use requestFullscreen on iOS
+            }
+
+            // Standard Fullscreen API for non-iOS browsers only
+            console.log('[Gym3D] Using native fullscreen API (Non-iOS)', { isFullscreen });
+            if (isFullscreen) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
             } else {
-                // Standard Fullscreen API for other browsers
-                console.log('[Gym3D] Using native fullscreen API', { isFullscreen });
-                if (isFullscreen) {
-                    if (document.exitFullscreen) document.exitFullscreen();
-                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-                    else if (document.msExitFullscreen) document.msExitFullscreen();
-                } else {
-                    if (container.requestFullscreen) container.requestFullscreen();
-                    else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-                    else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
-                    else if (container.msRequestFullscreen) container.msRequestFullscreen();
-                }
+                if (container.requestFullscreen) container.requestFullscreen();
+                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+                else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
+                else if (container.msRequestFullscreen) container.msRequestFullscreen();
             }
         };
 
@@ -118,20 +166,21 @@ if (isPublicLayout) {
                     const self = this;
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    // Force CSS fullscreen for all iOS devices
                     const useCSS = isIOS || (isSafari && !document.fullscreenEnabled);
-                    
-                    console.log('[Gym3D] Init with:', { isIOS, isSafari, useCSS });
-                    
+
+                    console.log('[Gym3D] Init with:', { isIOS, isSafari, useCSS, willUseCSS: isIOS || useCSS });
+
                     const checkFullscreen = () => {
-                        if (useCSS) {
-                            // For iOS/Safari, check the CSS class
+                        if (isIOS || useCSS) {
+                            // For iOS/Safari, ONLY check the CSS class (never use fullscreen API)
                             const wasFullscreen = self.gym3dFullscreen;
                             self.gym3dFullscreen = container.classList.contains('gym3d-ios-fullscreen');
                             if (wasFullscreen !== self.gym3dFullscreen) {
                                 console.log('[Gym3D] Fullscreen state changed (CSS):', self.gym3dFullscreen);
                             }
                         } else {
-                            // For other browsers, use standard API
+                            // For non-iOS browsers, use standard API
                             const isFullscreen = !!(
                                 document.fullscreenElement === container ||
                                 document.webkitFullscreenElement === container ||
@@ -141,22 +190,24 @@ if (isPublicLayout) {
                             self.gym3dFullscreen = Boolean(isFullscreen);
                         }
                     };
-                    
-                    // Listen for standard fullscreen events
-                    document.addEventListener('fullscreenchange', checkFullscreen);
-                    document.addEventListener('webkitfullscreenchange', checkFullscreen);
-                    document.addEventListener('mozfullscreenchange', checkFullscreen);
-                    document.addEventListener('MSFullscreenChange', checkFullscreen);
-                    
-                    // Listen for custom CSS fullscreen event
+
+                    // Only listen for standard fullscreen events on non-iOS
+                    if (!isIOS) {
+                        document.addEventListener('fullscreenchange', checkFullscreen);
+                        document.addEventListener('webkitfullscreenchange', checkFullscreen);
+                        document.addEventListener('mozfullscreenchange', checkFullscreen);
+                        document.addEventListener('MSFullscreenChange', checkFullscreen);
+                    }
+
+                    // Always listen for custom CSS fullscreen event (used by iOS)
                     document.addEventListener('gym3d-fullscreen-change', (e) => {
                         console.log('[Gym3D] Received gym3d-fullscreen-change event:', e.isFullscreen);
-                        if (useCSS) {
+                        if (isIOS || useCSS) {
                             self.gym3dFullscreen = e.isFullscreen;
                             console.log('[Gym3D] Updated gym3dFullscreen to:', self.gym3dFullscreen);
                         }
                     });
-                    
+
                     checkFullscreen();
                     console.log('[Gym3D] Initial fullscreen state:', self.gym3dFullscreen);
                 },

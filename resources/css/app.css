@@ -58,6 +58,23 @@
     display: none !important;
 }
 
+/* iOS Install Banner - ensure proper stacking */
+.ios-install-banner {
+    z-index: 9999;
+    animation: slideUpBanner 0.3s ease-out;
+}
+
+@keyframes slideUpBanner {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 /* Gym3D control button - reusable style for icon buttons */
 .gym3d-control-btn {
     @apply w-10 h-10 flex items-center justify-center rounded-lg bg-[#111111]/90 border border-[#333333] text-[#F97316] hover:border-[#F97316] hover:bg-[#1a1a1a] transition-colors cursor-pointer;
@@ -256,6 +273,11 @@
     overflow: hidden !important;
     border-radius: 0 !important; /* Remove rounded corners in fullscreen */
     border: none !important;
+    /* Prevent iOS Safari address bar and bottom bar from overlaying content */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    /* Prevent bouncing/rubber-banding */
+    overscroll-behavior: none;
 }
 
 #gym3d-container.gym3d-ios-fullscreen #canvas-container {

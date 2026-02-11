@@ -308,4 +308,8 @@ return [
     'profile_save' => 'Salvează',
     'profile_saved' => 'Salvat cu succes.',
     'profile_ensure_password' => 'Asigurați-vă că contul folosește o parolă lungă și aleatorie pentru securitate.',
+    
+    // iOS PWA Install Banner
+    'ios_install_title' => 'Instalează Muscle Arena 3D',
+    'ios_install_message' => 'Obțineți experiență 3D în ecran complet! Atingeți Share apoi "Add to Home Screen"',
 ];

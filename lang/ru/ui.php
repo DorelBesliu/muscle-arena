@@ -308,4 +308,8 @@ return [
     'profile_save' => 'Сохранить',
     'profile_saved' => 'Успешно сохранено.',
     'profile_ensure_password' => 'Используйте надёжный длинный пароль для безопасности аккаунта.',
+    
+    // iOS PWA Install Banner
+    'ios_install_title' => 'Установите Muscle Arena 3D',
+    'ios_install_message' => 'Получите полноэкранный 3D опыт! Нажмите Поделиться, затем "На экран Домой"',
 ];

@@ -308,4 +308,8 @@ return [
     'profile_save' => 'Save',
     'profile_saved' => 'Saved successfully.',
     'profile_ensure_password' => 'Ensure your account is using a long, random password to stay secure.',
+    
+    // iOS PWA Install Banner
+    'ios_install_title' => 'Install Muscle Arena 3D',
+    'ios_install_message' => 'Get full-screen 3D gym experience! Tap Share then "Add to Home Screen"',
 ];
