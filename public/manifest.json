@@ -1,6 +1,6 @@
 {
-  "name": "Muscle Arena 3D",
-  "short_name": "Muscle3D",
+  "name": "Muscle Arena",
+  "short_name": "MA",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
