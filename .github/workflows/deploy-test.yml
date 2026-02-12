@@ -50,13 +50,13 @@ jobs:
             --exclude="node_modules" \
             --exclude="tests" \
             ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/testing
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
 
       - name: Finalize on server
         run: |
           ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
-            cd ~/testing
+            cd /var/www/muscle-arena-test
             chmod -R 775 storage bootstrap/cache
             php artisan optimize
           EOF
