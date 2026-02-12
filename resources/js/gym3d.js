@@ -1,14 +1,20 @@
 /**
  * Three.js – 3D representation of the gym (Muscle Arena).
- * Single place for scene, camera, lights, floor, walls, vestiaries, bench, controls and render loop.
+ * Main scene orchestration - imports modular room components.
  */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const WIDTH = 10;   // 10 m
-const HEIGHT = 20;  // 20 m → 200 m²
-const WALL_H = 3.5; // ceiling height 3.5 m
+// Import modular components
+import { WIDTH, HEIGHT, WALL_H, VESTIARY_WIDTH, VESTIARY_DEPTH } from './gym3d/constants.js';
+import { createFloor } from './gym3d/floor.js';
+import { createWalls } from './gym3d/walls.js';
+import { createVestiaries } from './gym3d/vestiaries.js';
+import { createBench } from './gym3d/bench.js';
+import { createCarpet } from './gym3d/carpet.js';
+import { createToilet } from './gym3d/toilet.js';
+// import { createDining } from './gym3d/dining.js';
 
 /**
  * @param {HTMLElement} container - Element that will hold the canvas (e.g. #canvas-container)
@@ -338,300 +344,16 @@ export function initGym3d(container, options = {}) {
   backLight.position.set(5, 5, 25);
   scene.add(backLight);
 
-  // ---- Materials ----
-  const wallDepth = 0.2;
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.85, metalness: 0.1 });
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x353535, roughness: 0.8, metalness: 0.08 });
+  // ---- Main gym room (floor, walls with door) ----
+  const floorMesh = createFloor(scene);
+  const { backWall, leftWall, rightWall, frontWall } = createWalls(scene);
 
-  // ---- Room: floor ----
-  const floorGeo = new THREE.PlaneGeometry(WIDTH, HEIGHT);
-  const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-  floorMesh.rotation.x = -Math.PI / 2;
-  floorMesh.position.set(WIDTH / 2, 0, HEIGHT / 2);
-  floorMesh.receiveShadow = true;
-  scene.add(floorMesh);
+  // ---- Vestiaries (changing rooms) ----
+  const { boysVestiaryGroup, girlsVestiaryGroup } = createVestiaries(scene);
 
-  // ---- Walls ----
-  const backWall = new THREE.Mesh(new THREE.BoxGeometry(WIDTH + wallDepth * 2, WALL_H, wallDepth), wallMat);
-  backWall.position.set(WIDTH / 2, WALL_H / 2, HEIGHT + wallDepth / 2);
-  backWall.receiveShadow = true;
-  scene.add(backWall);
-  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, WALL_H, HEIGHT + wallDepth * 2), wallMat);
-  leftWall.position.set(-wallDepth / 2, WALL_H / 2, HEIGHT / 2);
-  scene.add(leftWall);
-  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, WALL_H, HEIGHT + wallDepth * 2), wallMat);
-  rightWall.position.set(WIDTH + wallDepth / 2, WALL_H / 2, HEIGHT / 2);
-  scene.add(rightWall);
-  const frontWall = new THREE.Mesh(new THREE.BoxGeometry(WIDTH + wallDepth * 2, WALL_H, wallDepth), wallMat);
-  frontWall.position.set(WIDTH / 2, WALL_H / 2, -wallDepth / 2);
-  frontWall.receiveShadow = true;
-  scene.add(frontWall);
-
-  // ---- Door (right wall, into gym) ----
-  const doorWidthZ = 1.2;
-  const doorHeight = 2.2;
-  const doorDepth = 0.08;
-  const rightWallX = WIDTH + wallDepth / 2;
-  const wallOuterX = rightWallX + wallDepth / 2;
-  const wallInnerX = rightWallX - wallDepth / 2;
-  // Door materials - color #373330
-  const doorMat = new THREE.MeshBasicMaterial({ color: 0x373330, side: THREE.DoubleSide });
-  const doorFrameMat = new THREE.MeshBasicMaterial({ color: 0x373330, side: THREE.DoubleSide });
-  const doorFrameThick = 0.08;
-  const doorY = doorHeight / 2;
-  const doorZ = HEIGHT / 2;
-  const frameH = doorHeight + doorFrameThick * 2;
-  const frameW = doorWidthZ + doorFrameThick * 2;
-  const doorGeo = new THREE.BoxGeometry(doorDepth, doorHeight, doorWidthZ);
-  const frameGeo = new THREE.BoxGeometry(doorDepth + 0.02, frameH, frameW);
-  const doorXInside = wallInnerX + doorDepth / 2 + 0.01;
-  const doorPanelInside = new THREE.Mesh(doorGeo.clone(), doorMat);
-  doorPanelInside.position.set(doorXInside, doorY, doorZ);
-  doorPanelInside.castShadow = false;
-  doorPanelInside.receiveShadow = false;
-  doorPanelInside.renderOrder = 1;
-  scene.add(doorPanelInside);
-  const doorFrameInside = new THREE.Mesh(frameGeo.clone(), doorFrameMat);
-  doorFrameInside.position.set(doorXInside - 0.02, doorY, doorZ);
-  doorFrameInside.castShadow = false;
-  doorFrameInside.renderOrder = 0;
-  scene.add(doorFrameInside);
-  // Outside door parts (copied from inside - using exact same materials)
-  const doorXOutside = wallOuterX + doorDepth / 2 + 0.01;
-  const doorPanelOutside = new THREE.Mesh(doorGeo.clone(), doorMat);
-  doorPanelOutside.position.set(doorXOutside, doorY, doorZ);
-  doorPanelOutside.castShadow = false;
-  doorPanelOutside.receiveShadow = false;
-  doorPanelOutside.renderOrder = 1;
-  scene.add(doorPanelOutside);
-  const doorFrameOutside = new THREE.Mesh(frameGeo.clone(), doorFrameMat);
-  doorFrameOutside.position.set(doorXOutside - 0.02, doorY, doorZ);
-  doorFrameOutside.castShadow = false;
-  doorFrameOutside.renderOrder = 0;
-  scene.add(doorFrameOutside);
-
-  // ---- Vestiaries ----
-  const vAz = 3;
-  const vAx = 5;
-  const roadWidth = 3;
-  const vestiaryWallH = 2.5;
-  const vestiaryFloorMat = new THREE.MeshStandardMaterial({ color: 0x2e2e2e, roughness: 0.85, metalness: 0.1 });
-  const vestiaryWallMat = new THREE.MeshStandardMaterial({ color: 0x404050, roughness: 0.8, metalness: 0.08 });
-  const lockerMat = new THREE.MeshStandardMaterial({ color: 0x3a3a45, roughness: 0.75, metalness: 0.1 });
-  const benchMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.9, metalness: 0.05 });
-  const vestiaryX = WIDTH + vAz / 2 + wallDepth + 0.35;
-  const stripCenterZ = HEIGHT / 2;
-  const vestiaryBoysZ = stripCenterZ - roadWidth / 2 - vAx / 2;
-  const vestiaryGirlsZ = stripCenterZ + roadWidth / 2 + vAx / 2;
-
-  function addVestiaryContents(vx, vz, group, cabinetWalls, opts = {}) {
-    const wall2NearBack = opts.wall2NearBack === true;
-    const lockerW = 0.4;
-    const lockerH = 0.95;
-    const lockerD = 0.12;
-    const lockerSpacing = 0.5;
-    const rowGap = 0.15;
-    const numLockersBack = 5;
-    const numLockersSide = 6;
-    const yLow = lockerH / 2 + 0.01;
-    const yHigh = lockerH + rowGap + lockerH / 2;
-    const has = (n) => cabinetWalls.includes(n);
-    const wallGap = 0.02;
-
-    if (has(1)) {
-      const zAgainstWall = vz - vAx / 2 + lockerD / 2 + wallGap;
-      const xStart = vx - vAz / 2 + lockerD / 2 + wallGap;
-      for (let row = 0; row < 2; row++) {
-        const y = row === 0 ? yLow : yHigh;
-        for (let i = 0; i < numLockersBack; i++) {
-          const locker = new THREE.Mesh(new THREE.BoxGeometry(lockerW, lockerH, lockerD), lockerMat);
-          locker.position.set(xStart + i * lockerSpacing, y, zAgainstWall);
-          group.add(locker);
-        }
-      }
-    }
-    if (has(2)) {
-      const sideX = vx + vAz / 2 - lockerD / 2 - wallGap;
-      const zStart = wall2NearBack ? vz + vAx / 2 - lockerW / 2 - wallGap : vz - vAx / 2 + lockerW / 2 + wallGap;
-      for (let row = 0; row < 2; row++) {
-        const y = row === 0 ? yLow : yHigh;
-        for (let i = 0; i < numLockersSide; i++) {
-          const locker = new THREE.Mesh(new THREE.BoxGeometry(lockerW, lockerH, lockerD), lockerMat);
-          const z = wall2NearBack ? zStart - i * lockerSpacing : zStart + i * lockerSpacing;
-          locker.position.set(sideX, y, z);
-          locker.rotation.y = Math.PI / 2;
-          group.add(locker);
-        }
-      }
-    }
-    if (has(3)) {
-      const zAgainstWall = vz + vAx / 2 - lockerD / 2 - wallGap;
-      const xStart = vx - vAz / 2 + lockerD / 2 + wallGap;
-      for (let row = 0; row < 2; row++) {
-        const y = row === 0 ? yLow : yHigh;
-        for (let i = 0; i < numLockersBack; i++) {
-          const locker = new THREE.Mesh(new THREE.BoxGeometry(lockerW, lockerH, lockerD), lockerMat);
-          locker.position.set(xStart + i * lockerSpacing, y, zAgainstWall);
-          group.add(locker);
-        }
-      }
-    }
-    if (has(4)) {
-      const sideX = vx - vAz / 2 + lockerD / 2 + wallGap;
-      const zStart = vz - vAx / 2 + lockerW / 2 + wallGap;
-      for (let row = 0; row < 2; row++) {
-        const y = row === 0 ? yLow : yHigh;
-        for (let i = 0; i < numLockersBack; i++) {
-          const locker = new THREE.Mesh(new THREE.BoxGeometry(lockerW, lockerH, lockerD), lockerMat);
-          locker.position.set(sideX, y, zStart + i * lockerSpacing);
-          locker.rotation.y = -Math.PI / 2;
-          group.add(locker);
-        }
-      }
-    }
-    const benchLen = 1.2;
-    const benchW = 0.4;
-    const benchH = 0.42;
-    const benchRowSpacing = 0.9;
-    for (let row = 0; row < 2; row++) {
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(benchLen, benchH, benchW), benchMat);
-      const zOffset = (row === 0 ? -1 : 1) * benchRowSpacing;
-      bench.position.set(vx, benchH / 2 + 0.01, vz + zOffset);
-      bench.castShadow = true;
-      group.add(bench);
-    }
-  }
-
-  const boysVestiaryGroup = new THREE.Group();
-  const boysFloor = new THREE.Mesh(new THREE.PlaneGeometry(vAz, vAx), vestiaryFloorMat);
-  boysFloor.rotation.x = -Math.PI / 2;
-  boysFloor.position.set(vestiaryX, 0, vestiaryBoysZ);
-  boysFloor.receiveShadow = true;
-  boysVestiaryGroup.add(boysFloor);
-  const boysBack = new THREE.Mesh(new THREE.BoxGeometry(vAz + wallDepth * 2, vestiaryWallH, wallDepth), vestiaryWallMat);
-  boysBack.position.set(vestiaryX, vestiaryWallH / 2, vestiaryBoysZ + vAx / 2 + wallDepth / 2);
-  boysVestiaryGroup.add(boysBack);
-  const boysFront = new THREE.Mesh(new THREE.BoxGeometry(vAz + wallDepth * 2, vestiaryWallH, wallDepth), vestiaryWallMat);
-  boysFront.position.set(vestiaryX, vestiaryWallH / 2, vestiaryBoysZ - vAx / 2 - wallDepth / 2);
-  boysVestiaryGroup.add(boysFront);
-  const boysLeft = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, vestiaryWallH, vAx + wallDepth * 2), vestiaryWallMat);
-  boysLeft.position.set(vestiaryX - vAz / 2 - wallDepth / 2, vestiaryWallH / 2, vestiaryBoysZ);
-  boysVestiaryGroup.add(boysLeft);
-  const boysRight = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, vestiaryWallH, vAx + wallDepth * 2), vestiaryWallMat);
-  boysRight.position.set(vestiaryX + vAz / 2 + wallDepth / 2, vestiaryWallH / 2, vestiaryBoysZ);
-  boysVestiaryGroup.add(boysRight);
-  addVestiaryContents(vestiaryX, vestiaryBoysZ, boysVestiaryGroup, [1, 2]);
-  scene.add(boysVestiaryGroup);
-
-  const girlsVestiaryGroup = new THREE.Group();
-  const girlsFloor = new THREE.Mesh(new THREE.PlaneGeometry(vAz, vAx), vestiaryFloorMat);
-  girlsFloor.rotation.x = -Math.PI / 2;
-  girlsFloor.position.set(vestiaryX, 0, vestiaryGirlsZ);
-  girlsFloor.receiveShadow = true;
-  girlsVestiaryGroup.add(girlsFloor);
-  const girlsBack = new THREE.Mesh(new THREE.BoxGeometry(vAz + wallDepth * 2, vestiaryWallH, wallDepth), vestiaryWallMat);
-  girlsBack.position.set(vestiaryX, vestiaryWallH / 2, vestiaryGirlsZ + vAx / 2 + wallDepth / 2);
-  girlsVestiaryGroup.add(girlsBack);
-  const girlsFront = new THREE.Mesh(new THREE.BoxGeometry(vAz + wallDepth * 2, vestiaryWallH, wallDepth), vestiaryWallMat);
-  girlsFront.position.set(vestiaryX, vestiaryWallH / 2, vestiaryGirlsZ - vAx / 2 - wallDepth / 2);
-  girlsVestiaryGroup.add(girlsFront);
-  const girlsLeft = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, vestiaryWallH, vAx + wallDepth * 2), vestiaryWallMat);
-  girlsLeft.position.set(vestiaryX - vAz / 2 - wallDepth / 2, vestiaryWallH / 2, vestiaryGirlsZ);
-  girlsVestiaryGroup.add(girlsLeft);
-  const girlsRight = new THREE.Mesh(new THREE.BoxGeometry(wallDepth, vestiaryWallH, vAx + wallDepth * 2), vestiaryWallMat);
-  girlsRight.position.set(vestiaryX + vAz / 2 + wallDepth / 2, vestiaryWallH / 2, vestiaryGirlsZ);
-  girlsVestiaryGroup.add(girlsRight);
-  addVestiaryContents(vestiaryX, vestiaryGirlsZ, girlsVestiaryGroup, [3, 2], { wall2NearBack: true });
-  scene.add(girlsVestiaryGroup);
-
-  // Vestiary wall labels (1–4)
-  const labelSize = 0.28;
-  const labelOffset = 0.03;
-  const labelOffsetZ = 0.08;
-  function makeWallLabelTexture(n) {
-    const c = document.createElement('canvas');
-    c.width = 128;
-    c.height = 128;
-    const ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, 128, 128);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 90px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(n), 64, 64);
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 1, side: THREE.DoubleSide, depthWrite: true });
-  }
-  function addVestiaryWallLabels(vx, vz, group) {
-    const y = vestiaryWallH / 2;
-    for (let n = 1; n <= 4; n++) {
-      const mat = makeWallLabelTexture(n);
-      const plane = new THREE.Mesh(new THREE.PlaneGeometry(labelSize, labelSize), mat);
-      plane.renderOrder = 1;
-      if (n === 1) { plane.position.set(vx, y, vz - vAx / 2 + labelOffsetZ); plane.rotation.set(0, 0, 0); }
-      else if (n === 2) { plane.position.set(vx + vAz / 2 - labelOffset, y, vz); plane.rotation.set(0, Math.PI / 2, 0); }
-      else if (n === 3) { plane.position.set(vx, y, vz + vAx / 2 - labelOffsetZ); plane.rotation.set(0, Math.PI, 0); }
-      else { plane.position.set(vx - vAz / 2 + labelOffset, y, vz); plane.rotation.set(0, -Math.PI / 2, 0); }
-      group.add(plane);
-    }
-  }
-  // Wall labels removed (numbers 1-4 on vestiary walls)
-  // addVestiaryWallLabels(vestiaryX, vestiaryBoysZ, boysVestiaryGroup);
-  // addVestiaryWallLabels(vestiaryX, vestiaryGirlsZ, girlsVestiaryGroup);
-
-  // Vestiary doors
-  const vestiaryDoorW = 1;
-  const vestiaryDoorH = 2.2;
-  const vestiaryDoorD = 0.08;
-  const vestiaryDoorY = vestiaryDoorH / 2;
-  const vestiaryFrameThick = 0.08;
-  const vestiaryDoorGeo = new THREE.BoxGeometry(vestiaryDoorW, vestiaryDoorH, vestiaryDoorD);
-  const vestiaryFrameH = vestiaryDoorH + vestiaryFrameThick * 2;
-  const vestiaryFrameW = vestiaryDoorW + vestiaryFrameThick * 2;
-  const vestiaryFrameGeo = new THREE.BoxGeometry(vestiaryFrameW, vestiaryFrameH, vestiaryDoorD + 0.02);
-  const boysWallZ = vestiaryBoysZ + vAx / 2;
-  const boysDoorZInside = boysWallZ - vestiaryDoorD / 2 - 0.02;
-  const boysDoorPanelInside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-  boysDoorPanelInside.position.set(vestiaryX, vestiaryDoorY, boysDoorZInside);
-  boysDoorPanelInside.castShadow = false;
-  boysDoorPanelInside.receiveShadow = false;
-  scene.add(boysDoorPanelInside);
-  const boysDoorFrame = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-  boysDoorFrame.position.set(vestiaryX, vestiaryDoorY, boysDoorZInside - 0.01);
-  boysDoorFrame.castShadow = false;
-  scene.add(boysDoorFrame);
-  const boysDoorZOutside = boysWallZ + wallDepth + vestiaryDoorD / 2 + 0.01;
-  const boysDoorPanelOutside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-  boysDoorPanelOutside.position.set(vestiaryX, vestiaryDoorY, boysDoorZOutside);
-  boysDoorPanelOutside.castShadow = false;
-  boysDoorPanelOutside.receiveShadow = false;
-  scene.add(boysDoorPanelOutside);
-  const boysDoorFrameOutside = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-  boysDoorFrameOutside.position.set(vestiaryX, vestiaryDoorY, boysDoorZOutside + 0.01);
-  boysDoorFrameOutside.castShadow = false;
-  scene.add(boysDoorFrameOutside);
-  const girlsWallZ = vestiaryGirlsZ - vAx / 2;
-  const girlsDoorZInside = girlsWallZ + vestiaryDoorD / 2 + 0.02;
-  const girlsDoorPanelInside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-  girlsDoorPanelInside.position.set(vestiaryX, vestiaryDoorY, girlsDoorZInside);
-  girlsDoorPanelInside.castShadow = false;
-  girlsDoorPanelInside.receiveShadow = false;
-  scene.add(girlsDoorPanelInside);
-  const girlsDoorFrame = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-  girlsDoorFrame.position.set(vestiaryX, vestiaryDoorY, girlsDoorZInside + 0.01);
-  girlsDoorFrame.castShadow = false;
-  scene.add(girlsDoorFrame);
-  const girlsDoorZOutside = girlsWallZ - wallDepth - vestiaryDoorD / 2 - 0.01;
-  const girlsDoorPanelOutside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-  girlsDoorPanelOutside.position.set(vestiaryX, vestiaryDoorY, girlsDoorZOutside);
-  girlsDoorPanelOutside.castShadow = false;
-  girlsDoorPanelOutside.receiveShadow = false;
-  scene.add(girlsDoorPanelOutside);
-  const girlsDoorFrameOutside = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-  girlsDoorFrameOutside.position.set(vestiaryX, vestiaryDoorY, girlsDoorZOutside - 0.01);
-  girlsDoorFrameOutside.castShadow = false;
-  scene.add(girlsDoorFrameOutside);
+  // ---- New Rooms ----
+  createToilet(scene);
+  // createDining(scene);
 
   // ---- Back wall: MUSCLE ARENA text ----
   const backWallZ = HEIGHT - 0.005;
@@ -682,167 +404,11 @@ export function initGym3d(container, options = {}) {
     img.src = logoUrl;
   }
 
-  // ---- Carpet (orange track) ----
-  const carpetWidthX = 1.5;
-  const carpetLengthZ = HEIGHT;
-  const carpetCanvas = document.createElement('canvas');
-  const texW = 384;
-  const texH = 1536;
-  carpetCanvas.width = texW;
-  carpetCanvas.height = texH;
-  const ctxC = carpetCanvas.getContext('2d');
-  ctxC.fillStyle = '#F97316';
-  ctxC.fillRect(0, 0, texW, texH);
-  const stepM = texH / carpetLengthZ;
-  ctxC.strokeStyle = '#ffffff';
-  ctxC.lineWidth = 2;
-  ctxC.strokeRect(4, 4, texW - 8, texH - 8);
-  const trackInset = texW * 0.2;
-  ctxC.beginPath(); ctxC.moveTo(trackInset, 0); ctxC.lineTo(trackInset, texH); ctxC.stroke();
-  ctxC.beginPath(); ctxC.moveTo(texW - trackInset, 0); ctxC.lineTo(texW - trackInset, texH); ctxC.stroke();
-  for (let s = 0; s <= carpetLengthZ; s++) { ctxC.beginPath(); ctxC.moveTo(0, s * stepM); ctxC.lineTo(texW, s * stepM); ctxC.stroke(); }
-  function drawTickGroup(x, yCenter, count, tall) {
-    const spacing = 6;
-    const start = x - (count - 1) * spacing / 2;
-    for (let i = 0; i < count; i++) {
-      const h = i === 1 ? tall : tall * 0.7;
-      ctxC.beginPath(); ctxC.moveTo(start + i * spacing, yCenter - h / 2); ctxC.lineTo(start + i * spacing, yCenter + h / 2); ctxC.stroke();
-    }
-  }
-  const tickH = 14;
-  const tickXLeft = trackInset - 20;
-  const tickXRight = texW - trackInset + 20;
-  for (let g = 0; g < 4; g++) {
-    const py = (g + 0.5) * (stepM / 4);
-    drawTickGroup(tickXLeft, py, 3, tickH);
-    drawTickGroup(tickXRight, py, 3, tickH);
-  }
-  for (let m = 1; m <= carpetLengthZ; m++) {
-    const segTop = (m - 1) * stepM;
-    const segBottom = m * stepM;
-    for (let g = 0; g < 2; g++) {
-      const py = segTop + (g + 0.5) * (stepM / 2);
-      drawTickGroup(tickXLeft, py, 3, tickH);
-      drawTickGroup(tickXRight, py, 3, tickH);
-    }
-  }
-  ctxC.fillStyle = '#ffffff';
-  ctxC.font = 'bold 64px system-ui, sans-serif';
-  ctxC.textAlign = 'center';
-  ctxC.textBaseline = 'middle';
-  for (let m = 1; m <= carpetLengthZ; m++) ctxC.fillText(String(m), texW / 2, texH - (m - 0.5) * stepM);
-  const carpetTexture = new THREE.CanvasTexture(carpetCanvas);
-  carpetTexture.wrapS = carpetTexture.wrapT = THREE.ClampToEdgeWrapping;
-  carpetTexture.repeat.set(-1, -1);
-  carpetTexture.offset.set(1, 1);
-  const carpetMaterial = new THREE.MeshStandardMaterial({ map: carpetTexture, roughness: 0.9, metalness: 0.05 });
-  const carpetMesh = new THREE.Mesh(new THREE.PlaneGeometry(carpetWidthX, carpetLengthZ), carpetMaterial);
-  carpetMesh.rotation.x = -Math.PI / 2;
-  carpetMesh.position.set(WIDTH / 2, 0.003, HEIGHT / 2);
-  carpetMesh.receiveShadow = true;
-  scene.add(carpetMesh);
+  // ---- Carpet (orange running track) ----
+  createCarpet(scene);
 
-  // ---- Bench (Vulcan TB43) ----
-  const benchGroup = new THREE.Group();
-  const clearance = 0.08;
-  const rackZLocal = 1.67 / 2 - 0.055;
-  const frontZLocal = 1.67 / 2;
-  benchGroup.rotation.y = (3 * Math.PI) / 2;
-  benchGroup.position.set(frontZLocal + clearance, 0, 10);
-  const blackMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85, metalness: 0.15 });
-  const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.2, metalness: 0.9 });
-  const rubberMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.95, metalness: 0 });
-  const redMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.6, metalness: 0.1 });
-  const benchL = 1.67;
-  const benchW = 1.66;
-  const benchH = 1.23;
-  const rackWidth = benchW - 0.14;
-  const rackZ = benchL / 2 - 0.055;
-  const uprightH = benchH - 0.05;
-  const padW = 0.35;
-  const padH = 0.06;
-  const padL = 1.22;
-  const padGeo = new THREE.BoxGeometry(padW, padH, padL);
-  const padMesh = new THREE.Mesh(padGeo, blackMat.clone());
-  padMesh.position.set(0, 0.48 + padH / 2, 0);
-  padMesh.castShadow = true;
-  benchGroup.add(padMesh);
-  const railGeo = new THREE.BoxGeometry(0.05, 0.045, padL - 0.08);
-  const railL = new THREE.Mesh(railGeo, blackMat);
-  railL.position.set(-padW / 2 + 0.045, 0.455, 0);
-  benchGroup.add(railL);
-  const railR = new THREE.Mesh(railGeo, blackMat);
-  railR.position.set(padW / 2 - 0.045, 0.455, 0);
-  benchGroup.add(railR);
-  const legW = 0.07;
-  const legThick = 0.06;
-  const legSeg1 = new THREE.Mesh(new THREE.BoxGeometry(legW, 0.32, legThick), blackMat);
-  legSeg1.position.set(0, 0.36, -0.58);
-  legSeg1.rotation.x = 0.4;
-  benchGroup.add(legSeg1);
-  const legSeg2 = new THREE.Mesh(new THREE.BoxGeometry(legW, 0.26, legThick), blackMat);
-  legSeg2.position.set(0, 0.14, -0.66);
-  benchGroup.add(legSeg2);
-  const footFront = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.03, 0.2), rubberMat);
-  footFront.position.set(0, 0.015, -benchL / 2 + 0.1);
-  benchGroup.add(footFront);
-  const rearBeam = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.05, 0.25), blackMat);
-  rearBeam.position.set(0, 0.455, rackZ - 0.35);
-  benchGroup.add(rearBeam);
-  const baseBar = new THREE.Mesh(new THREE.BoxGeometry(benchW, 0.08, 0.09), blackMat);
-  baseBar.position.set(0, 0.04, rackZ);
-  benchGroup.add(baseBar);
-  const footSize = 0.18;
-  const footRackL = new THREE.Mesh(new THREE.BoxGeometry(footSize, 0.035, footSize), rubberMat);
-  footRackL.position.set(-rackWidth / 2, 0.0175, rackZ);
-  benchGroup.add(footRackL);
-  const footRackR = new THREE.Mesh(new THREE.BoxGeometry(footSize, 0.035, footSize), rubberMat);
-  footRackR.position.set(rackWidth / 2, 0.0175, rackZ);
-  benchGroup.add(footRackR);
-  const uprightGeo = new THREE.BoxGeometry(0.065, uprightH, 0.065);
-  const uprightL = new THREE.Mesh(uprightGeo, blackMat);
-  uprightL.position.set(-rackWidth / 2, 0.04 + uprightH / 2, rackZ);
-  uprightL.rotation.z = 0.035;
-  benchGroup.add(uprightL);
-  const uprightR = new THREE.Mesh(uprightGeo, blackMat);
-  uprightR.position.set(rackWidth / 2, 0.04 + uprightH / 2, rackZ);
-  uprightR.rotation.z = -0.035;
-  benchGroup.add(uprightR);
-  const chromeBarGeo = new THREE.CylinderGeometry(0.025, 0.025, rackWidth - 0.06, 12);
-  const chromeBar1 = new THREE.Mesh(chromeBarGeo, chromeMat);
-  chromeBar1.rotation.z = Math.PI / 2;
-  chromeBar1.position.set(0, 0.04 + uprightH * 0.72, rackZ);
-  benchGroup.add(chromeBar1);
-  const chromeBar2 = new THREE.Mesh(chromeBarGeo, chromeMat);
-  chromeBar2.rotation.z = Math.PI / 2;
-  chromeBar2.position.set(0, 0.04 + uprightH * 0.38, rackZ);
-  benchGroup.add(chromeBar2);
-  const jHookGeo = new THREE.BoxGeometry(0.1, 0.08, 0.14);
-  const jHookYHigh = 0.04 + uprightH * 0.82;
-  const jHookYLow = 0.04 + uprightH * 0.62;
-  const jHookZ = rackZ - 0.08;
-  [-1, 1].forEach((side) => {
-    const x = side * (rackWidth / 2 + 0.025);
-    const jHigh = new THREE.Mesh(jHookGeo, blackMat);
-    jHigh.position.set(x, jHookYHigh, jHookZ);
-    benchGroup.add(jHigh);
-    const jLow = new THREE.Mesh(jHookGeo, blackMat);
-    jLow.position.set(x, jHookYLow, jHookZ);
-    benchGroup.add(jLow);
-  });
-  const spotterGeo = new THREE.BoxGeometry(0.09, 0.05, 0.42);
-  const spotterL = new THREE.Mesh(spotterGeo, blackMat);
-  spotterL.position.set(-rackWidth / 2, 0.04 + uprightH * 0.44, rackZ - 0.22);
-  benchGroup.add(spotterL);
-  const spotterR = new THREE.Mesh(spotterGeo, blackMat);
-  spotterR.position.set(rackWidth / 2, 0.04 + uprightH * 0.44, rackZ - 0.22);
-  benchGroup.add(spotterR);
-  const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.05), redMat);
-  logoPlane.position.set(0.2, 0.46, rackZ - 0.5);
-  logoPlane.rotation.y = -Math.PI / 2;
-  logoPlane.rotation.z = Math.PI / 2;
-  benchGroup.add(logoPlane);
-  scene.add(benchGroup);
+  // ---- Bench (workout equipment) ----
+  const benchGroup = createBench(scene);
 
   // Resize
   const resizeObserver = new ResizeObserver(() => {
@@ -863,7 +429,7 @@ export function initGym3d(container, options = {}) {
   const vestiaryBoysInfoEl = document.getElementById('vestiary-boys-info');
   const vestiaryGirlsInfoEl = document.getElementById('vestiary-girls-info');
 
-  const vestiaryHighlightGeo = new THREE.PlaneGeometry(vAz, vAx);
+  const vestiaryHighlightGeo = new THREE.PlaneGeometry(VESTIARY_WIDTH, VESTIARY_DEPTH);
   const vestiaryHighlightMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
   let vestiaryHighlightMesh = null;
 
