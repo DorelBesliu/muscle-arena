@@ -1,16 +1,22 @@
 /**
- * Vestiaries (changing rooms) module for the 3D gym
+ * Vestiaries (changing rooms) module for the 3D gym.
+ * Placed near the front wall (carpet "1"), after the reception/abonament room.
  */
 import * as THREE from 'three';
-import { WIDTH, HEIGHT, WALL_DEPTH, VESTIARY_WIDTH, VESTIARY_DEPTH, VESTIARY_WALL_H, ROAD_WIDTH, COLORS } from './constants.js';
+import { WALL_DEPTH, WIDTH, VESTIARY_WIDTH, VESTIARY_DEPTH, VESTIARY_WALL_H, VESTIARY_HALL_START_Z, COLORS } from './constants.js';
 
 const vAz = VESTIARY_WIDTH;
 const vAx = VESTIARY_DEPTH;
 
+// Aligned to main room: left vestiary left wall at x=0, right vestiary right wall at x=WIDTH (10)
+const boysCenterX = vAz / 2;
+const girlsCenterX = WIDTH - vAz / 2;
+const vestiaryZ = VESTIARY_HALL_START_Z + vAx / 2;
+
 /**
- * Creates both boys and girls vestiaries
+ * Creates vestiary 1 and 2 with hall between them. Doors open into the hall.
  * @param {THREE.Scene} scene
- * @returns {Object} { boysGroup, girlsGroup }
+ * @returns {Object} { boysVestiaryGroup, girlsVestiaryGroup }
  */
 export function createVestiaries(scene) {
   const vestiaryFloorMat = new THREE.MeshStandardMaterial({ color: COLORS.vestiaryFloor, roughness: 0.85, metalness: 0.1 });
@@ -20,21 +26,15 @@ export function createVestiaries(scene) {
   const doorMat = new THREE.MeshBasicMaterial({ color: COLORS.door, side: THREE.DoubleSide });
   const doorFrameMat = new THREE.MeshBasicMaterial({ color: COLORS.door, side: THREE.DoubleSide });
   
-  const vestiaryX = WIDTH + vAz / 2 + WALL_DEPTH + 0.35;
-  const stripCenterZ = HEIGHT / 2;
-  const vestiaryBoysZ = stripCenterZ - ROAD_WIDTH / 2 - vAx / 2;
-  const vestiaryGirlsZ = stripCenterZ + ROAD_WIDTH / 2 + vAx / 2;
-  
-  // Boys vestiary
-  const boysVestiaryGroup = createVestiaryRoom(vestiaryX, vestiaryBoysZ, vestiaryFloorMat, vestiaryWallMat, lockerMat, benchMat);
-  addVestiaryContents(vestiaryX, vestiaryBoysZ, boysVestiaryGroup, [1, 2], lockerMat, benchMat);
-  createVestiaryDoor(scene, vestiaryX, vestiaryBoysZ, true, doorMat, doorFrameMat);
+  // Vestiary 1 (boys)
+  const boysVestiaryGroup = createVestiaryRoom(boysCenterX, vestiaryZ, vestiaryFloorMat, vestiaryWallMat, lockerMat, benchMat);
+  addVestiaryContents(boysCenterX, vestiaryZ, boysVestiaryGroup, [1, 2], lockerMat, benchMat);
+  createVestiaryDoorInWall(scene, boysCenterX, vestiaryZ, 'right', doorMat, doorFrameMat);
   scene.add(boysVestiaryGroup);
   
-  // Girls vestiary
-  const girlsVestiaryGroup = createVestiaryRoom(vestiaryX, vestiaryGirlsZ, vestiaryFloorMat, vestiaryWallMat, lockerMat, benchMat);
-  addVestiaryContents(vestiaryX, vestiaryGirlsZ, girlsVestiaryGroup, [3, 2], lockerMat, benchMat, { wall2NearBack: true });
-  createVestiaryDoor(scene, vestiaryX, vestiaryGirlsZ, false, doorMat, doorFrameMat);
+  const girlsVestiaryGroup = createVestiaryRoom(girlsCenterX, vestiaryZ, vestiaryFloorMat, vestiaryWallMat, lockerMat, benchMat);
+  addVestiaryContents(girlsCenterX, vestiaryZ, girlsVestiaryGroup, [3, 2], lockerMat, benchMat, { wall2NearBack: true });
+  createVestiaryDoorInWall(scene, girlsCenterX, vestiaryZ, 'left', doorMat, doorFrameMat);
   scene.add(girlsVestiaryGroup);
   
   return { boysVestiaryGroup, girlsVestiaryGroup };
@@ -157,62 +157,33 @@ function addVestiaryContents(vx, vz, group, cabinetWalls, lockerMat, benchMat, o
   }
 }
 
-function createVestiaryDoor(scene, vx, vz, isBoys, doorMat, doorFrameMat) {
-  const vestiaryDoorW = 1;
-  const vestiaryDoorH = 2.2;
-  const vestiaryDoorD = 0.08;
-  const vestiaryDoorY = vestiaryDoorH / 2;
-  const vestiaryFrameThick = 0.08;
-  const vestiaryDoorGeo = new THREE.BoxGeometry(vestiaryDoorW, vestiaryDoorH, vestiaryDoorD);
-  const vestiaryFrameH = vestiaryDoorH + vestiaryFrameThick * 2;
-  const vestiaryFrameW = vestiaryDoorW + vestiaryFrameThick * 2;
-  const vestiaryFrameGeo = new THREE.BoxGeometry(vestiaryFrameW, vestiaryFrameH, vestiaryDoorD + 0.02);
-  
-  if (isBoys) {
-    const wallZ = vz + vAx / 2;
-    const doorZInside = wallZ - vestiaryDoorD / 2 - 0.02;
-    const doorPanelInside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-    doorPanelInside.position.set(vx, vestiaryDoorY, doorZInside);
-    doorPanelInside.castShadow = false;
-    scene.add(doorPanelInside);
-    
-    const doorFrame = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-    doorFrame.position.set(vx, vestiaryDoorY, doorZInside - 0.01);
-    doorFrame.castShadow = false;
-    scene.add(doorFrame);
-    
-    const doorZOutside = wallZ + WALL_DEPTH + vestiaryDoorD / 2 + 0.01;
-    const doorPanelOutside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-    doorPanelOutside.position.set(vx, vestiaryDoorY, doorZOutside);
-    doorPanelOutside.castShadow = false;
-    scene.add(doorPanelOutside);
-    
-    const doorFrameOutside = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-    doorFrameOutside.position.set(vx, vestiaryDoorY, doorZOutside + 0.01);
-    doorFrameOutside.castShadow = false;
-    scene.add(doorFrameOutside);
-  } else {
-    const wallZ = vz - vAx / 2;
-    const doorZInside = wallZ + vestiaryDoorD / 2 + 0.02;
-    const doorPanelInside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-    doorPanelInside.position.set(vx, vestiaryDoorY, doorZInside);
-    doorPanelInside.castShadow = false;
-    scene.add(doorPanelInside);
-    
-    const doorFrame = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-    doorFrame.position.set(vx, vestiaryDoorY, doorZInside + 0.01);
-    doorFrame.castShadow = false;
-    scene.add(doorFrame);
-    
-    const doorZOutside = wallZ - WALL_DEPTH - vestiaryDoorD / 2 - 0.01;
-    const doorPanelOutside = new THREE.Mesh(vestiaryDoorGeo.clone(), doorMat);
-    doorPanelOutside.position.set(vx, vestiaryDoorY, doorZOutside);
-    doorPanelOutside.castShadow = false;
-    scene.add(doorPanelOutside);
-    
-    const doorFrameOutside = new THREE.Mesh(vestiaryFrameGeo.clone(), doorFrameMat);
-    doorFrameOutside.position.set(vx, vestiaryDoorY, doorZOutside - 0.01);
-    doorFrameOutside.castShadow = false;
-    scene.add(doorFrameOutside);
-  }
+// Door in side wall: 'right' = wall at vx+vAz/2 (into hall), 'left' = wall at vx-vAz/2 (into hall)
+function createVestiaryDoorInWall(scene, vx, vz, side, doorMat, doorFrameMat) {
+  const doorW = 1;
+  const doorH = 2.2;
+  const doorD = 0.08;
+  const doorY = doorH / 2;
+  const frameThick = 0.08;
+  const doorGeo = new THREE.BoxGeometry(doorD, doorH, doorW);
+  const frameGeo = new THREE.BoxGeometry(doorD + 0.02, doorH + frameThick * 2, doorW + frameThick * 2);
+  const wallX = side === 'right' ? vx + vAz / 2 : vx - vAz / 2;
+  const insideX = side === 'right' ? wallX - doorD / 2 - 0.02 : wallX + doorD / 2 + 0.02;
+  const outsideX = side === 'right' ? wallX + WALL_DEPTH + doorD / 2 + 0.01 : wallX - WALL_DEPTH - doorD / 2 - 0.01;
+  const doorZ = vz;
+  const panelInside = new THREE.Mesh(doorGeo.clone(), doorMat);
+  panelInside.position.set(insideX, doorY, doorZ);
+  panelInside.castShadow = false;
+  scene.add(panelInside);
+  const frameInside = new THREE.Mesh(frameGeo.clone(), doorFrameMat);
+  frameInside.position.set(side === 'right' ? insideX - 0.01 : insideX + 0.01, doorY, doorZ);
+  frameInside.castShadow = false;
+  scene.add(frameInside);
+  const panelOutside = new THREE.Mesh(doorGeo.clone(), doorMat);
+  panelOutside.position.set(outsideX, doorY, doorZ);
+  panelOutside.castShadow = false;
+  scene.add(panelOutside);
+  const frameOutside = new THREE.Mesh(frameGeo.clone(), doorFrameMat);
+  frameOutside.position.set(side === 'right' ? outsideX + 0.01 : outsideX - 0.01, doorY, doorZ);
+  frameOutside.castShadow = false;
+  scene.add(frameOutside);
 }

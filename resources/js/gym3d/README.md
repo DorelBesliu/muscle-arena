@@ -7,7 +7,9 @@ This directory contains modular JavaScript files for the 3D gym representation u
 - **`constants.js`** - Shared constants (dimensions, colors) used across all modules
 - **`floor.js`** - Main gym floor
 - **`walls.js`** - Gym walls with entrance door
-- **`vestiaries.js`** - Boys and girls changing rooms with lockers and benches
+- **`reception.js`** - 1) Camera de înregistrare (registration)
+- **`hall.js`** - Hol între vestiare
+- **`vestiaries.js`** - 2) Vestiare cu hol între ele [Vestiar1] [Hol] [Vestiar2]
 - **`bench.js`** - Vulcan TB43 workout bench with detailed geometry
 - **`carpet.js`** - Orange running track with meter markings
 - **`toilet.js`** - **NEW** Toilet/WC room with fixtures (toilet, sink, mirror)
@@ -19,6 +21,8 @@ All modules are imported and used in the main `gym3d.js` file:
 ```javascript
 import { createFloor } from './gym3d/floor.js';
 import { createWalls } from './gym3d/walls.js';
+import { createReception } from './gym3d/reception.js';
+import { createHall } from './gym3d/hall.js';
 import { createVestiaries } from './gym3d/vestiaries.js';
 import { createBench } from './gym3d/bench.js';
 import { createCarpet } from './gym3d/carpet.js';
@@ -27,17 +31,19 @@ import { createToilet } from './gym3d/toilet.js';
 // In the scene setup:
 createFloor(scene);
 createWalls(scene);
+createReception(scene);
+createHall(scene);
 createVestiaries(scene);
 createToilet(scene);
 createCarpet(scene);
 createBench(scene);
 ```
 
-## Room Positions
+## Room order (flux)
 
-- **Main Gym**: Center (10m × 20m = 200m²)
-- **Vestiaries**: Right side of gym (boys and girls)
-- **Toilet/WC**: Left side, towards the back
+1. **Camera de înregistrare** – first (registration, abonament, wait for manager). z -6..-2.
+2. **Vestiare cu hol între ele** – [Vestiar1] [Hol] [Vestiar2]. z -5..0. Doors into the hall.
+3. **Sala principală cu ușa de intrare** – main gym, entrance door on front wall (z=0). Carpet "1" at this wall.
 
 ## Adding New Rooms
 

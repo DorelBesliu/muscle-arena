@@ -122,10 +122,10 @@
                                 aria-label="{{ __('ui.gym3d_drag_hint') }}">
                             <x-lucide-info class="w-5 h-5" />
                         </button>
-                        {{-- Expand/Minimize icon: toggles fullscreen (mobile only) --}}
+                        {{-- Expand/Minimize icon: toggles fullscreen (all devices) --}}
                         <button type="button"
                                 @click="toggleFullscreen()"
-                                class="gym3d-control-btn md:hidden absolute top-4 right-4 z-[60]"
+                                class="gym3d-control-btn absolute top-4 right-4 z-[60]"
                                 :aria-label="gym3dFullscreen ? '{{ __('ui.gym3d_exit_fullscreen') }}' : '{{ __('ui.gym3d_expand_fullscreen') }}'">
                             <x-lucide-maximize x-show="!gym3dFullscreen" class="w-5 h-5" />
                             <x-lucide-minimize-2 x-show="gym3dFullscreen" x-cloak class="w-5 h-5" />
@@ -170,6 +170,14 @@
                                 <dt>{{ __('ui.gym3d_vestiary_locker_dimensions') }}:</dt><dd>{{ __('ui.gym3d_vestiary_value_locker_dim') }}</dd>
                                 <dt>{{ __('ui.gym3d_vestiary_benches') }}:</dt><dd>{{ __('ui.gym3d_vestiary_value_benches') }}</dd>
                                 <dt>{{ __('ui.gym3d_vestiary_bench_dimensions') }}:</dt><dd>{{ __('ui.gym3d_vestiary_value_bench_dim') }}</dd>
+                            </dl>
+                        </div>
+                        <div id="reception-info" class="absolute" aria-live="polite">
+                            <div class="title">{{ __('ui.gym3d_reception_title') }}</div>
+                            <dl>
+                                <dt>{{ __('ui.gym3d_reception_surface') }}:</dt><dd>{{ __('ui.gym3d_reception_value_surface') }}</dd>
+                                <dt>{{ __('ui.gym3d_reception_dimensions') }}:</dt><dd>{{ __('ui.gym3d_reception_value_dimensions') }}</dd>
+                                <dt>{{ __('ui.gym3d_reception_ceiling') }}:</dt><dd>{{ __('ui.gym3d_reception_value_ceiling') }}</dd>
                             </dl>
                         </div>
                         {{-- Dialog: drag hint (opened by info icon) - mobile version (absolute position for fullscreen) --}}

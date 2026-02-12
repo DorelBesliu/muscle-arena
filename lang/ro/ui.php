@@ -72,6 +72,14 @@ return [
     'gym3d_vestiary_value_benches' => '2 bănci',
     'gym3d_vestiary_value_bench_dim' => '120 × 40 × 42 cm',
 
+    'gym3d_reception_title' => 'Recepție',
+    'gym3d_reception_surface' => 'Suprafață',
+    'gym3d_reception_dimensions' => 'Dimensiuni',
+    'gym3d_reception_ceiling' => 'Înălțime tavan',
+    'gym3d_reception_value_surface' => '50 m²',
+    'gym3d_reception_value_dimensions' => '10 m × 5 m',
+    'gym3d_reception_value_ceiling' => '2,5 m',
+
     'gym3d_drag_hint' => 'Schimbă poziția scenei: Apasă și ține apăsat pe scenă aproximativ o jumătate de secundă, apoi trage cu mouse-ul pentru a deplasa scena.',
 
     'gym3d_help_controls_title' => 'Controale',

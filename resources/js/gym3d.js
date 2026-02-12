@@ -7,9 +7,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Import modular components
-import { WIDTH, HEIGHT, WALL_H, VESTIARY_WIDTH, VESTIARY_DEPTH } from './gym3d/constants.js';
+import { WIDTH, HEIGHT, WALL_H, VESTIARY_WIDTH, VESTIARY_DEPTH, VESTIARY_HALL_START_Z, RECEPTION_WIDTH, RECEPTION_DEPTH, RECEPTION_START_Z } from './gym3d/constants.js';
 import { createFloor } from './gym3d/floor.js';
 import { createWalls } from './gym3d/walls.js';
+import { createReception } from './gym3d/reception.js';
+import { createHall } from './gym3d/hall.js';
 import { createVestiaries } from './gym3d/vestiaries.js';
 import { createBench } from './gym3d/bench.js';
 import { createCarpet } from './gym3d/carpet.js';
@@ -32,13 +34,15 @@ export function initGym3d(container, options = {}) {
   const containerHeight = container.clientHeight;
 
   const camera = new THREE.PerspectiveCamera(50, containerWidth / containerHeight, 0.1, 500);
-  camera.position.set(6, 9, -4);
-  camera.lookAt(7, 0, 10);
+  // Default: higher up in front of reception so all rooms (reception, vestiaries, main gym) are visible
+  const defaultLookAtZ = 5; // between reception and main room back
+  camera.position.set(5, 14, -20);
+  camera.lookAt(5, 0, defaultLookAtZ);
 
   // Store original camera position and target for restoration
   const originalCameraPosition = camera.position.clone();
-  const originalCameraTarget = new THREE.Vector3(7, 0, 10);
-  const originalControlsTarget = new THREE.Vector3(7, 0, 10);
+  const originalCameraTarget = new THREE.Vector3(5, 0, defaultLookAtZ);
+  const originalControlsTarget = new THREE.Vector3(5, 0, defaultLookAtZ);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(containerWidth, containerHeight);
@@ -53,7 +57,7 @@ export function initGym3d(container, options = {}) {
   controls.dampingFactor = 0.05;
   controls.minDistance = 2;
   controls.maxDistance = 45;
-  controls.target.set(7, 0, 10);
+  controls.target.set(5, 0, defaultLookAtZ);
 
   // ---- Drag-to-pan ----
   let dragPanActive = false;
@@ -285,10 +289,10 @@ export function initGym3d(container, options = {}) {
 
       // On mobile fullscreen, adjust camera to horizontal/landscape orientation
       if (isMobile) {
-        // Horizontal camera position: lower height, better horizontal view
-        camera.position.set(6, 5, -8);
-        camera.lookAt(7, 0, 10);
-        controls.target.set(7, 0, 10);
+        // Higher view in front of reception so all rooms visible
+        camera.position.set(5, 12, -20);
+        camera.lookAt(5, 0, defaultLookAtZ);
+        controls.target.set(5, 0, defaultLookAtZ);
         controls.update();
       }
     } else {
@@ -348,8 +352,16 @@ export function initGym3d(container, options = {}) {
   const floorMesh = createFloor(scene);
   const { backWall, leftWall, rightWall, frontWall } = createWalls(scene);
 
-  // ---- Vestiaries (changing rooms) ----
+  // ---- 1) Camera de înregistrare  2) Vestiare + hol  3) Sala principală (usa de intrare în walls) ----
+  const receptionGroup = createReception(scene);
+  createHall(scene);
   const { boysVestiaryGroup, girlsVestiaryGroup } = createVestiaries(scene);
+
+  const vestiaryZ = VESTIARY_HALL_START_Z + VESTIARY_DEPTH / 2;
+  const vestiaryBoysX = VESTIARY_WIDTH / 2;
+  const vestiaryGirlsX = WIDTH - VESTIARY_WIDTH / 2;
+  const receptionCenterX = WIDTH / 2;
+  const receptionCenterZ = RECEPTION_START_Z + RECEPTION_DEPTH / 2;
 
   // ---- New Rooms ----
   createToilet(scene);
@@ -428,10 +440,15 @@ export function initGym3d(container, options = {}) {
   const benchInfoEl = document.getElementById('bench-info');
   const vestiaryBoysInfoEl = document.getElementById('vestiary-boys-info');
   const vestiaryGirlsInfoEl = document.getElementById('vestiary-girls-info');
+  const receptionInfoEl = document.getElementById('reception-info');
 
   const vestiaryHighlightGeo = new THREE.PlaneGeometry(VESTIARY_WIDTH, VESTIARY_DEPTH);
   const vestiaryHighlightMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
   let vestiaryHighlightMesh = null;
+
+  const receptionHighlightGeo = new THREE.PlaneGeometry(RECEPTION_WIDTH, RECEPTION_DEPTH);
+  const receptionHighlightMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
+  let receptionHighlightMesh = null;
 
   const benchHighlightGeo = new THREE.BoxGeometry(1.72, 1.26, 1.72);
   const benchHighlightMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.3, side: THREE.BackSide, depthWrite: false });
@@ -454,6 +471,11 @@ export function initGym3d(container, options = {}) {
     while (o) { if (o === girlsVestiaryGroup) return true; o = o.parent; }
     return false;
   }
+  function isPartOfReception(obj) {
+    let o = obj;
+    while (o) { if (o === receptionGroup) return true; o = o.parent; }
+    return false;
+  }
 
   const fullFloorHighlightGeo = new THREE.PlaneGeometry(WIDTH, HEIGHT);
   const fullFloorHighlightMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
@@ -463,11 +485,16 @@ export function initGym3d(container, options = {}) {
     if (vestiaryBoysInfoEl) vestiaryBoysInfoEl.classList.remove('visible');
     if (vestiaryGirlsInfoEl) vestiaryGirlsInfoEl.classList.remove('visible');
   }
+  function removeReceptionHighlight() {
+    if (receptionHighlightMesh) { scene.remove(receptionHighlightMesh); receptionHighlightMesh = null; }
+    if (receptionInfoEl) receptionInfoEl.classList.remove('visible');
+  }
 
   function showFloorInfo() {
     if (benchGroup.children.includes(benchHighlightMesh)) benchGroup.remove(benchHighlightMesh);
     if (benchInfoEl) benchInfoEl.classList.remove('visible');
     removeVestiaryHighlight();
+    removeReceptionHighlight();
     if (floorHighlightMesh) return;
     floorHighlightMesh = new THREE.Mesh(fullFloorHighlightGeo, fullFloorHighlightMat);
     floorHighlightMesh.rotation.x = -Math.PI / 2;
@@ -485,6 +512,7 @@ export function initGym3d(container, options = {}) {
     }
     if (floorInfoEl) floorInfoEl.classList.remove('visible');
     removeVestiaryHighlight();
+    removeReceptionHighlight();
     if (!benchGroup.children.includes(benchHighlightMesh)) benchGroup.add(benchHighlightMesh);
     if (benchInfoEl) benchInfoEl.classList.add('visible');
   }
@@ -499,12 +527,13 @@ export function initGym3d(container, options = {}) {
     if (floorInfoEl) floorInfoEl.classList.remove('visible');
     if (benchGroup.children.includes(benchHighlightMesh)) benchGroup.remove(benchHighlightMesh);
     if (benchInfoEl) benchInfoEl.classList.remove('visible');
+    removeReceptionHighlight();
     if (vestiaryGirlsInfoEl) vestiaryGirlsInfoEl.classList.remove('visible');
     if (!vestiaryHighlightMesh) {
       vestiaryHighlightMesh = new THREE.Mesh(vestiaryHighlightGeo, vestiaryHighlightMat);
       vestiaryHighlightMesh.rotation.x = -Math.PI / 2;
     }
-    vestiaryHighlightMesh.position.set(vestiaryX, 0.02, vestiaryBoysZ);
+    vestiaryHighlightMesh.position.set(vestiaryBoysX, 0.02, vestiaryZ);
     if (!vestiaryHighlightMesh.parent) scene.add(vestiaryHighlightMesh);
     if (vestiaryBoysInfoEl) vestiaryBoysInfoEl.classList.add('visible');
   }
@@ -519,14 +548,35 @@ export function initGym3d(container, options = {}) {
     if (floorInfoEl) floorInfoEl.classList.remove('visible');
     if (benchGroup.children.includes(benchHighlightMesh)) benchGroup.remove(benchHighlightMesh);
     if (benchInfoEl) benchInfoEl.classList.remove('visible');
+    removeReceptionHighlight();
     if (vestiaryBoysInfoEl) vestiaryBoysInfoEl.classList.remove('visible');
     if (!vestiaryHighlightMesh) {
       vestiaryHighlightMesh = new THREE.Mesh(vestiaryHighlightGeo, vestiaryHighlightMat);
       vestiaryHighlightMesh.rotation.x = -Math.PI / 2;
     }
-    vestiaryHighlightMesh.position.set(vestiaryX, 0.02, vestiaryGirlsZ);
+    vestiaryHighlightMesh.position.set(vestiaryGirlsX, 0.02, vestiaryZ);
     if (!vestiaryHighlightMesh.parent) scene.add(vestiaryHighlightMesh);
     if (vestiaryGirlsInfoEl) vestiaryGirlsInfoEl.classList.add('visible');
+  }
+
+  function showReceptionInfo() {
+    if (floorHighlightMesh) {
+      scene.remove(floorHighlightMesh);
+      floorHighlightMesh.geometry.dispose();
+      floorHighlightMesh.material.dispose();
+      floorHighlightMesh = null;
+    }
+    if (floorInfoEl) floorInfoEl.classList.remove('visible');
+    if (benchGroup.children.includes(benchHighlightMesh)) benchGroup.remove(benchHighlightMesh);
+    if (benchInfoEl) benchInfoEl.classList.remove('visible');
+    removeVestiaryHighlight();
+    if (!receptionHighlightMesh) {
+      receptionHighlightMesh = new THREE.Mesh(receptionHighlightGeo, receptionHighlightMat);
+      receptionHighlightMesh.rotation.x = -Math.PI / 2;
+    }
+    receptionHighlightMesh.position.set(receptionCenterX, 0.02, receptionCenterZ);
+    if (!receptionHighlightMesh.parent) scene.add(receptionHighlightMesh);
+    if (receptionInfoEl) receptionInfoEl.classList.add('visible');
   }
 
   function hideAllInfo() {
@@ -538,8 +588,10 @@ export function initGym3d(container, options = {}) {
     }
     if (benchGroup.children.includes(benchHighlightMesh)) benchGroup.remove(benchHighlightMesh);
     removeVestiaryHighlight();
+    removeReceptionHighlight();
     if (floorInfoEl) floorInfoEl.classList.remove('visible');
     if (benchInfoEl) benchInfoEl.classList.remove('visible');
+    if (receptionInfoEl) receptionInfoEl.classList.remove('visible');
   }
 
   renderer.domElement.addEventListener('click', (e) => {
@@ -548,11 +600,12 @@ export function initGym3d(container, options = {}) {
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects([floorMesh, benchGroup, boysVestiaryGroup, girlsVestiaryGroup], true);
+    const intersects = raycaster.intersectObjects([floorMesh, benchGroup, receptionGroup, boysVestiaryGroup, girlsVestiaryGroup], true);
     if (intersects.length === 0) { hideAllInfo(); return; }
     const first = intersects[0].object;
     if (first === floorMesh) showFloorInfo();
     else if (isPartOfBench(first)) showBenchInfo();
+    else if (isPartOfReception(first)) showReceptionInfo();
     else if (isPartOfBoysVestiary(first)) showBoysVestiaryInfo();
     else if (isPartOfGirlsVestiary(first)) showGirlsVestiaryInfo();
     else hideAllInfo();
@@ -654,15 +707,22 @@ export function initGym3d(container, options = {}) {
     frameId = requestAnimationFrame(animate);
     controls.update();
     const viewDir = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
-    const frontScore = viewDir.z;
+    const frontScore = viewDir.z;   // front wall at +z
     const backScore = -viewDir.z;
-    const leftScore = viewDir.x;
-    const rightScore = -viewDir.x;
+    const leftScore = -viewDir.x;  // left wall at -x
+    const rightScore = viewDir.x;  // right wall at +x
     const maxScore = Math.max(frontScore, backScore, leftScore, rightScore);
-    frontWall.visible = frontScore !== maxScore;
+    const nearWallDist = 2.5;  // hide walls 2 & 4 when camera is within this distance
+    const nearLeft = camera.position.x <= nearWallDist;
+    const nearRight = camera.position.x >= WIDTH - nearWallDist;
+    frontWall.visible = true;  // always show front wall (entrance door from vestiaries)
     backWall.visible = backScore !== maxScore;
-    leftWall.visible = leftScore !== maxScore;
-    rightWall.visible = true;
+    leftWall.visible = (leftScore !== maxScore) && !nearLeft;   // hide wall 4 when camera near it
+    rightWall.visible = (rightScore !== maxScore) && !nearRight; // hide wall 2 when camera near it
+    if (!leftWall.visible && !rightWall.visible) {
+      if (nearRight) leftWall.visible = true;   // when wall 2 hidden, show wall 4
+      else rightWall.visible = true;            // when wall 4 hidden, show wall 2
+    }
     renderer.render(scene, camera);
   }
   animate();

@@ -315,12 +315,12 @@ body.gym3d-fullscreen-active {
 #floor-info,
 #bench-info,
 #vestiary-boys-info,
-#vestiary-girls-info {
+#vestiary-girls-info,
+#reception-info {
     display: none;
     position: absolute;
     bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 1rem;
     padding: 1rem 1.25rem;
     background: rgba(0, 0, 0, 0.9);
     border: 1px solid #F97316;
@@ -335,14 +335,17 @@ body.gym3d-fullscreen-active {
 #bench-info { min-width: 340px; }
 #vestiary-boys-info,
 #vestiary-girls-info { min-width: 340px; }
+#reception-info { min-width: 280px; }
 #floor-info.visible,
 #bench-info.visible,
 #vestiary-boys-info.visible,
-#vestiary-girls-info.visible { display: block; }
+#vestiary-girls-info.visible,
+#reception-info.visible { display: block; }
 #floor-info .title,
 #bench-info .title,
 #vestiary-boys-info .title,
-#vestiary-girls-info .title {
+#vestiary-girls-info .title,
+#reception-info .title {
     font-weight: 700;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
@@ -351,15 +354,18 @@ body.gym3d-fullscreen-active {
 #floor-info dl,
 #bench-info dl,
 #vestiary-boys-info dl,
-#vestiary-girls-info dl { margin: 0; }
+#vestiary-girls-info dl,
+#reception-info dl { margin: 0; }
 #floor-info dt,
 #bench-info dt,
 #vestiary-boys-info dt,
-#vestiary-girls-info dt { float: left; margin-right: 0.5rem; font-weight: 600; }
+#vestiary-girls-info dt,
+#reception-info dt { float: left; margin-right: 0.5rem; font-weight: 600; }
 #floor-info dd,
 #bench-info dd,
 #vestiary-boys-info dd,
-#vestiary-girls-info dd { margin: 0 0 0.25rem 0; }
+#vestiary-girls-info dd,
+#reception-info dd { margin: 0 0 0.25rem 0; }
 .gym3d-bench-link {
     display: inline-block;
     margin-top: 0.75rem;

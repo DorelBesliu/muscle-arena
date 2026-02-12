@@ -72,6 +72,14 @@ return [
     'gym3d_vestiary_value_benches' => '2 benches',
     'gym3d_vestiary_value_bench_dim' => '120 × 40 × 42 cm',
 
+    'gym3d_reception_title' => 'Reception',
+    'gym3d_reception_surface' => 'Surface',
+    'gym3d_reception_dimensions' => 'Dimensions',
+    'gym3d_reception_ceiling' => 'Ceiling height',
+    'gym3d_reception_value_surface' => '50 m²',
+    'gym3d_reception_value_dimensions' => '10 m × 5 m',
+    'gym3d_reception_value_ceiling' => '2.5 m',
+
     'gym3d_drag_hint' => 'Move the scene: Press and hold on the scene for about half a second, then drag with the mouse to pan.',
 
     'gym3d_help_controls_title' => 'Controls',

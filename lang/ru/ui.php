@@ -72,6 +72,14 @@ return [
     'gym3d_vestiary_value_benches' => '2 скамейки',
     'gym3d_vestiary_value_bench_dim' => '120 × 40 × 42 см',
 
+    'gym3d_reception_title' => 'Рецепция',
+    'gym3d_reception_surface' => 'Площадь',
+    'gym3d_reception_dimensions' => 'Размеры',
+    'gym3d_reception_ceiling' => 'Высота потолка',
+    'gym3d_reception_value_surface' => '50 м²',
+    'gym3d_reception_value_dimensions' => '10 м × 5 м',
+    'gym3d_reception_value_ceiling' => '2,5 м',
+
     'gym3d_drag_hint' => 'Перемещение сцены: нажмите и удерживайте на сцене примерно полсекунды, затем перетащите мышью.',
 
     'gym3d_help_controls_title' => 'Управление',
