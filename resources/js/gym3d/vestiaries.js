@@ -26,9 +26,9 @@ export function createVestiaries(scene) {
   const doorMat = new THREE.MeshBasicMaterial({ color: COLORS.door, side: THREE.DoubleSide });
   const doorFrameMat = new THREE.MeshBasicMaterial({ color: COLORS.door, side: THREE.DoubleSide });
   
-  // Vestiary 1 (boys)
+  // Vestiary 1 (boys) – back + left (hall) wall + front wall (cabinets aligned to right)
   const boysVestiaryGroup = createVestiaryRoom(boysCenterX, vestiaryZ, vestiaryFloorMat, vestiaryWallMat, lockerMat, benchMat);
-  addVestiaryContents(boysCenterX, vestiaryZ, boysVestiaryGroup, [1, 2], lockerMat, benchMat);
+  addVestiaryContents(boysCenterX, vestiaryZ, boysVestiaryGroup, [3, 4], lockerMat, benchMat, { wall4NearBack: true, wall3AlignRight: true });
   createVestiaryDoorInWall(scene, boysCenterX, vestiaryZ, 'right', doorMat, doorFrameMat);
   scene.add(boysVestiaryGroup);
   
@@ -70,8 +70,59 @@ function createVestiaryRoom(vx, vz, floorMat, wallMat, lockerMat, benchMat) {
   return group;
 }
 
+/** Number signs on each wall of a vestiary (1=front, 2=right, 3=back, 4=left). */
+function addVestiaryWallNumbers(vx, vz, group) {
+  const numSize = 0.5;
+  const signY = VESTIARY_WALL_H / 2;
+  const offset = 0.05;
+
+  function makeNumberPlane(num) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 80px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(num), 64, 64);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 1,
+      side: THREE.DoubleSide,
+      depthWrite: true
+    });
+    return new THREE.Mesh(new THREE.PlaneGeometry(numSize, numSize), mat);
+  }
+
+  const num1 = makeNumberPlane(1);
+  num1.position.set(vx, signY, vz - vAx / 2 + offset);
+  group.add(num1);
+
+  const num2 = makeNumberPlane(2);
+  num2.position.set(vx + vAz / 2 - offset, signY, vz);
+  num2.rotation.y = -Math.PI / 2;
+  group.add(num2);
+
+  const num3 = makeNumberPlane(3);
+  num3.position.set(vx, signY, vz + vAx / 2 - offset);
+  num3.rotation.y = Math.PI;
+  group.add(num3);
+
+  const num4 = makeNumberPlane(4);
+  num4.position.set(vx - vAz / 2 + offset, signY, vz);
+  num4.rotation.y = Math.PI / 2;
+  group.add(num4);
+}
+
 function addVestiaryContents(vx, vz, group, cabinetWalls, lockerMat, benchMat, opts = {}) {
   const wall2NearBack = opts.wall2NearBack === true;
+  const wall4NearBack = opts.wall4NearBack === true;
+  const wall1AlignRight = opts.wall1AlignRight === true;
+  const wall3AlignRight = opts.wall3AlignRight === true;
   const lockerW = 0.4;
   const lockerH = 0.95;
   const lockerD = 0.12;
@@ -87,7 +138,9 @@ function addVestiaryContents(vx, vz, group, cabinetWalls, lockerMat, benchMat, o
   // Wall 1 (front)
   if (has(1)) {
     const zAgainstWall = vz - vAx / 2 + lockerD / 2 + wallGap;
-    const xStart = vx - vAz / 2 + lockerD / 2 + wallGap;
+    const xStart = wall1AlignRight
+      ? vx + vAz / 2 - lockerD / 2 - wallGap - (numLockersBack - 1) * lockerSpacing
+      : vx - vAz / 2 + lockerD / 2 + wallGap;
     for (let row = 0; row < 2; row++) {
       const y = row === 0 ? yLow : yHigh;
       for (let i = 0; i < numLockersBack; i++) {
@@ -117,7 +170,9 @@ function addVestiaryContents(vx, vz, group, cabinetWalls, lockerMat, benchMat, o
   // Wall 3 (back)
   if (has(3)) {
     const zAgainstWall = vz + vAx / 2 - lockerD / 2 - wallGap;
-    const xStart = vx - vAz / 2 + lockerD / 2 + wallGap;
+    const xStart = wall3AlignRight
+      ? vx + vAz / 2 - lockerD / 2 - wallGap - (numLockersBack - 1) * lockerSpacing
+      : vx - vAz / 2 + lockerD / 2 + wallGap;
     for (let row = 0; row < 2; row++) {
       const y = row === 0 ? yLow : yHigh;
       for (let i = 0; i < numLockersBack; i++) {
@@ -131,12 +186,13 @@ function addVestiaryContents(vx, vz, group, cabinetWalls, lockerMat, benchMat, o
   // Wall 4 (left side)
   if (has(4)) {
     const sideX = vx - vAz / 2 + lockerD / 2 + wallGap;
-    const zStart = vz - vAx / 2 + lockerW / 2 + wallGap;
+    const zStart = wall4NearBack ? vz + vAx / 2 - lockerW / 2 - wallGap : vz - vAx / 2 + lockerW / 2 + wallGap;
     for (let row = 0; row < 2; row++) {
       const y = row === 0 ? yLow : yHigh;
-      for (let i = 0; i < numLockersBack; i++) {
+      for (let i = 0; i < numLockersSide; i++) {
         const locker = new THREE.Mesh(new THREE.BoxGeometry(lockerW, lockerH, lockerD), lockerMat);
-        locker.position.set(sideX, y, zStart + i * lockerSpacing);
+        const z = wall4NearBack ? zStart - i * lockerSpacing : zStart + i * lockerSpacing;
+        locker.position.set(sideX, y, z);
         locker.rotation.y = -Math.PI / 2;
         group.add(locker);
       }

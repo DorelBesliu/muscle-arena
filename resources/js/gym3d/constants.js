@@ -19,8 +19,8 @@ export const RECEPTION_START_Z = -10.3; // room z from -10.3 to -5.3 (aligned wi
 export const RECEPTION_END_Z = -5.3;
 
 // 2) Vestiare cu hol între ele: [Vestiar1] [Hol] [Vestiar2]; shifted back so walls don't go into main room
-export const VESTIARY_WIDTH = 3;
-export const VESTIARY_DEPTH = 5;
+export const VESTIARY_WIDTH = 3;  // 3 m
+export const VESTIARY_DEPTH = 5;  // 5 m
 export const VESTIARY_WALL_H = 2.5;
 export const VESTIARY_HALL_START_Z = -5.3; // vestiaries + hall start (back), 1.5× WALL_DEPTH behind -5
 export const VESTIARY_HALL_END_Z = -0.3;   // vestiaries + hall end, 1.5× WALL_DEPTH behind main room front

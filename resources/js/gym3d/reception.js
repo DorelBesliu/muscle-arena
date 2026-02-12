@@ -21,7 +21,7 @@ export function createReception(scene) {
   const cx = RECEPTION_CENTER_X;
   const cz = RECEPTION_CENTER_Z;
 
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.85, metalness: 0.1 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.85, metalness: 0.1 });
   const wallMat = new THREE.MeshStandardMaterial({ color: 0x3d3d48, roughness: 0.8, metalness: 0.08 });
   const doorMat = new THREE.MeshBasicMaterial({ color: COLORS.door, side: THREE.DoubleSide });
 
@@ -32,10 +32,7 @@ export function createReception(scene) {
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Walls (room is in front of gym: back wall at z=0 faces the gym; that wall has the door)
-  const backWall = new THREE.Mesh(new THREE.BoxGeometry(w + WALL_DEPTH * 2, h, WALL_DEPTH), wallMat);
-  backWall.position.set(cx, h / 2, cz + d / 2 + WALL_DEPTH / 2);
-  group.add(backWall);
+  // No wall between reception and vestiaries/hall (open passage)
 
   const frontWall = new THREE.Mesh(new THREE.BoxGeometry(w + WALL_DEPTH * 2, h, WALL_DEPTH), wallMat);
   frontWall.position.set(cx, h / 2, cz - d / 2 - WALL_DEPTH / 2);
@@ -48,6 +45,84 @@ export function createReception(scene) {
   const rightWall = new THREE.Mesh(new THREE.BoxGeometry(WALL_DEPTH, h, d + WALL_DEPTH * 2), wallMat);
   rightWall.position.set(cx + w / 2 + WALL_DEPTH / 2, h / 2, cz);
   group.add(rightWall);
+
+  // Reception desk along the right wall (counter: depth in x, length along z)
+  const deskDepth = 0.7;
+  const deskHeight = 1.0;
+  const deskLength = 2.5;
+  const rightWallInnerX = cx + w / 2 - WALL_DEPTH / 2;
+  const deskX = rightWallInnerX - deskDepth / 2 - 0.05;
+  const deskMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.6, metalness: 0.15 });
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(deskDepth, deskHeight, deskLength), deskMat);
+  desk.position.set(deskX, deskHeight / 2, cz);
+  desk.castShadow = true;
+  group.add(desk);
+
+  // Couch on the left side (seat + back + armrests)
+  const leftWallInnerX = cx - w / 2 + WALL_DEPTH / 2;
+  const couchDepth = 0.65;
+  const couchWidth = 1.5;
+  const seatHeight = 0.42;
+  const backHeight = 0.55;
+  const couchX = leftWallInnerX + couchDepth / 2 + 0.25;
+  const couchZ = cz + 1.3;
+  const couchZ2 = cz - 1.3;
+  const couchMat = new THREE.MeshStandardMaterial({ color: 0x3d3530, roughness: 0.85, metalness: 0.05 });
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(couchDepth, seatHeight, couchWidth), couchMat);
+  seat.position.set(couchX, seatHeight / 2, couchZ);
+  seat.castShadow = true;
+  group.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(0.12, backHeight, couchWidth + 0.02), couchMat);
+  back.position.set(couchX - couchDepth / 2 - 0.06, seatHeight + backHeight / 2, couchZ);
+  back.castShadow = true;
+  group.add(back);
+  const armH = 0.5;
+  const armW = 0.12;
+  const armD = couchDepth + 0.02;
+  const armMat = new THREE.MeshStandardMaterial({ color: 0x3d3530, roughness: 0.85, metalness: 0.05 });
+  const armL = new THREE.Mesh(new THREE.BoxGeometry(armD, armH, armW), armMat);
+  armL.position.set(couchX, armH / 2, couchZ - couchWidth / 2 - 0.01);
+  armL.castShadow = true;
+  group.add(armL);
+  const armR = new THREE.Mesh(new THREE.BoxGeometry(armD, armH, armW), armMat);
+  armR.position.set(couchX, armH / 2, couchZ + couchWidth / 2 + 0.01);
+  armR.castShadow = true;
+  group.add(armR);
+
+  // Small table in front of first couch
+  const tableW = 0.45;
+  const tableD = 0.35;
+  const tableH = 0.45;
+  const tableX = couchX + couchDepth / 2 + tableD / 2 + 0.2;
+  const tableMat = new THREE.MeshStandardMaterial({ color: 0x4a4440, roughness: 0.7, metalness: 0.1 });
+  const table1 = new THREE.Mesh(new THREE.BoxGeometry(tableD, tableH, tableW), tableMat);
+  table1.position.set(tableX, tableH / 2, couchZ);
+  table1.castShadow = true;
+  group.add(table1);
+
+  // Second couch on the left side, toward the front
+  const seat2 = new THREE.Mesh(new THREE.BoxGeometry(couchDepth, seatHeight, couchWidth), couchMat);
+  seat2.position.set(couchX, seatHeight / 2, couchZ2);
+  seat2.castShadow = true;
+  group.add(seat2);
+  const back2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, backHeight, couchWidth + 0.02), couchMat);
+  back2.position.set(couchX - couchDepth / 2 - 0.06, seatHeight + backHeight / 2, couchZ2);
+  back2.castShadow = true;
+  group.add(back2);
+  const armL2 = new THREE.Mesh(new THREE.BoxGeometry(armD, armH, armW), armMat);
+  armL2.position.set(couchX, armH / 2, couchZ2 - couchWidth / 2 - 0.01);
+  armL2.castShadow = true;
+  group.add(armL2);
+  const armR2 = new THREE.Mesh(new THREE.BoxGeometry(armD, armH, armW), armMat);
+  armR2.position.set(couchX, armH / 2, couchZ2 + couchWidth / 2 + 0.01);
+  armR2.castShadow = true;
+  group.add(armR2);
+
+  // Small table in front of second couch
+  const table2 = new THREE.Mesh(new THREE.BoxGeometry(tableD, tableH, tableW), tableMat);
+  table2.position.set(tableX, tableH / 2, couchZ2);
+  table2.castShadow = true;
+  group.add(table2);
 
   // Entrance door on the front wall (where people enter from outside)
   const doorW = 1.2;
@@ -76,18 +151,6 @@ export function createReception(scene) {
   entranceFrameOutside.position.set(cx, doorH / 2, entranceDoorZOutside + 0.01);
   entranceFrameOutside.castShadow = false;
   group.add(entranceFrameOutside);
-
-  // Door on the wall toward vestiaries/hall (back of reception room, at z = cz + d/2)
-  const backWallZ = cz + d / 2;
-  const backDoorZInside = backWallZ - doorDepth / 2 - 0.02;
-  const backDoorPanel = new THREE.Mesh(doorGeo.clone(), doorMat);
-  backDoorPanel.position.set(cx, doorH / 2, backDoorZInside);
-  backDoorPanel.castShadow = false;
-  scene.add(backDoorPanel);
-  const backDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(doorW + 0.16, doorH + 0.16, doorDepth + 0.02), doorMat);
-  backDoorFrame.position.set(cx, doorH / 2, backDoorZInside - 0.01);
-  backDoorFrame.castShadow = false;
-  scene.add(backDoorFrame);
 
   // Sign on front wall: "Abonament / Recepție"
   const signCanvas = document.createElement('canvas');
