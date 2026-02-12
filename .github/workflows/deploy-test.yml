@@ -40,12 +40,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H -p 49786 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p 48221 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync
         run: |
           rsync -avz --delete \
-            -e "ssh -p 49786" \
+            -e "ssh -p 48221" \
             --exclude=".git" \
             --exclude="node_modules" \
             --exclude="tests" \
@@ -54,7 +54,7 @@ jobs:
 
       - name: Finalize on server
         run: |
-          ssh -p 49786 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd ~/testing
             chmod -R 775 storage bootstrap/cache
