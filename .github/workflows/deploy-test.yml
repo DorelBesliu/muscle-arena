@@ -59,6 +59,5 @@ jobs:
           ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd /var/www/muscle-arena-test
-            chmod -R 775 storage bootstrap/cache
             php artisan optimize
           EOF
