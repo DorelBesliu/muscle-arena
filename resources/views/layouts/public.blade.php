@@ -33,7 +33,7 @@
     </head>
     <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak data-layout="public">
         {{-- Topbar --}}
-        <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-50" aria-label="Principal">
+        <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-[70]" aria-label="Principal">
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between h-[72px]">
                     <a href="{{ route('home', ['locale' => $locale]) }}" class="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
