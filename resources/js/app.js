@@ -31,37 +31,6 @@ if (isPublicLayout) {
             helpOpen: false,
         });
 
-        // iOS PWA Install Prompt
-        window.iosInstallPrompt = function() {
-            return {
-                showBanner: false,
-                init() {
-                    // Check if iOS
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    // Check if already installed (standalone mode)
-                    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
-                                       window.navigator.standalone === true;
-                    // Check if user dismissed before
-                    const wasDismissed = localStorage.getItem('ios-pwa-dismissed') === 'true';
-                    
-                    console.log('[iOS Install]', { isIOS, isInstalled, wasDismissed });
-                    
-                    // Show banner if iOS, not installed, and not dismissed
-                    if (isIOS && !isInstalled && !wasDismissed) {
-                        // Delay banner appearance by 3 seconds for better UX
-                        setTimeout(() => {
-                            this.showBanner = true;
-                        }, 3000);
-                    }
-                },
-                dismiss() {
-                    this.showBanner = false;
-                    localStorage.setItem('ios-pwa-dismissed', 'true');
-                    console.log('[iOS Install] Banner dismissed');
-                }
-            };
-        };
-
         // Detect iOS - ALWAYS use CSS-based fullscreen for iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);

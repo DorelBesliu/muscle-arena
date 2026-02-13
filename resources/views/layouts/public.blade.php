@@ -32,32 +32,6 @@
         @stack('styles')
     </head>
     <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak data-layout="public">
-        {{-- iOS PWA Install Banner --}}
-        <div x-data="iosInstallPrompt()" x-show="showBanner" x-cloak
-             class="fixed bottom-0 left-0 right-0 z-[9999] bg-gradient-to-r from-[#F97316] to-[#EF4444] shadow-2xl border-t-2 border-white/20"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="translate-y-full opacity-0"
-             x-transition:enter-end="translate-y-0 opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="translate-y-0 opacity-100"
-             x-transition:leave-end="translate-y-full opacity-0">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex items-start gap-3">
-                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <img src="{{ asset('images/logo-white.svg') }}" alt="Logo" class="w-8 h-8" />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-white font-bold text-sm mb-1">{{ __('ui.ios_install_title') }}</h3>
-                        <p class="text-white/90 text-xs leading-relaxed">{{ __('ui.ios_install_message') }}</p>
-                    </div>
-                    <button @click="dismiss()" class="flex-shrink-0 p-2 text-white/80 hover:text-white transition-colors rounded-lg hover:bg-white/10" aria-label="{{ __('ui.close') }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
         {{-- Topbar --}}
         <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-50" aria-label="Principal">
             <div class="container mx-auto px-4">
