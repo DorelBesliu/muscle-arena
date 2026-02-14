@@ -44,7 +44,7 @@
                             id="email"
                             name="email"
                             value="{{ old('email') }}"
-                            class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 pl-12 pr-4 text-white placeholder-[#666666] focus:border-[#333333] focus:outline-none focus:ring-0 @error('email') border-red-500 @enderror"
+                            class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 pl-12 pr-4 text-white placeholder-[#666666] focus:border-[#333333] focus:outline-none focus:ring-0"
                             style="-webkit-tap-highlight-color: transparent;"
                             placeholder="your@email.com"
                             required
@@ -71,7 +71,7 @@
                             :type="showPassword ? 'text' : 'password'"
                             id="password"
                             name="password"
-                            class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 pl-12 pr-12 text-white placeholder-[#666666] focus:border-[#333333] focus:outline-none focus:ring-0 @error('password') border-red-500 @enderror"
+                            class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 pl-12 pr-12 text-white placeholder-[#666666] focus:border-[#333333] focus:outline-none focus:ring-0"
                             style="-webkit-tap-highlight-color: transparent;"
                             placeholder="••••••••"
                             required

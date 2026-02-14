@@ -12,7 +12,7 @@
 @endpush
 
 @section('content')
-<main>
+<main x-data="proposalFormData()" data-success-message="{{ __('ui.proposalFormSuccess') }}">
     {{-- Start Hero Section --}}
     <section id="hero" class="bg-[#111111] relative overflow-hidden scroll-mt-[72px] pt-[32px]">
         {{-- Background decoration --}}
@@ -23,31 +23,38 @@
 
         <div class="container mx-auto px-4 relative z-10">
             <div class="grid items-center min-h-[370px] md:min-h-[600px] mt-10">
-                {{-- Left: Text content (75% width on md) --}}
-                <div class="py-6 md:py-20 md:pr-12 lg:pr-16 w-full md:w-3/4">
-                    <div class="mb-8">
-                        <h2 class="text-2xl md:text-5xl lg:text-6xl font-black mb-4 leading-tight">
+                {{-- Left: Text content (wider on md) --}}
+                <div class="py-6 md:py-20 md:pr-12 lg:pr-16 w-full md:w-4/5 lg:max-w-[80rem]">
+                    <div class="mb-6">
+                        <h2 class="text-2xl md:text-5xl lg:text-6xl font-black mb-2 leading-tight">
                             <span class="text-white block">{{ __('ui.hero_title_line1') }}</span>
                             <span class="text-[#F97316] block mt-2">{{ __('ui.hero_title_line2') }}</span>
                         </h2>
-                        <div class="h-1 w-24 bg-[#F97316] mb-6"></div>
+                        <div class="h-1 w-24 bg-[#F97316] mb-2"></div>
                     </div>
 
-                    <p class="text-sm md:text-xl text-secondary leading-snug max-w-3xl mb-8">
+                    <p class="text-sm md:text-xl text-secondary leading-snug max-w-4xl mb-2">
                         {{ __('ui.hero_description') }}
                     </p>
 
-                    {{-- @guest
-                        <a href="{{ route('register') }}" class="bg-[#F97316] hover:bg-[#EF4444] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl transition-all hover:scale-105 shadow-xl inline-flex items-center text-base md:text-lg gap-2 md:gap-3">
-                            {{ __('ui.cta_join') }}
-                            <x-lucide-target class="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                        </a>
-                    @else
-                        <a href="{{ url('/dashboard') }}" class="bg-[#F97316] hover:bg-[#EF4444] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl transition-all hover:scale-105 shadow-xl inline-flex items-center text-base md:text-lg gap-2 md:gap-3">
-                            {{ __('ui.cta_dashboard') }}
-                            <x-lucide-target class="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                        </a>
-                    @endguest --}}
+                    <p class="text-sm md:text-lg text-secondary leading-snug max-w-4xl mb-6">
+                        {{ __('ui.hero_timeline_prefix') }}
+                        <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#timeline" class="text-[#F97316] hover:text-[#EF4444] font-medium underline underline-offset-2 transition-colors">{{ __('ui.menu_timeline') }}</a>.
+                    </p>
+
+                    <p class="text-sm md:text-lg text-[#CCCCCC] leading-snug max-w-3xl mb-3">
+                        {{ __('ui.hero_proposal_intro') }}
+                    </p>
+
+                    {{-- Proposal button (hero CTA) --}}
+                    <button
+                        type="button"
+                        @click="proposalDialogOpen = true"
+                        class="bg-[#F97316] hover:bg-[#EF4444] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl transition-all hover:scale-105 shadow-xl inline-flex items-center text-base md:text-lg gap-2 md:gap-3"
+                    >
+                        {{ __('ui.contactProposal') }}
+                        <x-lucide-target class="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                    </button>
                 </div>
             </div>
         </div>
@@ -73,8 +80,11 @@
                         <h2 class="text-2xl md:text-[36px] font-black text-white mb-6 leading-tight">
                             {{ __('ui.section_about_title') }}
                         </h2>
-                        <p class="text-sm md:text-lg text-secondary leading-relaxed w-full mb-12">
+                        <p class="text-sm md:text-lg text-secondary leading-relaxed w-full mb-4">
                             {{ __('ui.about_description') }}
+                        </p>
+                        <p class="text-sm md:text-lg text-secondary leading-relaxed w-full mb-12">
+                            {{ __('ui.about_description_2') }}
                         </p>
                     </div>
                 </div>
@@ -353,7 +363,7 @@
 
         {{-- Features Cards --}}
         <div class="container mx-auto px-4 mt-12">
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {{-- Feature 1 --}}
                 <div class="bg-[#111111] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
                     <div class="flex items-center gap-4 mb-6">
@@ -437,7 +447,7 @@
                             'title' => __('ui.timeline_step2_title'),
                             'description' => __('ui.timeline_step2_description'),
                             'date' => __('ui.timeline_step2_date'),
-                            'status' => 'upcoming'
+                            'status' => 'next'
                         ],
                         [
                             'title' => __('ui.timeline_step3_title'),
@@ -449,6 +459,12 @@
                             'title' => __('ui.timeline_step4_title'),
                             'description' => __('ui.timeline_step4_description'),
                             'date' => __('ui.timeline_step4_date'),
+                            'status' => 'upcoming'
+                        ],
+                        [
+                            'title' => __('ui.timeline_step5_title'),
+                            'description' => __('ui.timeline_step5_description'),
+                            'date' => __('ui.timeline_step5_date'),
                             'status' => 'upcoming'
                         ],
                     ];
@@ -465,18 +481,21 @@
                                 $iconClass = match($status) {
                                     'completed' => 'bg-green-500/10 text-green-500',
                                     'current' => 'bg-[#F97316]/10 text-[#F97316]',
+                                    'next' => 'bg-[#333333] text-[#CCCCCC]',
                                     default => 'bg-[#333333] text-[#CCCCCC]',
                                 };
 
                                 $badgeClass = match($status) {
                                     'completed' => 'bg-green-500/10 text-green-500',
                                     'current' => 'bg-[#F97316]/10 text-[#F97316]',
+                                    'next' => 'bg-[#333333] text-[#CCCCCC]',
                                     default => 'bg-[#333333] text-[#CCCCCC]',
                                 };
 
                                 $badgeText = match($status) {
                                     'completed' => __('ui.timeline_status_completed'),
                                     'current' => __('ui.timeline_status_current'),
+                                    'next' => __('ui.timeline_status_next'),
                                     default => __('ui.timeline_status_upcoming'),
                                 };
                             @endphp
@@ -508,10 +527,12 @@
                                                 {{ $badgeText }}
                                             </span>
                                         </div>
+                                        @if($date)
                                         <p class="text-sm text-[#CCCCCC] mb-3">{{ $date }}</p>
-                                        <p class="text-[#CCCCCC] leading-relaxed">
-                                            {{ $description }}
-                                        </p>
+                                        @endif
+                                        <div class="text-[#CCCCCC] leading-relaxed">
+                                            {!! nl2br(e($description)) !!}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -524,23 +545,7 @@
     {{-- End Timeline Section --}}
 
     {{-- Start Contact Section --}}
-    <section
-        id="contact"
-        class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]"
-        x-data="{
-            proposalDialogOpen: false,
-            proposalFormData: {
-                title: '',
-                message: ''
-            },
-            submitProposal() {
-                console.log('Proposal submitted:', this.proposalFormData);
-                alert('{{ __('ui.proposalFormSuccess') }}');
-                this.proposalFormData = { title: '', message: '' };
-                this.proposalDialogOpen = false;
-            }
-        }"
-    >
+    <section id="contact" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]">
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto">
                 <div class="text-center mb-16">
@@ -552,8 +557,7 @@
                     </p>
                 </div>
 
-
-                <div class="grid md:grid-cols-3 gap-8">
+                <div class="grid md:grid-cols-2 gap-8">
                     {{-- Phone --}}
                     <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
                         <div class="flex items-center gap-3">
@@ -565,10 +569,10 @@
                                     {{ __('ui.contactPhone') }}
                                 </h3>
                                 <a
-                                    href="tel:{{ $contactPhone ?? '+37360123456' }}"
+                                    href="tel:{{ $contactPhone ?? '+37368097384' }}"
                                     class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
                                 >
-                                    {{ $contactPhone ?? '+373 60 123 456' }}
+                                    {{ $contactPhone ?? '+373 68 097 384' }}
                                 </a>
                             </div>
                         </div>
@@ -585,34 +589,14 @@
                                     Email
                                 </h3>
                                 <a
-                                    href="mailto:{{ $contactEmail ?? 'info@musclearena.md' }}"
+                                    href="mailto:{{ $contactEmail ?? 'support@muscle-arena.md' }}"
                                     class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
                                 >
-                                    {{ $contactEmail ?? 'info@musclearena.md' }}
+                                    {{ $contactEmail ?? 'support@muscle-arena.md' }}
                                 </a>
                             </div>
                         </div>
                     </div>
-
-                    {{-- Proposal --}}
-                    <button
-                        @click="proposalDialogOpen = true"
-                        class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group text-left"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                                <x-lucide-message-square class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
-                            </div>
-                            <div class="flex flex-col">
-                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
-                                    {{ __('ui.contactProposal') }}
-                                </h3>
-                                <span class="text-sm md:text-base text-[#CCCCCC] group-hover:text-[#F97316] transition-colors">
-                                    {{ __('ui.contactProposalText') }}
-                                </span>
-                            </div>
-                        </div>
-                    </button>
                 </div>
             </div>
         </div>

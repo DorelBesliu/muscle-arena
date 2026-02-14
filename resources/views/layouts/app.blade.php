@@ -59,13 +59,13 @@
 
                 @if (isset($header))
                     <header class="bg-[#111111] border-b border-[#333333]">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="max-w-screen-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
                     </header>
                 @elseif(View::hasSection('header'))
                     <header class="bg-[#111111] border-b border-[#333333]">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="max-w-screen-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                             @yield('header')
                         </div>
                     </header>

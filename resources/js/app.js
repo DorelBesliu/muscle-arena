@@ -1,6 +1,31 @@
 import './bootstrap';
 import './toast.js';
 
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/themes/dark.css';
+window.flatpickr = flatpickr;
+
+window.memberFormDatepickers = function () {
+    return {
+        init(el) {
+            if (typeof window.flatpickr === 'undefined') return;
+            el.querySelectorAll('input[data-datepicker]').forEach((input) => {
+                const prop = input.dataset.wireProperty;
+                if (!prop) return;
+                if (input._flatpickr) return;
+                window.flatpickr(input, {
+                    dateFormat: 'Y-m-d',
+                    disableMobile: true,
+                    onChange: (selected, dateStr) => {
+                        input.value = dateStr || '';
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    },
+                });
+            });
+        },
+    };
+};
+
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -13,6 +38,23 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+// Proposal form (hero + dialog): on window so Alpine can resolve x-data="proposalFormData()".
+window.proposalFormData = function () {
+    return {
+        proposalDialogOpen: false,
+        proposalFormData: { title: '', message: '' },
+        init() {
+            this._successMessage = this.$el?.dataset?.successMessage || '';
+        },
+        submitProposal() {
+            console.log('Proposal submitted:', this.proposalFormData);
+            alert(this._successMessage || 'Sent.');
+            this.proposalFormData = { title: '', message: '' };
+            this.proposalDialogOpen = false;
+        },
+    };
+};
 
 // Only run our Alpine (stores + start) on public layout. App layout uses Livewire's Alpine.
 const isPublicLayout = document.body?.dataset?.layout === 'public';

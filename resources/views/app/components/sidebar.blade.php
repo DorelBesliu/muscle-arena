@@ -30,7 +30,6 @@
 
         {{-- Clients --}}
         <a
-            wire:show="false"
             href="{{ route('clients') }}"
             wire:navigate
             class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isClients ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
