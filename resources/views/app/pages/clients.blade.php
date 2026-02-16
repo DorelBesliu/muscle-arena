@@ -149,6 +149,7 @@ new #[Layout('layouts.app')] class extends Component
         $this->resetForm();
         $this->isModalOpen = false;
         $this->editingId = null;
+        $this->dispatch('toast', message: __('ui.members_saved_success'));
         $this->dispatch('$refresh');
     }
 
@@ -169,6 +170,7 @@ new #[Layout('layouts.app')] class extends Component
         if ($this->deleteConfirmId) {
             Member::findOrFail($this->deleteConfirmId)->delete();
             $this->deleteConfirmId = null;
+            $this->dispatch('toast', message: __('ui.members_delete_success'));
             $this->dispatch('$refresh');
         }
     }
@@ -188,6 +190,7 @@ new #[Layout('layouts.app')] class extends Component
         $member = Member::findOrFail($id);
         $member->status = ($member->status ?? 'active') === 'active' ? 'inactive' : 'active';
         $member->save();
+        $this->dispatch('toast', message: __('ui.members_status_updated'));
         $this->dispatch('$refresh');
     }
 
@@ -421,7 +424,7 @@ new #[Layout('layouts.app')] class extends Component
                 </div>
             @else
                 <div class="bg-[#111111] border-2 border-[#333333] rounded-xl p-8 text-center">
-                    <x-lucide-users class="w-12 h-12 text-[#333333] mx-auto mb-3" />
+                    <x-lucide-inbox class="w-12 h-12 text-[#666666] mx-auto mb-3 opacity-50" />
                     <p class="text-white font-bold text-sm mb-1">{{ __('ui.members_no_results') }}</p>
                     <p class="text-[#CCCCCC] text-xs">{{ __('ui.members_no_results_desc') }}</p>
                 </div>
@@ -494,13 +497,13 @@ new #[Layout('layouts.app')] class extends Component
                 <button type="button" wire:click="saveMember"
                     wire:loading.attr="disabled"
                     wire:target="saveMember"
-                    class="h-9 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed">
-                <span wire:loading.remove wire:target="saveMember">{{ __('ui.members_save') }}</span>
-                <span wire:loading wire:target="saveMember" class="inline-flex items-center gap-2">
-                    <x-lucide-loader-2 class="w-4 h-4 animate-spin" />
-                    {{ __('ui.members_save') }}
-                </span>
-            </button>
+                    class="h-9 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
+                    <span wire:loading.remove wire:target="saveMember" class="inline-flex items-center gap-2">{{ __('ui.members_save') }}</span>
+                    <span wire:loading wire:target="saveMember" class="inline-flex items-center gap-2">
+                        <x-lucide-loader-2 class="w-4 h-4 animate-spin shrink-0" />
+                        <span>{{ __('ui.members_save') }}</span>
+                    </span>
+                </button>
             </x-slot:footer>
         </x-app-dialog>
     @endif
@@ -520,13 +523,13 @@ new #[Layout('layouts.app')] class extends Component
                 <button type="button" wire:click="doDelete"
                     wire:loading.attr="disabled"
                     wire:target="doDelete"
-                    class="h-9 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed">
-                <span wire:loading.remove wire:target="doDelete">{{ __('ui.members_delete_confirm_btn') }}</span>
-                <span wire:loading wire:target="doDelete" class="inline-flex items-center gap-2">
-                    <x-lucide-loader-2 class="w-4 h-4 animate-spin" />
-                    {{ __('ui.members_delete_confirm_btn') }}
-                </span>
-            </button>
+                    class="h-9 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
+                    <span wire:loading.remove wire:target="doDelete" class="inline-flex items-center gap-2">{{ __('ui.members_delete_confirm_btn') }}</span>
+                    <span wire:loading wire:target="doDelete" class="inline-flex items-center gap-2">
+                        <x-lucide-loader-2 class="w-4 h-4 shrink-0 animate-spin" />
+                        <span>{{ __('ui.members_delete_confirm_btn') }}</span>
+                    </span>
+                </button>
             </x-slot:footer>
         </x-app-dialog>
     @endif

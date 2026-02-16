@@ -73,14 +73,14 @@ $deleteUser = function (Logout $logout) {
                     type="submit"
                     form="delete-user-form"
                     wire:loading.attr="disabled"
-                    class="h-9 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-70 disabled:cursor-wait"
+                    class="h-9 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-70 disabled:cursor-wait whitespace-nowrap"
                 >
                     <span wire:loading.remove wire:target="deleteUser" class="inline-flex items-center gap-2">
-                        <x-lucide-trash-2 class="w-4 h-4" />
+                        <x-lucide-trash-2 class="w-4 h-4 shrink-0" />
                         {{ __('ui.profile_delete_confirm') }}
                     </span>
                     <span wire:loading wire:target="deleteUser" class="inline-flex items-center gap-2">
-                        <x-lucide-loader-2 class="w-4 h-4 animate-spin" />
+                        <x-lucide-loader-2 class="w-4 h-4 shrink-0 animate-spin" />
                         {{ __('ui.profile_delete_confirm') }}
                     </span>
                 </button>

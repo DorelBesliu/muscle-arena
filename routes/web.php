@@ -39,6 +39,14 @@ Volt::route('clients', 'pages.clients')
     ->middleware(['auth'])
     ->name('clients');
 
+Volt::route('administrators', 'pages.administrators')
+    ->middleware(['auth'])
+    ->name('administrators');
+
+Volt::route('content/about', 'pages.site-content.about-project')
+    ->middleware(['auth'])
+    ->name('content.about');
+
 Route::get('clients/export', function (\Illuminate\Http\Request $request) {
     $query = \App\Models\Member::query();
     $search = $request->string('q')->trim()->toString();

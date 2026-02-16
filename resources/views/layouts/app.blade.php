@@ -29,6 +29,7 @@
             x-data="toastContainer(@js(__('ui.profile_saved')))"
             x-on:profile-updated.window="addToast(savedMessage)"
             x-on:password-updated.window="addToast(savedMessage)"
+            x-on:toast.window="addToast($event.detail?.message ?? $event.detail ?? savedMessage)"
         >
             <template x-for="toast in toasts" :key="toast.id">
                 <div

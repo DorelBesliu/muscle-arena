@@ -71,7 +71,37 @@
     </section>
     {{-- End Hero Section --}}
 
-    {{-- Start About Section --}}
+    {{-- Start About Section (content from site_content) --}}
+    @php
+        $locale = app()->getLocale();
+        $about = \App\Models\SiteContent::get('about_' . $locale);
+        $aboutTitle = is_array($about) ? (string) ($about['title'] ?? '') : '';
+        $aboutDescription = is_array($about) ? (string) ($about['description'] ?? '') : '';
+        if ($aboutDescription === '') {
+            $aboutDescription = __('ui.about_description') . "\n\n" . __('ui.about_description_2');
+        }
+        $aboutDescriptionIsPlain = ! str_contains($aboutDescription, '<');
+        $iconsForFeatures = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
+        $aboutFeatureIconsAllowed = array_keys(array_filter($iconsForFeatures, fn ($v, $k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
+        $defaultFeatureIcon = $iconsForFeatures['default'] ?? 'list-checks';
+        if (! in_array($defaultFeatureIcon, $aboutFeatureIconsAllowed, true)) {
+            $defaultFeatureIcon = 'list-checks';
+        }
+        $aboutFeaturesRaw = \App\Models\SiteContent::get('about_features_' . $locale, []);
+        $aboutFeatures = is_array($aboutFeaturesRaw) ? array_values(array_map(function ($f) use ($aboutFeatureIconsAllowed, $defaultFeatureIcon) {
+            $icon = (string) ($f['icon'] ?? $defaultFeatureIcon);
+            if (! in_array($icon, $aboutFeatureIconsAllowed, true)) {
+                $icon = $defaultFeatureIcon;
+            }
+            return [
+                'title' => (string) ($f['title'] ?? ''),
+                'description' => (string) ($f['description'] ?? ''),
+                'sort_order' => (int) ($f['sort_order'] ?? 0),
+                'icon' => $icon,
+            ];
+        }, $aboutFeaturesRaw)) : [];
+        usort($aboutFeatures, fn ($a, $b) => $a['sort_order'] <=> $b['sort_order']);
+    @endphp
     <section id="about" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]" data-gym3d-logo="{{ asset('images/logo-white.svg') }}">
         <div class="container mx-auto px-4">
             <div class="mx-auto">
@@ -80,12 +110,13 @@
                         <h2 class="text-2xl md:text-[36px] font-black text-white mb-6 leading-tight">
                             {{ __('ui.section_about_title') }}
                         </h2>
-                        <p class="text-sm md:text-lg text-secondary leading-relaxed w-full mb-4">
-                            {{ __('ui.about_description') }}
-                        </p>
-                        <p class="text-sm md:text-lg text-secondary leading-relaxed w-full mb-12">
-                            {{ __('ui.about_description_2') }}
-                        </p>
+                        <div class="about-description text-sm md:text-lg text-secondary leading-relaxed w-full mb-12 prose prose-invert prose-p:text-secondary max-w-none">
+                            @if($aboutDescriptionIsPlain)
+                                {!! nl2br(e($aboutDescription)) !!}
+                            @else
+                                {!! $aboutDescription !!}
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -361,55 +392,28 @@
             </div>
         </div>
 
-        {{-- Features Cards --}}
+        {{-- Caracteristici (din admin) --}}
+        @if(count($aboutFeatures) > 0)
         <div class="container mx-auto px-4 mt-12">
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {{-- Feature 1 --}}
+                @foreach($aboutFeatures as $feature)
                 <div class="bg-[#111111] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
                     <div class="flex items-center gap-4 mb-6">
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                            <x-lucide-dumbbell class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                            <x-dynamic-component :component="'lucide-' . ($feature['icon'] ?? $defaultFeatureIcon)" class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
                         </div>
                         <h3 class="text-lg md:text-xl font-bold text-white">
-                            {{ __('ui.feature1') }}
+                            {{ $feature['title'] ?: '—' }}
                         </h3>
                     </div>
                     <p class="text-sm md:text-base text-secondary">
-                        {{ __('ui.feature1Desc') }}
+                        {{ $feature['description'] ?: '—' }}
                     </p>
                 </div>
-
-                {{-- Feature 2 --}}
-                <div class="bg-[#111111] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                            <x-lucide-clipboard-list class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-white">
-                            {{ __('ui.feature2') }}
-                        </h3>
-                    </div>
-                    <p class="text-sm md:text-base text-secondary">
-                        {{ __('ui.feature2Desc') }}
-                    </p>
-                </div>
-
-                {{-- Feature 3 - Working Hours --}}
-                <div class="bg-[#111111] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                            <x-lucide-clock class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-white">
-                            {{ __('ui.feature3') }}
-                        </h3>
-                    </div>
-                    <p class="text-sm md:text-base text-secondary">
-                        {{ __('ui.feature3Desc') }}
-                    </p>
-                </div>
+                @endforeach
             </div>
         </div>
+        @endif
     </section>
     {{-- End About Section --}}
 

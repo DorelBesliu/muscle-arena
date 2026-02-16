@@ -16,11 +16,32 @@ new class extends Component
         if (request()->routeIs('clients')) {
             return __('ui.sidebar_clients');
         }
+        if (request()->routeIs('administrators')) {
+            return __('ui.sidebar_administrators');
+        }
+        if (request()->routeIs('content.about')) {
+            return __('ui.sidebar_content_about');
+        }
         if (request()->routeIs('profile')) {
             return __('Profile');
         }
 
         return config('app.name');
+    }
+
+    /**
+     * Get the current page subtitle for the topbar (null when not used).
+     */
+    public function getCurrentPageSubtitle(): ?string
+    {
+        if (request()->routeIs('administrators')) {
+            return __('ui.admins_subtitle');
+        }
+        if (request()->routeIs('clients')) {
+            return __('ui.members_subtitle');
+        }
+
+        return null;
     }
 
     /**
@@ -58,11 +79,16 @@ new class extends Component
             <x-lucide-menu class="w-5 h-5" />
         </button>
 
-        {{-- Page Title --}}
+        {{-- Page Title + Subtitle --}}
         <div class="flex-1 md:flex-none">
             <h2 class="text-base md:text-lg font-bold text-white text-center md:text-left">
                 {{ $this->getCurrentPageTitle() }}
             </h2>
+            @if($this->getCurrentPageSubtitle())
+                <p class="text-xs md:text-sm text-[#CCCCCC] text-center md:text-left mt-0.5">
+                    {{ $this->getCurrentPageSubtitle() }}
+                </p>
+            @endif
         </div>
 
         {{-- User Menu - Desktop --}}

@@ -3,17 +3,36 @@
     $isDashboard = request()->routeIs('dashboard');
     $isClients = request()->routeIs('clients');
     $isProfile = request()->routeIs('profile');
-    $isContentActive = request()->routeIs('privacy') || request()->routeIs('terms');
-    $isPrivacy = request()->routeIs('privacy');
-    $isTerms = request()->routeIs('terms');
+    $isAdministrators = request()->routeIs('administrators');
+    $isContentAbout = request()->routeIs('content.about');
+    $isContentActive = $isContentAbout;
+    $isAdmin = auth()->user()?->role === 'admin';
 @endphp
 
 {{-- Desktop Sidebar --}}
 <aside class="hidden md:flex flex-col w-[270px] bg-[#111111] border-r border-[#333333] shrink-0">
-    {{-- Logo --}}
-    <div class="p-4 border-b border-[#333333]">
-        <h1 class="text-lg font-black text-white">{{ __('ui.site_name') }}</h1>
-        <p class="text-xs text-[#CCCCCC]">{{ auth()->user()->name ?? '' }}</p>
+    {{-- Logo + company name (link to home); user name not clickable --}}
+    <div class="p-4 border-b border-[#333333] flex items-center gap-3">
+        <a
+            href="{{ route('home', ['locale' => $locale]) }}"
+            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden hover:opacity-90 transition-opacity"
+            aria-label="{{ __('ui.site_name') }}"
+        >
+            <img
+                src="{{ asset('images/logo-white.svg') }}"
+                alt="{{ __('ui.site_name') }} Logo"
+                class="w-full h-full object-contain"
+            />
+        </a>
+        <div class="min-w-0">
+            <a
+                href="{{ route('home', ['locale' => $locale]) }}"
+                class="text-lg font-black text-white block truncate hover:underline"
+            >
+                {{ __('ui.site_name') }}
+            </a>
+            <a href="{{ route('profile') }}" wire:navigate class="text-xs text-[#CCCCCC] hover:underline block truncate">{{ auth()->user()?->name }}</a>
+        </div>
     </div>
 
     {{-- Navigation --}}
@@ -38,56 +57,39 @@
             <span class="font-medium">{{ __('ui.sidebar_clients') }}</span>
         </a>
 
-        {{-- Content - Expandable --}}
-        <div x-data="{ contentExpanded: {{ $isContentActive ? 'true' : 'false' }} }" wire:show="false">
+        @if($isAdmin)
+        {{-- Administrators --}}
+        <a
+            href="{{ route('administrators') }}"
+            wire:navigate
+            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isAdministrators ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
+        >
+            <x-lucide-shield class="w-4 h-4 shrink-0" />
+            <span class="font-medium">{{ __('ui.sidebar_administrators') }}</span>
+        </a>
+        @endif
+
+        {{-- Conținut site – Expandable --}}
+        <div x-data="{ contentExpanded: {{ $isContentActive ? 'true' : 'false' }} }">
             <button
                 type="button"
                 @click="contentExpanded = !contentExpanded"
                 class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentActive ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
             >
                 <x-lucide-file-text class="w-4 h-4 shrink-0" />
-                <span class="font-medium flex-1 text-left">{{ __('ui.sidebar_content') }}</span>
+                <span class="font-medium flex-1 text-left">{{ __('ui.sidebar_content_site') }}</span>
                 <span x-show="contentExpanded" class="shrink-0"><x-lucide-chevron-down class="w-4 h-4" /></span>
                 <span x-show="!contentExpanded" class="shrink-0" x-cloak style="display: none;"><x-lucide-chevron-right class="w-4 h-4" /></span>
             </button>
 
             <div x-show="contentExpanded" class="mt-1 ml-4 space-y-1 pl-2 border-l border-[#333333]">
                 <a
-                    href="{{ route('home', ['locale' => $locale]) }}#about"
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
+                    href="{{ route('content.about') }}"
+                    wire:navigate
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentAbout ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
                 >
                     <x-lucide-info class="w-3.5 h-3.5 shrink-0" />
                     <span class="font-medium text-xs">{{ __('ui.sidebar_content_about') }}</span>
-                </a>
-                <a
-                    href="{{ route('home', ['locale' => $locale]) }}#timeline"
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
-                >
-                    <x-lucide-route class="w-3.5 h-3.5 shrink-0" />
-                    <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
-                </a>
-                <a
-                    href="{{ route('home', ['locale' => $locale]) }}#contact"
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
-                >
-                    <x-lucide-mail class="w-3.5 h-3.5 shrink-0" />
-                    <span class="font-medium text-xs">{{ __('ui.menu_contact') }}</span>
-                </a>
-                <a
-                    href="{{ route('privacy', ['locale' => $locale]) }}"
-                    wire:navigate
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isPrivacy ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
-                >
-                    <x-lucide-shield class="w-3.5 h-3.5 shrink-0" />
-                    <span class="font-medium text-xs">{{ __('ui.sidebar_privacy') }}</span>
-                </a>
-                <a
-                    href="{{ route('terms', ['locale' => $locale]) }}"
-                    wire:navigate
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isTerms ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
-                >
-                    <x-lucide-file-text class="w-3.5 h-3.5 shrink-0" />
-                    <span class="font-medium text-xs">{{ __('ui.sidebar_terms') }}</span>
                 </a>
             </div>
         </div>
@@ -124,10 +126,28 @@
             x-transition:leave-end="-translate-x-full"
             class="absolute left-0 top-0 bottom-0 w-64 bg-[#111111] border-r border-[#333333] flex flex-col"
         >
-            <div class="p-4 border-b border-[#333333] flex items-center justify-between">
-                <div>
-                    <h1 class="text-lg font-black text-white">{{ __('ui.site_name') }}</h1>
-                    <p class="text-xs text-[#CCCCCC]">{{ __('ui.sidebar_admin') }}</p>
+            <div class="p-4 border-b border-[#333333] flex items-center gap-3">
+                <a
+                    href="{{ route('home', ['locale' => $locale]) }}"
+                    @click="sidebarOpen = false"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden hover:opacity-90 transition-opacity"
+                    aria-label="{{ __('ui.site_name') }}"
+                >
+                    <img
+                        src="{{ asset('images/logo-white.svg') }}"
+                        alt="{{ __('ui.site_name') }} Logo"
+                        class="w-full h-full object-contain"
+                    />
+                </a>
+                <div class="min-w-0">
+                    <a
+                        href="{{ route('home', ['locale' => $locale]) }}"
+                        @click="sidebarOpen = false"
+                        class="text-lg font-black text-white block truncate hover:underline"
+                    >
+                        {{ __('ui.site_name') }}
+                    </a>
+                    <a href="{{ route('profile') }}" wire:navigate @click="sidebarOpen = false" class="text-xs text-[#CCCCCC] hover:underline block truncate">{{ __('ui.sidebar_admin') }}</a>
                 </div>
             </div>
 
@@ -150,6 +170,17 @@
                     <x-lucide-users class="w-4 h-4 shrink-0" />
                     <span class="font-medium">{{ __('ui.sidebar_clients') }}</span>
                 </a>
+                @if($isAdmin)
+                <a
+                    href="{{ route('administrators') }}"
+                    wire:navigate
+                    @click="sidebarOpen = false"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isAdministrators ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
+                >
+                    <x-lucide-shield class="w-4 h-4 shrink-0" />
+                    <span class="font-medium">{{ __('ui.sidebar_administrators') }}</span>
+                </a>
+                @endif
 
                 <div x-data="{ contentExpandedMobile: {{ $isContentActive ? 'true' : 'false' }} }">
                     <button
@@ -158,52 +189,19 @@
                         class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentActive ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
                     >
                         <x-lucide-file-text class="w-4 h-4 shrink-0" />
-                        <span class="font-medium flex-1 text-left">{{ __('ui.sidebar_content') }}</span>
+                        <span class="font-medium flex-1 text-left">{{ __('ui.sidebar_content_site') }}</span>
                         <span x-show="contentExpandedMobile"><x-lucide-chevron-down class="w-4 h-4 shrink-0" /></span>
                         <span x-show="!contentExpandedMobile" x-cloak style="display: none;"><x-lucide-chevron-right class="w-4 h-4 shrink-0" /></span>
                     </button>
                     <div x-show="contentExpandedMobile" class="mt-1 ml-4 space-y-1 pl-2 border-l border-[#333333]">
                         <a
-                            href="{{ route('home', ['locale' => $locale]) }}#about"
+                            href="{{ route('content.about') }}"
+                            wire:navigate
                             @click="sidebarOpen = false"
-                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
+                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentAbout ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
                         >
                             <x-lucide-info class="w-3.5 h-3.5 shrink-0" />
                             <span class="font-medium text-xs">{{ __('ui.sidebar_content_about') }}</span>
-                        </a>
-                        <a
-                            href="{{ route('home', ['locale' => $locale]) }}#timeline"
-                            @click="sidebarOpen = false"
-                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
-                        >
-                            <x-lucide-route class="w-3.5 h-3.5 shrink-0" />
-                            <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
-                        </a>
-                        <a
-                            href="{{ route('home', ['locale' => $locale]) }}#contact"
-                            @click="sidebarOpen = false"
-                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-[#CCCCCC] hover:bg-[#222222] hover:text-white"
-                        >
-                            <x-lucide-mail class="w-3.5 h-3.5 shrink-0" />
-                            <span class="font-medium text-xs">{{ __('ui.menu_contact') }}</span>
-                        </a>
-                        <a
-                            href="{{ route('privacy', ['locale' => $locale]) }}"
-                            wire:navigate
-                            @click="sidebarOpen = false"
-                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isPrivacy ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
-                        >
-                            <x-lucide-shield class="w-3.5 h-3.5 shrink-0" />
-                            <span class="font-medium text-xs">{{ __('ui.sidebar_privacy') }}</span>
-                        </a>
-                        <a
-                            href="{{ route('terms', ['locale' => $locale]) }}"
-                            wire:navigate
-                            @click="sidebarOpen = false"
-                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isTerms ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
-                        >
-                            <x-lucide-file-text class="w-3.5 h-3.5 shrink-0" />
-                            <span class="font-medium text-xs">{{ __('ui.sidebar_terms') }}</span>
                         </a>
                     </div>
                 </div>

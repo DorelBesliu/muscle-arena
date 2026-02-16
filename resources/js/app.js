@@ -1,6 +1,88 @@
 import './bootstrap';
 import './toast.js';
 
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('tiptapEditor', (config) => {
+        let editor;
+        return {
+            updatedAt: Date.now(),
+            init() {
+                const el = document.getElementById(config.initialContentId);
+                const initialContent = (el && (el.value !== undefined ? el.value : el.textContent)) ? (el.value !== undefined ? el.value : el.textContent).trim() : '';
+                const _this = this;
+                editor = new Editor({
+                    element: this.$refs.element,
+                    extensions: [
+                        StarterKit,
+                        Link.configure({ openOnClick: false }),
+                        Placeholder.configure({ placeholder: config.placeholder || '…' }),
+                    ],
+                    content: initialContent || '',
+                    editorProps: {
+                        attributes: {
+                            class: 'tiptap-content min-h-[140px] outline-none',
+                        },
+                    },
+                    onCreate() {
+                        _this.updatedAt = Date.now();
+                        if (window.Livewire && _this.$wire) {
+                            _this.$wire.set(config.wireProperty, editor.getHTML());
+                        }
+                    },
+                    onUpdate() {
+                        _this.updatedAt = Date.now();
+                        if (window.Livewire && _this.$wire) {
+                            _this.$wire.set(config.wireProperty, editor.getHTML());
+                        }
+                    },
+                    onSelectionUpdate() {
+                        _this.updatedAt = Date.now();
+                    },
+                });
+            },
+            isActive(type, opts = {}) {
+                return editor ? editor.isActive(type, opts) : false;
+            },
+            toggleBold() {
+                editor?.chain().focus().toggleBold().run();
+            },
+            toggleItalic() {
+                editor?.chain().focus().toggleItalic().run();
+            },
+            toggleStrike() {
+                editor?.chain().focus().toggleStrike().run();
+            },
+            toggleBulletList() {
+                editor?.chain().focus().toggleBulletList().run();
+            },
+            toggleOrderedList() {
+                editor?.chain().focus().toggleOrderedList().run();
+            },
+            toggleBlockquote() {
+                editor?.chain().focus().toggleBlockquote().run();
+            },
+            setParagraph() {
+                editor?.chain().focus().setParagraph().run();
+            },
+            toggleHeading(level = 1) {
+                editor?.chain().focus().toggleHeading({ level }).run();
+            },
+            setCode() {
+                editor?.chain().focus().toggleCode().run();
+            },
+            setLink() {
+                const url = window.prompt('URL');
+                if (url) editor?.chain().focus().setLink({ href: url }).run();
+            },
+        };
+    });
+});
+
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/dark.css';
 window.flatpickr = flatpickr;
