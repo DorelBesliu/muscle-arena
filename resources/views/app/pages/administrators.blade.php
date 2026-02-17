@@ -289,16 +289,14 @@ new #[Layout('layouts.app')] class extends Component
             <x-slot:footer>
                 <button type="button" wire:click="cancelModal"
                     class="h-9 px-4 rounded-xl border-2 border-[#333333] text-sm font-medium text-[#CCCCCC] hover:text-white">{{ __('ui.admins_cancel') }}</button>
-                <button type="button" wire:click="saveAdministrator"
-                    wire:loading.attr="disabled"
-                    wire:target="saveAdministrator"
-                    class="h-9 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
-                    <span wire:loading.remove wire:target="saveAdministrator" class="inline-flex items-center gap-2">{{ __('ui.admins_save') }}</span>
-                    <span wire:loading wire:target="saveAdministrator" class="inline-flex items-center gap-2">
-                        <x-lucide-loader-2 class="w-4 h-4 animate-spin shrink-0" />
-                        <span>{{ __('ui.admins_save') }}</span>
-                    </span>
-                </button>
+<x-app.components.loading-button
+                type="button"
+                wire-target="saveAdministrator"
+                wire:click="saveAdministrator"
+                class="h-9 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white min-w-[5rem]"
+            >
+                <x-slot:label>{{ __('ui.admins_save') }}</x-slot:label>
+            </x-app.components.loading-button>
             </x-slot:footer>
         </x-app-dialog>
     @endif
@@ -315,16 +313,14 @@ new #[Layout('layouts.app')] class extends Component
             <x-slot:footer>
                 <button type="button" wire:click="cancelDelete"
                     class="h-9 px-4 rounded-xl border-2 border-[#333333] text-sm font-medium text-[#CCCCCC] hover:text-white">{{ __('ui.admins_cancel') }}</button>
-                <button type="button" wire:click="deleteAdministrator"
-                    wire:loading.attr="disabled"
-                    wire:target="deleteAdministrator"
-                    class="h-9 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-sm font-medium text-white inline-flex items-center justify-center gap-2 min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
-                    <span wire:loading.remove wire:target="deleteAdministrator" class="inline-flex items-center gap-2">{{ __('ui.admins_delete_confirm_btn') }}</span>
-                    <span wire:loading wire:target="deleteAdministrator" class="inline-flex items-center gap-2">
-                        <x-lucide-loader-2 class="w-4 h-4 shrink-0 animate-spin" />
-                        <span>{{ __('ui.admins_delete_confirm_btn') }}</span>
-                    </span>
-                </button>
+<x-app.components.loading-button
+                type="button"
+                wire-target="deleteAdministrator"
+                wire:click="deleteAdministrator"
+                class="h-9 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-sm font-medium text-white min-w-[5rem]"
+            >
+                <x-slot:label>{{ __('ui.admins_delete_confirm_btn') }}</x-slot:label>
+            </x-app.components.loading-button>
             </x-slot:footer>
         </x-app-dialog>
     @endif

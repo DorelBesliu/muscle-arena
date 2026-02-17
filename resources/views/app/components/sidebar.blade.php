@@ -5,7 +5,8 @@
     $isProfile = request()->routeIs('profile');
     $isAdministrators = request()->routeIs('administrators');
     $isContentAbout = request()->routeIs('content.about');
-    $isContentActive = $isContentAbout;
+    $isContentRoadmap = request()->routeIs('content.roadmap');
+    $isContentActive = $isContentAbout || $isContentRoadmap;
     $isAdmin = auth()->user()?->role === 'admin';
 @endphp
 
@@ -90,6 +91,14 @@
                 >
                     <x-lucide-info class="w-3.5 h-3.5 shrink-0" />
                     <span class="font-medium text-xs">{{ __('ui.sidebar_content_about') }}</span>
+                </a>
+                <a
+                    href="{{ route('content.roadmap') }}"
+                    wire:navigate
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentRoadmap ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                >
+                    <x-lucide-line-squiggle class="w-3.5 h-3.5 shrink-0" />
+                    <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
                 </a>
             </div>
         </div>
@@ -202,6 +211,15 @@
                         >
                             <x-lucide-info class="w-3.5 h-3.5 shrink-0" />
                             <span class="font-medium text-xs">{{ __('ui.sidebar_content_about') }}</span>
+                        </a>
+                        <a
+                            href="{{ route('content.roadmap') }}"
+                            wire:navigate
+                            @click="sidebarOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentRoadmap ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                        >
+                            <x-lucide-line-squiggle class="w-3.5 h-3.5 shrink-0" />
+                            <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
                         </a>
                     </div>
                 </div>

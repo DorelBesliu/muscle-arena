@@ -3,7 +3,6 @@ import './toast.js';
 
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 
 document.addEventListener('alpine:init', () => {
@@ -11,6 +10,7 @@ document.addEventListener('alpine:init', () => {
         let editor;
         return {
             updatedAt: Date.now(),
+            _tiptapInitialSyncDone: false,
             init() {
                 const el = document.getElementById(config.initialContentId);
                 const initialContent = (el && (el.value !== undefined ? el.value : el.textContent)) ? (el.value !== undefined ? el.value : el.textContent).trim() : '';
@@ -18,8 +18,7 @@ document.addEventListener('alpine:init', () => {
                 editor = new Editor({
                     element: this.$refs.element,
                     extensions: [
-                        StarterKit,
-                        Link.configure({ openOnClick: false }),
+                        StarterKit.configure({ link: { openOnClick: false } }),
                         Placeholder.configure({ placeholder: config.placeholder || '…' }),
                     ],
                     content: initialContent || '',
@@ -30,15 +29,15 @@ document.addEventListener('alpine:init', () => {
                     },
                     onCreate() {
                         _this.updatedAt = Date.now();
-                        if (window.Livewire && _this.$wire) {
-                            _this.$wire.set(config.wireProperty, editor.getHTML());
-                        }
                     },
                     onUpdate() {
                         _this.updatedAt = Date.now();
-                        if (window.Livewire && _this.$wire) {
-                            _this.$wire.set(config.wireProperty, editor.getHTML());
+                        if (!window.Livewire || !_this.$wire) return;
+                        if (!_this._tiptapInitialSyncDone) {
+                            _this._tiptapInitialSyncDone = true;
+                            return;
                         }
+                        _this.$wire.set(config.wireProperty, editor.getHTML());
                     },
                     onSelectionUpdate() {
                         _this.updatedAt = Date.now();
@@ -82,6 +81,250 @@ document.addEventListener('alpine:init', () => {
         };
     });
 });
+
+/**
+ * Initialize Alpine store and Livewire listeners for about-project feature editing.
+ * Call from x-init: initAboutFeatureEditing(iconsConfig, $wire, contentLocale)
+ */
+window.initAboutFeatureEditing = function (iconsConfig, wire, contentLocale) {
+    if (!window.__aboutFeatureEditingStore) {
+        window.__aboutFeatureEditingStore = true;
+        window.Alpine.store('aboutFeatureEditing', {
+            id: null,
+            index: null,
+            editingIcon: null,
+            openIconDropdown: false,
+            dropdownRect: null,
+            iconsConfig: iconsConfig || {},
+            contentLocale: (typeof contentLocale === 'string' && contentLocale) ? contentLocale : 'ro',
+        });
+    }
+    var s = window.Alpine.store('aboutFeatureEditing');
+    if (s && typeof contentLocale === 'string' && contentLocale) s.contentLocale = contentLocale;
+    if (wire) {
+        wire.$on('feature-added', (payload) => {
+            const s = window.Alpine.store('aboutFeatureEditing');
+            s.id = payload?.featureId ?? payload ?? null;
+            s.index = payload?.featureIndex ?? null;
+            s.editingIcon = payload?.editingIcon ?? 'list-checks';
+        });
+        wire.$on('feature-saved', (payload) => {
+            const featureId = payload?.featureId;
+            const icon = payload?.icon;
+            if (featureId != null && icon && typeof window.aboutFeatureIconDropdownSyncCollapsedIcon === 'function') {
+                window.aboutFeatureIconDropdownSyncCollapsedIcon(featureId, icon);
+            }
+            const s = window.Alpine.store('aboutFeatureEditing');
+            s.id = null;
+            s.index = null;
+            s.editingIcon = null;
+            s.openIconDropdown = false;
+            s.dropdownRect = null;
+        });
+    }
+};
+
+function aboutFeatureIconDropdownApplySearch() {
+    const list = document.getElementById('about-feature-icon-dropdown-list');
+    const searchEl = document.getElementById('about-feature-icon-search');
+    if (!list || !searchEl) return;
+    const q = (searchEl.value || '').toLowerCase();
+    list.querySelectorAll('button.about-feature-icon-option').forEach(function (btn) {
+        const label = (btn.dataset.label || '').toLowerCase();
+        btn.style.display = !q || label.includes(q) ? '' : 'none';
+    });
+}
+
+function aboutFeatureIconDropdownBindSearch() {
+    var searchInput = document.getElementById('about-feature-icon-search');
+    if (searchInput && !searchInput._aboutFeatureSearchBound) {
+        searchInput._aboutFeatureSearchBound = true;
+        searchInput.addEventListener('input', aboutFeatureIconDropdownApplySearch);
+    }
+}
+
+window._aboutFeatureIconCache = window._aboutFeatureIconCache || {};
+
+function aboutFeatureIconGetHtml(iconKey) {
+    if (!iconKey) return null;
+    if (window._aboutFeatureIconCache[iconKey]) return window._aboutFeatureIconCache[iconKey];
+    var iconEl = document.getElementById('about-feature-icon-' + iconKey);
+    if (iconEl) {
+        window._aboutFeatureIconCache[iconKey] = iconEl.innerHTML;
+        return iconEl.innerHTML;
+    }
+    return null;
+}
+
+window.aboutFeatureIconDropdownSyncDisplay = function (featureId, iconKey) {
+    if (!featureId || !iconKey) return;
+    var display = document.getElementById('about-feature-icon-display-' + featureId);
+    if (!display) return;
+    var html = aboutFeatureIconGetHtml(iconKey);
+    if (html) display.innerHTML = html;
+};
+
+window.aboutFeatureIconDropdownSyncCollapsedIcon = function (featureId, iconKey) {
+    if (!featureId || !iconKey) return;
+    var container = document.getElementById('about-feature-collapsed-icon-' + featureId);
+    if (!container) return;
+    var html = aboutFeatureIconGetHtml(iconKey);
+    if (html) container.innerHTML = html;
+};
+
+/**
+ * Alpine component for the about-project feature icon button (syncs display with store and list).
+ * Usage: x-data="aboutFeatureIconButton(featId, initialKey)"
+ */
+window.aboutFeatureIconButton = function (featId, initialKey) {
+    return {
+        featId: featId,
+        initialKey: initialKey || 'list-checks',
+        init() {
+            const store = Alpine.store('aboutFeatureEditing');
+            if (!store) return;
+            this.$watch(
+                () => store.editingIcon,
+                () => {
+                    if (store.id !== this.featId) return;
+                    var self = this;
+                    this.$nextTick(() => {
+                        if (typeof aboutFeatureIconDropdownSyncDisplay === 'function') aboutFeatureIconDropdownSyncDisplay(self.featId, store.editingIcon);
+                    });
+                }
+            );
+            this.$watch(
+                () => store.id,
+                () => {
+                    if (store.id !== this.featId) return;
+                    var self = this;
+                    this.$nextTick(() => {
+                        if (typeof aboutFeatureIconDropdownSyncDisplay === 'function') aboutFeatureIconDropdownSyncDisplay(self.featId, store.editingIcon);
+                    });
+                }
+            );
+        },
+    };
+};
+
+var _aboutFeatureIconDropdownLoadPromise = null;
+
+function aboutFeatureIconPopulateCacheFromList(listEl) {
+    if (!listEl) return;
+    listEl.querySelectorAll('button.about-feature-icon-option').forEach(function (btn) {
+        var key = btn.dataset.iconKey;
+        var span = document.getElementById('about-feature-icon-' + key);
+        if (key && span) {
+            window._aboutFeatureIconCache = window._aboutFeatureIconCache || {};
+            window._aboutFeatureIconCache[key] = span.innerHTML;
+        }
+    });
+}
+
+/**
+ * Load icon list for about-project dropdown (fetch fragment and inject).
+ * Fetches once per locale; if already loaded for current locale, reuses stored HTML.
+ */
+window.loadAboutFeatureIconDropdownContent = function () {
+    const listEl = document.getElementById('about-feature-icon-dropdown-list');
+    if (!listEl) return Promise.reject(new Error('list container not found'));
+
+    const store = window.Alpine?.store?.('aboutFeatureEditing');
+    const locale = (store && store.contentLocale) ? store.contentLocale : 'ro';
+    window._aboutFeatureIconListHtmlByLocale = window._aboutFeatureIconListHtmlByLocale || {};
+    const cachedHtml = window._aboutFeatureIconListHtmlByLocale[locale];
+
+    if (cachedHtml) {
+        var hasContent = listEl.querySelectorAll('button.about-feature-icon-option').length > 0;
+        if (!hasContent) {
+            listEl.setAttribute('data-loaded', '1');
+            listEl.setAttribute('data-loaded-locale', locale);
+            listEl.innerHTML = cachedHtml;
+            aboutFeatureIconPopulateCacheFromList(listEl);
+            aboutFeatureIconDropdownBindSearch();
+            aboutFeatureIconDropdownApplySearch();
+        } else {
+            listEl.setAttribute('data-loaded', '1');
+            listEl.setAttribute('data-loaded-locale', locale);
+        }
+        return Promise.resolve();
+    }
+
+    var state = listEl.getAttribute('data-loaded');
+    var loadedLocale = listEl.getAttribute('data-loaded-locale');
+    if (state === '1' && loadedLocale === locale && listEl.querySelectorAll('button.about-feature-icon-option').length > 0) return Promise.resolve();
+    if (state === 'loading' && _aboutFeatureIconDropdownLoadPromise) return _aboutFeatureIconDropdownLoadPromise;
+
+    listEl.setAttribute('data-loaded', 'loading');
+    listEl.innerHTML = '<span class="text-[#666666] text-sm">Loading...</span>';
+    const fragmentUrl = '/content/about/icon-dropdown-fragment?locale=' + encodeURIComponent(locale);
+    _aboutFeatureIconDropdownLoadPromise = fetch(fragmentUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+            window._aboutFeatureIconListHtmlByLocale[locale] = html;
+            listEl.setAttribute('data-loaded', '1');
+            listEl.setAttribute('data-loaded-locale', locale);
+            listEl.innerHTML = html;
+            aboutFeatureIconPopulateCacheFromList(listEl);
+            aboutFeatureIconDropdownBindSearch();
+            aboutFeatureIconDropdownApplySearch();
+        })
+        .catch(function () {
+            listEl.setAttribute('data-loaded', '0');
+            listEl.removeAttribute('data-loaded-locale');
+            listEl.innerHTML = '<span class="text-red-500 text-sm">Failed to load icons.</span>';
+        });
+    return _aboutFeatureIconDropdownLoadPromise;
+};
+
+/**
+ * Open the shared icon dropdown for about-project feature editing.
+ * Positions the dropdown under the clicked button. Icon list is loaded on page load or on first open.
+ */
+window.openAboutFeatureIconDropdown = function (id, index, initialKey, event) {
+    const store = window.Alpine?.store?.('aboutFeatureEditing');
+    if (!store) return;
+    const btn = event?.target?.closest?.('button') ?? null;
+    store.id = id;
+    store.index = index;
+    store.editingIcon = store.editingIcon || initialKey;
+    store.openIconDropdown = true;
+
+    var dropdownEl = document.getElementById('about-feature-icon-dropdown');
+    if (dropdownEl && btn) {
+        var anchor = document.querySelector('[data-about-feature-dropdown-anchor][data-feature-id="' + id + '"]');
+        if (anchor) {
+            if (dropdownEl.parentNode !== anchor) {
+                anchor.appendChild(dropdownEl);
+            }
+            var btnRect = btn.getBoundingClientRect();
+            var anchorRect = anchor.getBoundingClientRect();
+            dropdownEl.style.top = (btnRect.bottom - anchorRect.top + 4) + 'px';
+            dropdownEl.style.left = (btnRect.left - anchorRect.left) + 'px';
+        }
+    }
+
+    loadAboutFeatureIconDropdownContent();
+    var listEl = document.getElementById('about-feature-icon-dropdown-list');
+    if (listEl && listEl.getAttribute('data-loaded') === '1') aboutFeatureIconDropdownApplySearch();
+    aboutFeatureIconDropdownSyncDisplay(id, store.editingIcon);
+};
+
+/**
+ * Reset about-project icon dropdown store state (close dropdown and clear positioning).
+ * Use fullReset: true when closing without choosing (click outside / escape) to clear id/index/editingIcon too.
+ */
+window.closeAboutFeatureIconDropdown = function (fullReset) {
+    const store = window.Alpine?.store?.('aboutFeatureEditing');
+    if (!store) return;
+    store.openIconDropdown = false;
+    store.dropdownRect = null;
+    if (fullReset) {
+        store.id = null;
+        store.index = null;
+        store.editingIcon = null;
+    }
+};
 
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/dark.css';

@@ -22,6 +22,9 @@ new class extends Component
         if (request()->routeIs('content.about')) {
             return __('ui.sidebar_content_about');
         }
+        if (request()->routeIs('content.roadmap')) {
+            return __('ui.sidebar_content_roadmap');
+        }
         if (request()->routeIs('profile')) {
             return __('Profile');
         }

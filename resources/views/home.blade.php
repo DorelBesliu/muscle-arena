@@ -77,30 +77,24 @@
         $about = \App\Models\SiteContent::get('about_' . $locale);
         $aboutTitle = is_array($about) ? (string) ($about['title'] ?? '') : '';
         $aboutDescription = is_array($about) ? (string) ($about['description'] ?? '') : '';
-        if ($aboutDescription === '') {
-            $aboutDescription = __('ui.about_description') . "\n\n" . __('ui.about_description_2');
-        }
         $aboutDescriptionIsPlain = ! str_contains($aboutDescription, '<');
         $iconsForFeatures = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
-        $aboutFeatureIconsAllowed = array_keys(array_filter($iconsForFeatures, fn ($v, $k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
+        $aboutFeatureIconsAllowed = array_keys(array_filter($iconsForFeatures, fn ($k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
         $defaultFeatureIcon = $iconsForFeatures['default'] ?? 'list-checks';
         if (! in_array($defaultFeatureIcon, $aboutFeatureIconsAllowed, true)) {
             $defaultFeatureIcon = 'list-checks';
         }
-        $aboutFeaturesRaw = \App\Models\SiteContent::get('about_features_' . $locale, []);
-        $aboutFeatures = is_array($aboutFeaturesRaw) ? array_values(array_map(function ($f) use ($aboutFeatureIconsAllowed, $defaultFeatureIcon) {
-            $icon = (string) ($f['icon'] ?? $defaultFeatureIcon);
-            if (! in_array($icon, $aboutFeatureIconsAllowed, true)) {
-                $icon = $defaultFeatureIcon;
-            }
-            return [
-                'title' => (string) ($f['title'] ?? ''),
-                'description' => (string) ($f['description'] ?? ''),
-                'sort_order' => (int) ($f['sort_order'] ?? 0),
+        $aboutFeatures = [];
+        foreach (\App\Models\PageAboutProjectFeature::orderBy('sort_order')->get() as $index => $feature) {
+            $trans = $feature->translation($locale);
+            $icon = in_array($feature->icon, $aboutFeatureIconsAllowed, true) ? $feature->icon : $defaultFeatureIcon;
+            $aboutFeatures[] = [
+                'title' => $trans ? $trans->title : '',
+                'description' => $trans ? $trans->description : '',
+                'sort_order' => $index,
                 'icon' => $icon,
             ];
-        }, $aboutFeaturesRaw)) : [];
-        usort($aboutFeatures, fn ($a, $b) => $a['sort_order'] <=> $b['sort_order']);
+        }
     @endphp
     <section id="about" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]" data-gym3d-logo="{{ asset('images/logo-white.svg') }}">
         <div class="container mx-auto px-4">
@@ -438,40 +432,28 @@
                         {{ __('ui.projectTimelineDescription') }}
                     </p>
                 </div>
-                {{-- Timeline steps --}}
+                {{-- Timeline steps (din panela de administrare – Drumul spre deschidere) --}}
                 @php
-                    $timelineSteps = [
-                        [
-                            'title' => __('ui.timeline_step1_title'),
-                            'description' => __('ui.timeline_step1_description'),
-                            'date' => __('ui.timeline_step1_date'),
-                            'status' => 'current'
-                        ],
-                        [
-                            'title' => __('ui.timeline_step2_title'),
-                            'description' => __('ui.timeline_step2_description'),
-                            'date' => __('ui.timeline_step2_date'),
-                            'status' => 'next'
-                        ],
-                        [
-                            'title' => __('ui.timeline_step3_title'),
-                            'description' => __('ui.timeline_step3_description'),
-                            'date' => __('ui.timeline_step3_date'),
-                            'status' => 'upcoming'
-                        ],
-                        [
-                            'title' => __('ui.timeline_step4_title'),
-                            'description' => __('ui.timeline_step4_description'),
-                            'date' => __('ui.timeline_step4_date'),
-                            'status' => 'upcoming'
-                        ],
-                        [
-                            'title' => __('ui.timeline_step5_title'),
-                            'description' => __('ui.timeline_step5_description'),
-                            'date' => __('ui.timeline_step5_date'),
-                            'status' => 'upcoming'
-                        ],
-                    ];
+                    $pathToOpeningSteps = \App\Models\PagePathToOpeningStep::with([
+                        'translations' => fn ($q) => $q->where('locale', $locale),
+                    ])->orderBy('sort_order')->get();
+
+                    $timelineSteps = [];
+                    foreach ($pathToOpeningSteps as $step) {
+                        $trans = $step->translations->first();
+                        $status = $step->status;
+                        if ($status === 'in-progress') {
+                            $status = 'current';
+                        } elseif (! in_array($status, ['completed', 'current', 'upcoming'], true)) {
+                            $status = 'upcoming';
+                        }
+                        $timelineSteps[] = [
+                            'title' => $trans?->title ?? '',
+                            'description' => $trans?->description ?? '',
+                            'date' => '',
+                            'status' => $status,
+                        ];
+                    }
                 @endphp
                 <div class="max-w-4xl mx-auto">
                     <div class="space-y-8">

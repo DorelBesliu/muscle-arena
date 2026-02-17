@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\PageAboutProjectFeature;
+use App\Models\PageAboutProjectFeatureTranslation;
 use App\Models\SiteContent;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -14,52 +16,54 @@ new #[Layout('layouts.app')] class extends Component
     /** @var array<int, array{id: int, title: string, description: string, sort_order: int, icon: string}> */
     public array $features = [];
 
-    public ?int $editingFeatureId = null;
+    /** @var array<string, string> Icon key => label (from config, set once in mount). */
+    public array $iconsConfig = [];
 
     public function mount(): void
     {
+        $this->contentLocale = app()->getLocale() ?? 'ro';
+
         $requested = request()->query('locale');
         if (in_array($requested, ['ro', 'en', 'ru'], true)) {
             $this->contentLocale = $requested;
-        } else {
-            $this->contentLocale = app()->getLocale();
-            if (! in_array($this->contentLocale, ['ro', 'en', 'ru'], true)) {
-                $this->contentLocale = 'ro';
-            }
         }
 
         $about = SiteContent::get('about_' . $this->contentLocale);
-        if (is_array($about)) {
-            $this->aboutDescription = (string) ($about['description'] ?? '');
-        } else {
-            $previousLocale = app()->getLocale();
-            app()->setLocale($this->contentLocale);
-            $this->aboutDescription = (string) __('ui.about_description') . "\n\n" . (string) __('ui.about_description_2');
-            app()->setLocale($previousLocale);
-        }
 
-        $iconsConfig = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
-        $allowedIcons = array_keys(array_filter($iconsConfig, fn ($v, $k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
-        $defaultIcon = $iconsConfig['default'] ?? 'list-checks';
-        if (! in_array($defaultIcon, $allowedIcons, true)) {
-            $defaultIcon = 'list-checks';
+        $this->aboutDescription = is_array($about) ? (string) ($about['description'] ?? '') : '';
+
+        // Etichete iconițe în limba din profil (pentru butonul „element ales” și dropdown)
+        $profileLocale = auth()->user()?->locale ?? session('locale', 'ro');
+        $profileLocale = in_array($profileLocale, ['ro', 'en', 'ru'], true) ? $profileLocale : 'ro';
+        $previousLocale = app()->getLocale();
+        app()->setLocale($profileLocale);
+        $iconsRaw = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
+        $this->iconsConfig = [];
+        foreach ($iconsRaw as $key => $defaultLabel) {
+            // „default” păstrează cheia iconiței implicite (ex. list-checks), nu eticheta
+            if ($key === 'default') {
+                $this->iconsConfig[$key] = $defaultLabel;
+                continue;
+            }
+            $label = __('icons.' . $key);
+            $this->iconsConfig[$key] = ($label === 'icons.' . $key) ? $defaultLabel : $label;
         }
-        $stored = SiteContent::get('about_features_' . $this->contentLocale, []);
-        if (is_array($stored)) {
-            $this->features = array_values(array_map(function ($f) use ($allowedIcons, $defaultIcon) {
-                $icon = (string) ($f['icon'] ?? $defaultIcon);
-                if (! in_array($icon, $allowedIcons, true)) {
-                    $icon = $defaultIcon;
-                }
-                return [
-                    'id' => (int) ($f['id'] ?? 0),
-                    'title' => (string) ($f['title'] ?? ''),
-                    'description' => (string) ($f['description'] ?? ''),
-                    'sort_order' => (int) ($f['sort_order'] ?? 0),
-                    'icon' => $icon,
-                ];
-            }, $stored));
-            usort($this->features, fn ($a, $b) => $a['sort_order'] <=> $b['sort_order']);
+        app()->setLocale($previousLocale);
+
+        $defaultIcon = config('icons.default', 'list-checks');
+        $featureModels = PageAboutProjectFeature::with([
+            'translations' => fn ($q) => $q->where('locale', $this->contentLocale),
+        ])->orderBy('sort_order')->get();
+
+        foreach ($featureModels as $index => $feature) {
+            $trans = $feature->translations->first();
+            $this->features[] = [
+                'id' => $feature->id,
+                'title' => $trans?->title ?? '',
+                'description' => $trans?->description ?? '',
+                'sort_order' => $index,
+                'icon' => $feature->icon ?? $defaultIcon,
+            ];
         }
     }
 
@@ -74,63 +78,77 @@ new #[Layout('layouts.app')] class extends Component
 
     public function addFeature(): void
     {
-        $maxId = 0;
-        foreach ($this->features as $f) {
-            if (($f['id'] ?? 0) > $maxId) {
-                $maxId = (int) $f['id'];
-            }
-        }
-        $iconsConfig = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
-        $allowedIcons = array_keys(array_filter($iconsConfig, fn ($v, $k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
-        $defaultIcon = $iconsConfig['default'] ?? 'list-checks';
+        $allowedIcons = array_keys(array_filter($this->iconsConfig, fn ($k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
+        $defaultIcon = $this->iconsConfig['default'] ?? 'list-checks';
         if (! in_array($defaultIcon, $allowedIcons, true)) {
             $defaultIcon = 'list-checks';
         }
+        $locales = config('locales.supported', ['ro', 'en', 'ru']);
+        $feature = PageAboutProjectFeature::create(['sort_order' => count($this->features), 'icon' => $defaultIcon]);
+        foreach ($locales as $locale) {
+            PageAboutProjectFeatureTranslation::create([
+                'page_about_project_feature_id' => $feature->id,
+                'locale' => $locale,
+                'title' => '',
+                'description' => '',
+            ]);
+        }
         $this->features[] = [
-            'id' => $maxId + 1,
+            'id' => $feature->id,
             'title' => '',
             'description' => '',
             'sort_order' => count($this->features),
             'icon' => $defaultIcon,
         ];
-        $this->editingFeatureId = $maxId + 1;
+        $this->dispatch('feature-added', featureId: $feature->id, featureIndex: count($this->features) - 1, editingIcon: $defaultIcon);
     }
 
-    public function editFeature(int $id): void
+    public function saveFeature(int $id, ?string $icon = null): void
     {
-        $this->editingFeatureId = $id;
-    }
-
-    public function saveFeature(int $id): void
-    {
-        foreach ($this->features as $i => $f) {
-            if (($f['id'] ?? 0) === $id) {
-                $this->features[$i]['title'] = trim($this->features[$i]['title']);
-                $this->features[$i]['description'] = trim($this->features[$i]['description']);
-                break;
-            }
+        $key = array_search($id, array_column($this->features, 'id'));
+        if ($key === false) {
+            return;
         }
-        $this->persistFeatures();
-        $this->editingFeatureId = null;
+
+        $feature = $this->features[$key];
+        $this->features[$key]['title'] = trim($feature['title'] ?? '');
+        $this->features[$key]['description'] = trim($feature['description'] ?? '');
+        if ($icon !== null && $icon !== '') {
+            $this->features[$key]['icon'] = $icon;
+        }
+
+        $trans = PageAboutProjectFeatureTranslation::where('page_about_project_feature_id', $id)
+            ->where('locale', $this->contentLocale)
+            ->first();
+
+        if ($trans) {
+            $trans->update([
+                'title' => $this->features[$key]['title'] ?? '',
+                'description' => $this->features[$key]['description'] ?? '',
+            ]);
+        }
+
+        $feat = PageAboutProjectFeature::find($id);
+        if ($feat) {
+            $feat->update(['icon' => $this->features[$key]['icon'] ?? config('icons.default', 'list-checks')]);
+        }
+
         $this->dispatch('toast', message: __('ui.admins_update_success'));
+        $this->dispatch('feature-saved', [
+            'featureId' => $id,
+            'icon' => $this->features[$key]['icon'] ?? config('icons.default', 'list-checks'),
+        ]);
     }
 
     public function deleteFeature(int $id): void
     {
+        PageAboutProjectFeature::where('id', $id)->delete();
         $this->features = array_values(array_filter($this->features, fn ($f) => ($f['id'] ?? 0) !== $id));
         foreach ($this->features as $i => $f) {
             $this->features[$i]['sort_order'] = $i;
-        }
-        $this->persistFeatures();
-        if ($this->editingFeatureId === $id) {
-            $this->editingFeatureId = null;
+            PageAboutProjectFeature::where('id', $f['id'])->update(['sort_order' => $i]);
         }
         $this->dispatch('toast', message: __('ui.admins_delete_success'));
-    }
-
-    protected function persistFeatures(): void
-    {
-        SiteContent::set('about_features_' . $this->contentLocale, $this->features);
     }
 
     public function getHasAboutChangesProperty(): bool
@@ -146,38 +164,8 @@ new #[Layout('layouts.app')] class extends Component
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-3 p-3 bg-[#111111] rounded-xl border-2 border-[#333333]">
-                    <span class="text-sm text-[#999999]">{{ __('ui.content_editing_language') }}:</span>
-                    <div class="flex gap-2">
-                    <a
-                        href="{{ route('content.about', ['locale' => 'ro']) }}"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {{ $contentLocale === 'ro' ? 'bg-[#F97316] text-white' : 'bg-[#000000] text-[#666666] hover:text-white hover:bg-[#333333]' }}"
-                    >
-                        RO
-                    </a>
-                    <a
-                        href="{{ route('content.about', ['locale' => 'en']) }}"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {{ $contentLocale === 'en' ? 'bg-[#F97316] text-white' : 'bg-[#000000] text-[#666666] hover:text-white hover:bg-[#333333]' }}"
-                    >
-                        EN
-                    </a>
-                    <a
-                        href="{{ route('content.about', ['locale' => 'ru']) }}"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {{ $contentLocale === 'ru' ? 'bg-[#F97316] text-white' : 'bg-[#000000] text-[#666666] hover:text-white hover:bg-[#333333]' }}"
-                    >
-                        RU
-                    </a>
-                </div>
-                </div>
-                <a
-                    href="{{ route('home', ['locale' => $contentLocale]) }}#about"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 h-9 px-4 rounded-lg border-2 border-[#333333] hover:border-[#F97316] hover:bg-[#111111] text-white text-sm font-medium transition-colors"
-                >
-                    <x-lucide-external-link class="w-4 h-4" />
-                    <span>{{ __('ui.sidebar_content_view_about') }}</span>
-                </a>
+                <x-app.components.content-editing-language-bar :content-locale="$contentLocale" route-name="content.about" />
+                <x-app.components.content-view-on-site-button :content-locale="$contentLocale" hash="#about" />
             </div>
 
             {{-- About block --}}
@@ -185,20 +173,25 @@ new #[Layout('layouts.app')] class extends Component
                 <div class="space-y-3">
                     <div>
                         <label for="about-description-editor" class="block text-sm font-medium text-[#CCCCCC] mb-1.5">{{ __('ui.content_about_description_label') }}</label>
-                        <x-tiptap-editor wireProperty="aboutDescription" :content="$aboutDescription" />
+                        @php
+                            $editorDescription = $aboutDescription;
+                            if ($editorDescription !== '' && ! str_contains($editorDescription, '<')) {
+                                $paragraphs = array_filter(array_map('trim', explode("\n\n", $editorDescription)));
+                                $editorDescription = implode('', array_map(fn ($p) => '<p>' . e($p) . '</p>', $paragraphs));
+                            }
+                        @endphp
+                        <x-tiptap-editor wireProperty="aboutDescription" :content="$editorDescription" />
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button
-                            type="button"
+                        <x-app.components.loading-button
+                            wire-target="saveAbout"
                             wire:click="saveAbout"
-                            wire:loading.attr="disabled"
-                            wire:target="saveAbout"
-                            class="inline-flex items-center justify-center gap-2 h-8 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white min-w-[5rem] disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                            icon-size="w-3.5 h-3.5"
+                            class="h-8 px-4 rounded-xl bg-[#F97316] hover:bg-[#ea580c] text-sm font-medium text-white min-w-[5rem]"
                         >
-                            <span wire:loading.remove wire:target="saveAbout" class="shrink-0"><x-lucide-save class="w-3.5 h-3.5" /></span>
-                            <span wire:loading wire:target="saveAbout" class="shrink-0 inline-flex items-center"><x-lucide-loader-2 class="w-3.5 h-3.5 animate-spin" /></span>
-                            <span class="text-xs">{{ __('ui.admins_save') }}</span>
-                        </button>
+                            <x-lucide-save class="w-3.5 h-3.5" />
+                            <x-slot:label><span class="text-xs">{{ __('ui.admins_save') }}</span></x-slot:label>
+                        </x-app.components.loading-button>
                     </div>
                 </div>
             </div>
@@ -216,163 +209,131 @@ new #[Layout('layouts.app')] class extends Component
                         <span>{{ __('ui.content_about_add_feature') }}</span>
                     </button>
                 </div>
-                <div class="space-y-3">
+                @php
+                    $profileLocale = auth()->user()?->locale ?? session('locale', 'ro');
+                    $profileLocale = in_array($profileLocale, ['ro', 'en', 'ru'], true) ? $profileLocale : 'ro';
+                @endphp
+                <div
+                    class="space-y-3"
+                    x-data
+                    x-init="initAboutFeatureEditing({{ Js::from($this->iconsConfig) }}, $wire, {{ Js::from($profileLocale) }}); loadAboutFeatureIconDropdownContent()"
+                >
                     @if(count($this->features) === 0)
                         <div class="flex flex-col items-center justify-center py-12 px-4 bg-[#111111] outline outline-2 outline-[#333333] rounded-xl text-[#666666]">
                             <x-lucide-inbox class="w-12 h-12 mb-3 text-[#666666] opacity-50" />
                             <p class="text-sm">{{ __('ui.content_about_features_empty') }}</p>
                         </div>
                     @else
-                    @foreach($this->features as $index => $feature)
-                        @php $id = $feature['id']; $isEditing = $editingFeatureId === $id; @endphp
-                        <div class="bg-[#111111] border-2 border-[#333333] rounded-xl" wire:key="feature-{{ $id }}">
-                            <div class="p-3">
-                                @if($isEditing)
-                                    <div class="flex gap-3">
-                                        <div class="flex items-start pt-2">
-                                            <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
-                                        </div>
-                                        <div class="flex-1 space-y-2">
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                @php
-                                                    $iconsConfig = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
-                                                    $defaultIcon = $iconsConfig['default'] ?? 'list-checks';
-                                                    $currentIconKey = $feature['icon'] ?? $defaultIcon;
-                                                    if ($currentIconKey === 'default' || !isset($iconsConfig[$currentIconKey])) {
-                                                        $currentIconKey = $defaultIcon;
-                                                    }
-                                                @endphp
-                                                <div
-                                                    class="relative"
-                                                    x-data="{ open: false, search: '', featureIndex: {{ $index }} }"
-                                                    x-on:click.outside="open = false"
-                                                    x-on:keydown.escape.window="open = false"
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        x-on:click="open = !open"
-                                                        class="h-9 px-3 flex items-center gap-2 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white hover:border-[#444444] focus:border-[#F97316] focus:outline-none min-w-[10rem]"
-                                                    >
-                                                        <span class="w-5 h-5 flex items-center justify-center shrink-0 text-[#F97316]">
-                                                            <x-dynamic-component :component="'lucide-' . $currentIconKey" class="w-4 h-4" />
-                                                        </span>
-                                                        <span class="truncate">{{ $iconsConfig[$currentIconKey] ?? $currentIconKey }}</span>
-                                                        <x-lucide-chevron-down class="w-4 h-4 shrink-0 opacity-70" />
-                                                    </button>
-                                                    <div
-                                                        x-show="open"
-                                                        x-transition
-                                                        x-cloak
-                                                        class="absolute left-0 top-full mt-1 z-50 w-72 max-h-80 flex flex-col bg-[#111111] border-2 border-[#333333] rounded-xl shadow-xl"
-                                                    >
-                                                        <input
-                                                            type="text"
-                                                            x-model="search"
-                                                            placeholder="{{ __('ui.content_about_icon_search') }}..."
-                                                            class="m-2 px-3 py-2 bg-[#000000] border border-[#333333] rounded-lg text-sm text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none"
-                                                        />
-                                                        <div class="overflow-y-auto flex-1 min-h-0 p-2 space-y-0.5">
-                                                            @foreach($iconsConfig as $iconKey => $iconLabel)
-                                                                @if($iconKey === 'default') @continue @endif
-                                                                <button
-                                                                    type="button"
-                                                                    data-label="{{ e($iconLabel) }}"
-                                                                    data-icon-key="{{ e($iconKey) }}"
-                                                                    x-show="!search || $el.dataset.label.toLowerCase().includes(search.toLowerCase())"
-                                                                    x-on:click="$wire.set('features.' + featureIndex + '.icon', $el.dataset.iconKey); open = false"
-                                                                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm text-[#CCCCCC] hover:bg-[#333333] hover:text-white transition-colors"
-                                                                >
-                                                                    <span class="w-6 h-6 flex items-center justify-center shrink-0 text-[#F97316]">
-                                                                        <x-dynamic-component :component="'lucide-' . $iconKey" class="w-4 h-4" />
-                                                                    </span>
-                                                                    <span class="truncate">{{ $iconLabel }}</span>
-                                                                </button>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    wire:model="features.{{ $index }}.title"
-                                                    placeholder="{{ __('ui.content_about_feature_title_placeholder') }}"
-                                                    class="flex-1 h-9 px-3 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white placeholder-[#666666] focus:outline-none"
-                                                />
+                        @foreach($this->features as $index => $feature)
+                            @php $id = $feature['id']; @endphp
+                            <div class="bg-[#111111] border-2 border-[#333333] rounded-xl" wire:key="feature-{{ $id }}">
+                                <div class="p-3">
+                                    <div class="relative" data-about-feature-dropdown-anchor data-feature-id="{{ $id }}">
+                                    <template x-if="Alpine.store('aboutFeatureEditing')?.id === {{ $id }}">
+                                        <div class="flex gap-3">
+                                            <div class="flex items-start pt-2">
+                                                <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
                                             </div>
-                                            <textarea
-                                                wire:model="features.{{ $index }}.description"
-                                                rows="2"
-                                                placeholder="{{ __('ui.content_about_feature_description_placeholder') }}"
-                                                class="w-full bg-[#111111] border-2 border-[#333333] rounded-xl px-3 py-2 text-sm text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none resize-none"
-                                            ></textarea>
-                                        </div>
-                                        <div class="flex flex-col gap-2">
-                                            <button
-                                                type="button"
-                                                wire:click="saveFeature({{ $id }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="saveFeature"
-                                                class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-green-500 hover:bg-[#111111] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                                            >
-                                                <span wire:loading.remove wire:target="saveFeature">
+                                            <div class="flex-1 space-y-2">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    @php
+                                                        $defaultIconKey = $this->iconsConfig['default'] ?? 'list-checks';
+                                                        $currentIconKey = $feature['icon'] ?? $defaultIconKey;
+                                                        if ($currentIconKey === 'default' || !isset($this->iconsConfig[$currentIconKey])) {
+                                                            $currentIconKey = $defaultIconKey;
+                                                        }
+                                                    @endphp
+                                                    <input type="hidden" data-feature-icon="{{ $index }}" :value="Alpine.store('aboutFeatureEditing')?.id === {{ $id }} ? (Alpine.store('aboutFeatureEditing')?.editingIcon || '{{ $currentIconKey }}') : '{{ $currentIconKey }}'">
+                                                    <div class="relative" x-data="aboutFeatureIconButton({{ $id }}, {{ Js::from($currentIconKey) }})">
+                                                        <button
+                                                            type="button"
+                                                            x-on:click="openAboutFeatureIconDropdown({{ $id }}, {{ $index }}, initialKey, $event)"
+                                                            class="h-9 px-3 flex items-center gap-2 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white hover:border-[#444444] focus:border-[#F97316] focus:outline-none min-w-[10rem]"
+                                                        >
+                                                            <span id="about-feature-icon-display-{{ $id }}" x-ref="iconDisplay" class="w-5 h-5 flex items-center justify-center shrink-0 text-[#F97316]">
+                                                                <x-dynamic-component :component="'lucide-' . $currentIconKey" class="w-4 h-4" />
+                                                            </span>
+                                                            <span class="truncate" x-text="Alpine.store('aboutFeatureEditing')?.iconsConfig?.[Alpine.store('aboutFeatureEditing')?.id === featId ? (Alpine.store('aboutFeatureEditing')?.editingIcon || initialKey) : initialKey] || initialKey"></span>
+                                                            <x-lucide-chevron-down class="w-4 h-4 shrink-0 opacity-70" />
+                                                        </button>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        wire:model="features.{{ $index }}.title"
+                                                        placeholder="{{ __('ui.content_about_feature_title_placeholder') }}"
+                                                        class="flex-1 h-9 px-3 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white placeholder-[#666666] focus:outline-none"
+                                                    />
+                                                </div>
+                                                <textarea
+                                                    wire:model="features.{{ $index }}.description"
+                                                    rows="2"
+                                                    placeholder="{{ __('ui.content_about_feature_description_placeholder') }}"
+                                                    class="w-full bg-[#111111] border-2 border-[#333333] rounded-xl px-3 py-2 text-sm text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none resize-none"
+                                                ></textarea>
+                                            </div>
+                                            <div class="flex flex-col gap-2">
+                                                <x-app.components.loading-button
+                                                    wire-target="saveFeature"
+                                                    x-on:click="Alpine.store('aboutFeatureEditing').openIconDropdown = false"
+                                                    wire:click="saveFeature({{ $id }}, document.querySelector('input[data-feature-icon=&quot;{{ $index }}&quot;]')?.value || 'list-checks')"
+                                                    class="h-8 w-8 rounded-lg text-[#666666] hover:text-green-500 hover:bg-[#111111] transition-colors"
+                                                >
                                                     <x-lucide-save class="w-4 h-4" />
-                                                </span>
-                                                <span wire:loading wire:target="saveFeature">
-                                                    <x-lucide-loader-2 class="w-4 h-4 animate-spin" />
-                                                </span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                wire:click="deleteFeature({{ $id }})"
-                                                wire:confirm="{{ __('ui.admins_delete_confirm') }}"
-                                                class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-red-500 hover:bg-[#111111] transition-colors"
-                                            >
-                                                <x-lucide-trash-2 class="w-4 h-4" />
-                                            </button>
+                                                </x-app.components.loading-button>
+                                                <button
+                                                    type="button"
+                                                    x-on:click="closeAboutFeatureIconDropdown(true)"
+                                                    class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-[#F97316] hover:bg-[#111111] transition-colors"
+                                                    title="{{ __('ui.admins_cancel') }}"
+                                                >
+                                                    <x-lucide-x class="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div class="flex gap-3" x-show="Alpine.store('aboutFeatureEditing')?.id !== {{ $id }}" x-cloak>
+                                            <div class="flex items-start pt-2">
+                                                <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
+                                            </div>
+                                            @php
+                                                $allowedIconsList = array_keys(array_filter($this->iconsConfig, fn ($k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
+                                                $defaultIcon = $this->iconsConfig['default'] ?? 'list-checks';
+                                                $featIcon = $feature['icon'] ?? $defaultIcon;
+                                                if ($featIcon === 'default' || !in_array($featIcon, $allowedIconsList, true)) {
+                                                    $featIcon = $defaultIcon;
+                                                }
+                                            @endphp
+                                            <div class="w-8 h-8 rounded-lg bg-[#333333] flex items-center justify-center shrink-0 text-[#F97316]" id="about-feature-collapsed-icon-{{ $id }}">
+                                                <x-dynamic-component :component="'lucide-' . $featIcon" class="w-4 h-4" />
+                                            </div>
+                                            <div class="flex-1 space-y-1 min-w-0">
+                                                <h5 class="text-sm font-semibold text-white">{{ $feature['title'] ?: '—' }}</h5>
+                                                <p class="text-sm text-[#999999]">{{ $feature['description'] ?: '—' }}</p>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    x-on:click="Alpine.store('aboutFeatureEditing').id = {{ $id }}; Alpine.store('aboutFeatureEditing').index = {{ $index }}; Alpine.store('aboutFeatureEditing').editingIcon = '{{ addslashes($feature['icon'] ?? 'list-checks') }}'"
+                                                    class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-[#F97316] hover:bg-[#111111] transition-colors"
+                                                >
+                                                    <x-lucide-pencil class="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    wire:click="deleteFeature({{ $id }})"
+                                                    wire:confirm="{{ __('ui.admins_delete_confirm') }}"
+                                                    class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-red-500 hover:bg-[#111111] transition-colors"
+                                                >
+                                                    <x-lucide-trash-2 class="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                @else
-                                    <div class="flex gap-3">
-                                        <div class="flex items-start pt-2">
-                                            <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
-                                        </div>
-                                        @php
-                                            $iconsList = config('icons', ['default' => 'list-checks', 'list-checks' => 'List checks']);
-                                            $allowedIconsList = array_keys(array_filter($iconsList, fn ($v, $k) => $k !== 'default', ARRAY_FILTER_USE_KEY));
-                                            $defaultIcon = $iconsList['default'] ?? 'list-checks';
-                                            $featIcon = $feature['icon'] ?? $defaultIcon;
-                                            if ($featIcon === 'default' || !in_array($featIcon, $allowedIconsList, true)) {
-                                                $featIcon = $defaultIcon;
-                                            }
-                                        @endphp
-                                        <div class="w-8 h-8 rounded-lg bg-[#333333] flex items-center justify-center shrink-0 text-[#F97316]">
-                                            <x-dynamic-component :component="'lucide-' . $featIcon" class="w-4 h-4" />
-                                        </div>
-                                        <div class="flex-1 space-y-1 min-w-0">
-                                            <h5 class="text-sm font-semibold text-white">{{ $feature['title'] ?: '—' }}</h5>
-                                            <p class="text-sm text-[#999999]">{{ $feature['description'] ?: '—' }}</p>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button
-                                                type="button"
-                                                wire:click="editFeature({{ $id }})"
-                                                class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-[#F97316] hover:bg-[#111111] transition-colors"
-                                            >
-                                                <x-lucide-pencil class="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                wire:click="deleteFeature({{ $id }})"
-                                                wire:confirm="{{ __('ui.admins_delete_confirm') }}"
-                                                class="h-8 w-8 flex items-center justify-center rounded-lg text-[#666666] hover:text-red-500 hover:bg-[#111111] transition-colors"
-                                            >
-                                                <x-lucide-trash-2 class="w-4 h-4" />
-                                            </button>
-                                        </div>
                                     </div>
-                                @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                        <x-about-feature-icon-dropdown :icons="$this->iconsConfig" />
                     @endif
                 </div>
             </div>

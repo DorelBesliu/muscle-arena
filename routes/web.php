@@ -47,6 +47,32 @@ Volt::route('content/about', 'pages.site-content.about-project')
     ->middleware(['auth'])
     ->name('content.about');
 
+Volt::route('content/roadmap', 'pages.site-content.roadmap')
+    ->middleware(['auth'])
+    ->name('content.roadmap');
+
+Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Request $request) {
+    $iconsConfig = config('icons', []);
+    // Etichetele iconițelor în limba setată în profil (nu din query)
+    $locale = $request->user()?->locale ?? config('locales.default', 'ro');
+
+    app('log')->info('locale', ['locale' => $locale]);
+
+    $icons = [];
+    foreach ($iconsConfig as $key => $defaultLabel) {
+        if ($key === 'default') continue;
+
+        $label = __('icons.' . $key);
+        if ($label === 'icons.' . $key) {
+            $label = $defaultLabel;
+        }
+        $icons[$key] = $label;
+    }
+    return response()->view('components.about-feature-icon-list-fragment', [
+        'icons' => $icons,
+    ]);
+})->middleware(['auth'])->name('content.about.icon-dropdown-fragment');
+
 Route::get('clients/export', function (\Illuminate\Http\Request $request) {
     $query = \App\Models\Member::query();
     $search = $request->string('q')->trim()->toString();

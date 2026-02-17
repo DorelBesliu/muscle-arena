@@ -81,19 +81,13 @@ $updatePassword = function () {
 
     <form wire:submit="updatePassword" class="flex items-center justify-end gap-3 mt-4">
         @csrf
-        <button
+        <x-app.components.loading-button
             type="submit"
-            wire:loading.attr="disabled"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#F97316] hover:bg-[#ea580c] rounded-lg transition-colors disabled:opacity-70 disabled:cursor-wait min-w-[7rem] whitespace-nowrap"
+            wire-target="updatePassword"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#F97316] hover:bg-[#ea580c] rounded-lg transition-colors disabled:cursor-wait min-w-[7rem]"
         >
-            <span wire:loading.remove wire:target="updatePassword" class="inline-flex items-center gap-2">
-                <x-lucide-save class="w-4 h-4 shrink-0" />
-                {{ __('ui.profile_save') }}
-            </span>
-            <span wire:loading wire:target="updatePassword" class="inline-flex items-center gap-2">
-                <x-lucide-loader-2 class="w-4 h-4 shrink-0 animate-spin" />
-                {{ __('ui.profile_save') }}
-            </span>
-        </button>
+            <x-lucide-save class="w-4 h-4 shrink-0" />
+            <x-slot:label>{{ __('ui.profile_save') }}</x-slot:label>
+        </x-app.components.loading-button>
     </form>
 </div>
