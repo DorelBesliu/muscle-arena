@@ -584,8 +584,9 @@ if (isPublicLayout) {
 
             const updateActiveSection = () => {
                 const navHeight = 72;
-                const scrollPosition = window.scrollY + navHeight + 100;
-                let activeId = 'hero';
+                // Trigger line: ~100px below nav; active section = whose center is closest to this line (same for all items including Contact)
+                const triggerLine = window.scrollY + navHeight + 100;
+                let activeId = store.activeSection || 'hero';
                 let minDistance = Infinity;
 
                 ids.forEach((id) => {
@@ -593,8 +594,12 @@ if (isPublicLayout) {
                     if (!el) return;
                     const rect = el.getBoundingClientRect();
                     const elementTop = rect.top + window.scrollY;
-                    const distance = Math.abs(elementTop - scrollPosition);
-                    if (rect.top <= navHeight + 100 && rect.bottom > navHeight && distance < minDistance) {
+                    const sectionMid = elementTop + rect.height / 2;
+                    const hasReached = elementTop <= triggerLine;
+                    const stillVisible = rect.bottom > navHeight;
+                    if (!hasReached || !stillVisible) return;
+                    const distance = Math.abs(sectionMid - triggerLine);
+                    if (distance < minDistance) {
                         minDistance = distance;
                         activeId = id;
                     }

@@ -51,6 +51,10 @@ Volt::route('content/roadmap', 'pages.site-content.roadmap')
     ->middleware(['auth'])
     ->name('content.roadmap');
 
+Volt::route('content/contact', 'pages.site-content.contact')
+    ->middleware(['auth'])
+    ->name('content.contact');
+
 Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Request $request) {
     $iconsConfig = config('icons', []);
     // Etichetele iconițelor în limba setată în profil (nu din query)

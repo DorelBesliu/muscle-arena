@@ -530,10 +530,19 @@
     </section>
     {{-- End Timeline Section --}}
 
-    {{-- Start Contact Section --}}
+    {{-- Start Contact Section (date din Conținut site → Contacte) --}}
+    @php
+        $contactData = \App\Models\SiteContent::get('contact_' . $locale);
+        $contactCards = is_array($contactData) && isset($contactData['cards']) && is_array($contactData['cards'])
+            ? $contactData['cards']
+            : [];
+        $contactPhone = is_array($contactData) ? (string) ($contactData['phone'] ?? '') : '';
+        $contactEmail = is_array($contactData) ? (string) ($contactData['email'] ?? '') : '';
+        $useCards = count($contactCards) > 0;
+    @endphp
     <section id="contact" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]">
         <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto">
+            <div class="max-w-5xl mx-auto">
                 <div class="text-center mb-16">
                     <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
                         {{ __('ui.contactTitle') }}
@@ -543,47 +552,80 @@
                     </p>
                 </div>
 
-                <div class="grid md:grid-cols-2 gap-8">
-                    {{-- Phone --}}
-                    <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                                <x-lucide-phone class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                @if($useCards)
+                    <div class="grid md:grid-cols-2 gap-8">
+                        @foreach($contactCards as $card)
+                            @php
+                                $hasType = is_array($card) && isset($card['type']) && in_array($card['type'], ['phone', 'email'], true);
+                                $type = $hasType ? $card['type'] : null;
+                                $iconKey = isset($card['icon']) ? $card['icon'] : ($type === 'phone' ? 'phone' : 'mail');
+                                $title = $hasType ? ($type === 'phone' ? __('ui.contactPhone') : __('ui.contactEmail')) : (string) ($card['title'] ?? $card['label'] ?? '—');
+                                $description = is_array($card) ? (string) ($card['description'] ?? $card['value'] ?? '') : '';
+                                $isEmail = $type === 'email' || (!$hasType && $description !== '' && filter_var($description, FILTER_VALIDATE_EMAIL));
+                                $isPhone = $type === 'phone' || (!$hasType && $description !== '' && preg_match('/^[\d\s\+\-\(\)]+$/', trim($description)));
+                            @endphp
+                            <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                        @if($iconKey && preg_match('/^[a-z0-9\-]+$/i', $iconKey))
+                                            <x-dynamic-component :component="'lucide-' . $iconKey" class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                        @elseif($isEmail)
+                                            <x-lucide-mail class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                        @elseif($isPhone)
+                                            <x-lucide-phone class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                        @else
+                                            <x-lucide-map-pin class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                        @endif
+                                    </div>
+                                    <div class="flex flex-col min-w-0">
+                                        <h3 class="text-lg md:text-xl font-bold text-white mb-1">{{ $title }}</h3>
+                                        @if($type === 'email' && $description !== '')
+                                            <a href="mailto:{{ $description }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors break-all">{{ $description }}</a>
+                                        @elseif($type === 'phone' && $description !== '')
+                                            <a href="tel:{{ preg_replace('/\s+/', '', $description) }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">{{ $description }}</a>
+                                        @elseif($isEmail && $description !== '')
+                                            <a href="mailto:{{ $description }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors break-all">{{ $description }}</a>
+                                        @elseif($isPhone && $description !== '')
+                                            <a href="tel:{{ preg_replace('/\s+/', '', $description) }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">{{ $description }}</a>
+                                        @else
+                                            <p class="text-sm md:text-base text-[#CCCCCC]">{{ $description ?: '—' }}</p>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
-                                    {{ __('ui.contactPhone') }}
-                                </h3>
-                                <a
-                                    href="tel:{{ $contactPhone ?? '+37368097384' }}"
-                                    class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
-                                >
-                                    {{ $contactPhone ?? '+373 68 097 384' }}
-                                </a>
+                        @endforeach
+                    </div>
+                @else
+                    {{-- Fallback: phone + email (vechi) --}}
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                    <x-lucide-phone class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                </div>
+                                <div class="flex flex-col">
+                                    <h3 class="text-lg md:text-xl font-bold text-white mb-1">{{ __('ui.contactPhone') }}</h3>
+                                    <a href="tel:{{ $contactPhone ?: '+37368097384' }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
+                                        {{ $contactPhone ?: '+373 68 097 384' }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
+                                    <x-lucide-mail class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
+                                </div>
+                                <div class="flex flex-col">
+                                    <h3 class="text-lg md:text-xl font-bold text-white mb-1">{{ __('ui.contactEmail') }}</h3>
+                                    <a href="mailto:{{ $contactEmail ?: 'support@muscle-arena.md' }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
+                                        {{ $contactEmail ?: 'support@muscle-arena.md' }}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    {{-- Email --}}
-                    <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
-                                <x-lucide-mail class="w-5 h-5 md:w-6 md:h-6 text-[#F97316] group-hover:text-white transition-colors" />
-                            </div>
-                            <div class="flex flex-col">
-                                <h3 class="text-lg md:text-xl font-bold text-white mb-1">
-                                    Email
-                                </h3>
-                                <a
-                                    href="mailto:{{ $contactEmail ?? 'support@muscle-arena.md' }}"
-                                    class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors"
-                                >
-                                    {{ $contactEmail ?? 'support@muscle-arena.md' }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
 

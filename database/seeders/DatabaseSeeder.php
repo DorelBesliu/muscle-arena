@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             MemberSeeder::class,
             AboutProjectSeeder::class,
             PathToOpeningSeeder::class,
+            ContactSeeder::class,
         ]);
     }
 }

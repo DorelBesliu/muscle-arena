@@ -6,7 +6,8 @@
     $isAdministrators = request()->routeIs('administrators');
     $isContentAbout = request()->routeIs('content.about');
     $isContentRoadmap = request()->routeIs('content.roadmap');
-    $isContentActive = $isContentAbout || $isContentRoadmap;
+    $isContentContact = request()->routeIs('content.contact');
+    $isContentActive = $isContentAbout || $isContentRoadmap || $isContentContact;
     $isAdmin = auth()->user()?->role === 'admin';
 @endphp
 
@@ -99,6 +100,14 @@
                 >
                     <x-lucide-line-squiggle class="w-3.5 h-3.5 shrink-0" />
                     <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
+                </a>
+                <a
+                    href="{{ route('content.contact') }}"
+                    wire:navigate
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentContact ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                >
+                    <x-lucide-phone class="w-3.5 h-3.5 shrink-0" />
+                    <span class="font-medium text-xs">{{ __('ui.sidebar_content_contact') }}</span>
                 </a>
             </div>
         </div>
@@ -220,6 +229,15 @@
                         >
                             <x-lucide-line-squiggle class="w-3.5 h-3.5 shrink-0" />
                             <span class="font-medium text-xs">{{ __('ui.sidebar_content_roadmap') }}</span>
+                        </a>
+                        <a
+                            href="{{ route('content.contact') }}"
+                            wire:navigate
+                            @click="sidebarOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentContact ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                        >
+                            <x-lucide-phone class="w-3.5 h-3.5 shrink-0" />
+                            <span class="font-medium text-xs">{{ __('ui.sidebar_content_contact') }}</span>
                         </a>
                     </div>
                 </div>

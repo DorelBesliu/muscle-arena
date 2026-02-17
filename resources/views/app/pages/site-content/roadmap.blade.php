@@ -103,6 +103,27 @@ new #[Layout('layouts.app')] class extends Component
         $this->loadPhasesFromDb();
     }
 
+    public function reorderPhases(array $orderedIds): void
+    {
+        $orderedIds = array_values(array_filter(array_map('intval', $orderedIds)));
+        $byId = [];
+        foreach ($this->phases as $p) {
+            $byId[(int) ($p['id'] ?? 0)] = $p;
+        }
+        $newPhases = [];
+        foreach ($orderedIds as $i => $id) {
+            if (isset($byId[$id])) {
+                $byId[$id]['sort_order'] = $i;
+                $newPhases[] = $byId[$id];
+            }
+        }
+        $this->phases = $newPhases;
+        foreach ($this->phases as $i => $p) {
+            PagePathToOpeningStep::where('id', $p['id'])->update(['sort_order' => $i]);
+        }
+        $this->dispatch('toast', message: __('ui.admins_update_success'));
+    }
+
     private function loadPhasesFromDb(): void
     {
         $steps = PagePathToOpeningStep::with([
@@ -125,25 +146,26 @@ new #[Layout('layouts.app')] class extends Component
 
 <div class="min-h-screen bg-[#000000] text-white">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="space-y-6">
+        <div class="space-y-6 mb-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <x-app.components.content-editing-language-bar :content-locale="$contentLocale" route-name="content.roadmap" />
                 <x-app.components.content-view-on-site-button :content-locale="$contentLocale" hash="#timeline" />
             </div>
 
             {{-- Descriere --}}
-            <div class="bg-[#111111] border-2 border-[#333333] rounded-xl">
-                <div class="p-4 md:p-5">
-                    <div class="space-y-3">
-                        <div>
-                            <label for="roadmap-description" class="block text-sm font-medium text-[#CCCCCC] mb-1.5">{{ __('ui.content_roadmap_description') }}</label>
-                            <textarea
-                                id="roadmap-description"
-                                wire:model="roadmapDescription"
-                                rows="3"
-                                class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl px-3 py-2 text-sm text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors resize-none"
-                            ></textarea>
-                        </div>
+            <div class="w-full rounded-xl">
+                <div class="space-y-3">
+                    <div class="w-full">
+                        <label for="roadmap-description-editor" class="block text-sm font-medium text-[#CCCCCC] mb-1.5">{{ __('ui.content_roadmap_description') }}</label>
+                        @php
+                            $editorDescription = $roadmapDescription;
+                            if ($editorDescription !== '' && ! str_contains($editorDescription, '<')) {
+                                $paragraphs = array_filter(array_map('trim', explode("\n\n", $editorDescription)));
+                                $editorDescription = implode('', array_map(fn ($p) => '<p>' . e($p) . '</p>', $paragraphs));
+                            }
+                        @endphp
+                        <x-tiptap-editor wireProperty="roadmapDescription" :content="$editorDescription" class="w-full" />
+                    </div>
                         <div class="flex justify-end pt-2">
                             <x-app.components.loading-button
                                 wire-target="saveRoadmap"
@@ -172,13 +194,13 @@ new #[Layout('layouts.app')] class extends Component
                         <span>{{ __('ui.content_roadmap_add_phase') }}</span>
                     </button>
                 </div>
-                <div class="space-y-3">
+                <div id="roadmap-phases-sortable" class="space-y-3">
                     @forelse($phases as $index => $phase)
-                        <div class="bg-[#111111] border-2 border-[#333333] rounded-xl" wire:key="phase-{{ $phase['id'] }}">
+                        <div class="bg-[#111111] border-2 border-[#333333] rounded-xl roadmap-phase-sortable-item" wire:key="phase-{{ $phase['id'] }}" data-phase-id="{{ $phase['id'] }}">
                             <div class="p-3">
                                 @if($editingPhaseId === $phase['id'])
                                     <div class="flex gap-3">
-                                        <div class="flex items-start pt-2">
+                                        <div class="flex items-start pt-2 roadmap-phase-drag-handle cursor-grab active:cursor-grabbing" title="{{ __('ui.content_roadmap_drag_to_reorder') }}">
                                             <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
                                         </div>
                                         <div class="flex-1 space-y-2">
@@ -226,7 +248,7 @@ new #[Layout('layouts.app')] class extends Component
                                     </div>
                                 @else
                                     <div class="flex gap-3">
-                                        <div class="flex items-start pt-2">
+                                        <div class="flex items-start pt-2 roadmap-phase-drag-handle cursor-grab active:cursor-grabbing" title="{{ __('ui.content_roadmap_drag_to_reorder') }}">
                                             <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
                                         </div>
                                         <div class="flex-1 space-y-1 min-w-0">
@@ -272,3 +294,42 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var roadmapSortableInstance = null;
+    function initRoadmapPhasesSortable() {
+        var container = document.getElementById('roadmap-phases-sortable');
+        if (!container) return;
+        if (roadmapSortableInstance) {
+            roadmapSortableInstance.destroy();
+            roadmapSortableInstance = null;
+        }
+        roadmapSortableInstance = new Sortable(container, {
+            handle: '.roadmap-phase-drag-handle',
+            animation: 150,
+            ghostClass: 'opacity-50',
+            onEnd: function(evt) {
+                var items = container.querySelectorAll('.roadmap-phase-sortable-item');
+                var orderedIds = Array.from(items).map(function(el) { return parseInt(el.getAttribute('data-phase-id'), 10); });
+                var root = container.closest('[wire\\:id]');
+                if (root && typeof Livewire !== 'undefined') {
+                    var comp = Livewire.find(root.getAttribute('wire:id'));
+                    if (comp && typeof comp.reorderPhases === 'function') comp.reorderPhases(orderedIds);
+                }
+            }
+        });
+    }
+    initRoadmapPhasesSortable();
+    document.addEventListener('livewire:navigated', initRoadmapPhasesSortable);
+    if (typeof Livewire !== 'undefined' && Livewire.hook) {
+        Livewire.hook('morph.updated', function(payload) {
+            var el = payload && payload.el;
+            if (el && ((el.querySelector && el.querySelector('#roadmap-phases-sortable')) || el.id === 'roadmap-phases-sortable')) initRoadmapPhasesSortable();
+        });
+    }
+});
+</script>
+@endpush

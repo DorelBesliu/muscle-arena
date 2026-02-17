@@ -84,7 +84,10 @@ new #[Layout('layouts.app')] class extends Component
             $defaultIcon = 'list-checks';
         }
         $locales = config('locales.supported', ['ro', 'en', 'ru']);
-        $feature = PageAboutProjectFeature::create(['sort_order' => count($this->features), 'icon' => $defaultIcon]);
+
+        // Prepend: noua caracteristică la începutul listei (sort_order 0)
+        PageAboutProjectFeature::query()->increment('sort_order');
+        $feature = PageAboutProjectFeature::create(['sort_order' => 0, 'icon' => $defaultIcon]);
         foreach ($locales as $locale) {
             PageAboutProjectFeatureTranslation::create([
                 'page_about_project_feature_id' => $feature->id,
@@ -93,14 +96,18 @@ new #[Layout('layouts.app')] class extends Component
                 'description' => '',
             ]);
         }
-        $this->features[] = [
+        $newItem = [
             'id' => $feature->id,
             'title' => '',
             'description' => '',
-            'sort_order' => count($this->features),
+            'sort_order' => 0,
             'icon' => $defaultIcon,
         ];
-        $this->dispatch('feature-added', featureId: $feature->id, featureIndex: count($this->features) - 1, editingIcon: $defaultIcon);
+        foreach ($this->features as $i => $f) {
+            $this->features[$i]['sort_order'] = $i + 1;
+        }
+        $this->features = array_merge([$newItem], $this->features);
+        $this->dispatch('feature-added', featureId: $feature->id, featureIndex: 0, editingIcon: $defaultIcon);
     }
 
     public function saveFeature(int $id, ?string $icon = null): void
@@ -151,6 +158,33 @@ new #[Layout('layouts.app')] class extends Component
         $this->dispatch('toast', message: __('ui.admins_delete_success'));
     }
 
+    public function reorderFeatures(array $orderedIds): void
+    {
+        $orderedIds = array_values(array_filter(array_map('intval', $orderedIds)));
+        $byId = [];
+        foreach ($this->features as $f) {
+            $byId[(int) ($f['id'] ?? 0)] = $f;
+        }
+        $newFeatures = [];
+        foreach ($orderedIds as $i => $id) {
+            if (isset($byId[$id])) {
+                $byId[$id]['sort_order'] = $i;
+                $newFeatures[] = $byId[$id];
+            }
+        }
+        $this->features = $newFeatures;
+        $this->persistFeatureOrder();
+        $this->dispatch('toast', message: __('ui.admins_update_success'));
+    }
+
+    private function persistFeatureOrder(): void
+    {
+        foreach ($this->features as $i => $f) {
+            $this->features[$i]['sort_order'] = $i;
+            PageAboutProjectFeature::where('id', $f['id'])->update(['sort_order' => $i]);
+        }
+    }
+
     public function getHasAboutChangesProperty(): bool
     {
         $about = SiteContent::get('about_' . $this->contentLocale);
@@ -169,9 +203,9 @@ new #[Layout('layouts.app')] class extends Component
             </div>
 
             {{-- About block --}}
-            <div class="bg-[#111111] border-2 border-[#333333] rounded-xl p-4 md:p-5">
+            <div class="w-full rounded-xl">
                 <div class="space-y-3">
-                    <div>
+                    <div class="w-full">
                         <label for="about-description-editor" class="block text-sm font-medium text-[#CCCCCC] mb-1.5">{{ __('ui.content_about_description_label') }}</label>
                         @php
                             $editorDescription = $aboutDescription;
@@ -180,7 +214,7 @@ new #[Layout('layouts.app')] class extends Component
                                 $editorDescription = implode('', array_map(fn ($p) => '<p>' . e($p) . '</p>', $paragraphs));
                             }
                         @endphp
-                        <x-tiptap-editor wireProperty="aboutDescription" :content="$editorDescription" />
+                        <x-tiptap-editor wireProperty="aboutDescription" :content="$editorDescription" class="w-full" />
                     </div>
                     <div class="flex justify-end pt-2">
                         <x-app.components.loading-button
@@ -224,14 +258,16 @@ new #[Layout('layouts.app')] class extends Component
                             <p class="text-sm">{{ __('ui.content_about_features_empty') }}</p>
                         </div>
                     @else
+                        <div id="about-features-sortable" class="space-y-3">
                         @foreach($this->features as $index => $feature)
                             @php $id = $feature['id']; @endphp
-                            <div class="bg-[#111111] border-2 border-[#333333] rounded-xl" wire:key="feature-{{ $id }}">
+                            <div class="bg-[#111111] border-2 border-[#333333] rounded-xl about-feature-sortable-item" wire:key="feature-{{ $id }}" data-feature-id="{{ $id }}">
                                 <div class="p-3">
                                     <div class="relative" data-about-feature-dropdown-anchor data-feature-id="{{ $id }}">
+                                        <div>
                                     <template x-if="Alpine.store('aboutFeatureEditing')?.id === {{ $id }}">
                                         <div class="flex gap-3">
-                                            <div class="flex items-start pt-2">
+                                            <div class="flex items-start pt-2 about-feature-drag-handle cursor-grab active:cursor-grabbing" title="{{ __('ui.content_about_drag_to_reorder') }}">
                                                 <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
                                             </div>
                                             <div class="flex-1 space-y-2">
@@ -292,7 +328,7 @@ new #[Layout('layouts.app')] class extends Component
                                         </div>
                                     </template>
                                     <div class="flex gap-3" x-show="Alpine.store('aboutFeatureEditing')?.id !== {{ $id }}" x-cloak>
-                                            <div class="flex items-start pt-2">
+                                            <div class="flex items-start pt-2 about-feature-drag-handle cursor-grab active:cursor-grabbing" title="{{ __('ui.content_about_drag_to_reorder') }}">
                                                 <x-lucide-grip-vertical class="w-4 h-4 text-[#666666]" />
                                             </div>
                                             @php
@@ -328,11 +364,12 @@ new #[Layout('layouts.app')] class extends Component
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
+                        </div>
                         <x-about-feature-icon-dropdown :icons="$this->iconsConfig" />
                     @endif
                 </div>
@@ -340,3 +377,40 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let aboutSortableInstance = null;
+    function initAboutFeaturesSortable() {
+        const container = document.getElementById('about-features-sortable');
+        if (!container) return;
+        if (aboutSortableInstance) {
+            aboutSortableInstance.destroy();
+            aboutSortableInstance = null;
+        }
+        aboutSortableInstance = new Sortable(container, {
+            handle: '.about-feature-drag-handle',
+            animation: 150,
+            ghostClass: 'opacity-50',
+            onEnd: function(evt) {
+                const items = container.querySelectorAll('.about-feature-sortable-item');
+                const orderedIds = Array.from(items).map(function(el) { return parseInt(el.getAttribute('data-feature-id'), 10); });
+                const root = container.closest('[wire\\:id]');
+                if (root && typeof Livewire !== 'undefined') {
+                    const comp = Livewire.find(root.getAttribute('wire:id'));
+                    if (comp && typeof comp.reorderFeatures === 'function') comp.reorderFeatures(orderedIds);
+                }
+            }
+        });
+    }
+    initAboutFeaturesSortable();
+    document.addEventListener('livewire:navigated', initAboutFeaturesSortable);
+    Livewire.hook('morph.updated', ({ el }) => {
+        if (el.querySelector && el.querySelector('#about-features-sortable')) initAboutFeaturesSortable();
+        if (el.id === 'about-features-sortable') initAboutFeaturesSortable();
+    });
+});
+</script>
+@endpush
