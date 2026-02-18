@@ -15,10 +15,10 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => env('ADMIN_EMAIL')],
+            ['email' => config('app.admin.email')],
             [
                 'name' => 'Administrator',
-                'password' => Hash::make(env('ADMIN_PASSWORD')),
+                'password' => Hash::make(config('app.admin.password')),
                 'role' => 'admin',
             ]
         );
