@@ -1,153 +1,3 @@
-<?php
-
-use App\Models\User;
-use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-
-new #[Layout('layouts.app')] class extends Component
-{
-    public string $searchTerm = '';
-
-    public bool $isModalOpen = false;
-
-    public ?int $editingId = null;
-
-    public string $newName = '';
-
-    public string $newEmail = '';
-
-    public ?int $deleteConfirmId = null;
-
-    public function mount(): void
-    {
-        if (auth()->user()?->role !== 'admin') {
-            abort(403, 'Access denied.');
-        }
-    }
-
-    #[Computed]
-    public function administrators()
-    {
-        return User::query()
-            ->where('role', 'admin')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-
-    #[Computed]
-    public function filteredAdministrators()
-    {
-        $search = strtolower($this->searchTerm);
-        return $this->administrators->filter(function (User $admin) use ($search) {
-            if ($search === '') {
-                return true;
-            }
-            return str_contains(strtolower($admin->name), $search)
-                || str_contains(strtolower($admin->email), $search);
-        })->values();
-    }
-
-    public function openAddModal(): void
-    {
-        $this->newName = '';
-        $this->newEmail = '';
-        $this->editingId = null;
-        $this->isModalOpen = true;
-        $this->resetValidation();
-    }
-
-    public function openEditModal(int $id): void
-    {
-        $admin = User::where('id', $id)->where('role', 'admin')->firstOrFail();
-        $this->editingId = $id;
-        $this->newName = $admin->name;
-        $this->newEmail = $admin->email;
-        $this->isModalOpen = true;
-        $this->resetValidation();
-    }
-
-    public function saveAdministrator(): void
-    {
-        $rules = [
-            'newName' => 'required|string|max:255',
-            'newEmail' => 'required|email',
-        ];
-        $uniqueRule = $this->editingId
-            ? 'unique:users,email,' . $this->editingId
-            : 'unique:users,email';
-        $rules['newEmail'] .= '|' . $uniqueRule;
-
-        $this->validate($rules, [
-            'newName.required' => __('ui.admins_name_required'),
-            'newEmail.required' => __('ui.admins_email_required'),
-            'newEmail.email' => __('ui.admins_email_invalid'),
-            'newEmail.unique' => __('ui.admins_email_exists'),
-        ]);
-
-        if ($this->editingId) {
-            User::where('id', $this->editingId)->where('role', 'admin')->update([
-                'name' => $this->newName,
-                'email' => $this->newEmail,
-            ]);
-            $this->dispatch('toast', message: __('ui.admins_update_success'));
-        } else {
-            User::create([
-                'name' => $this->newName,
-                'email' => $this->newEmail,
-                'password' => Hash::make(Str::random(32)),
-                'role' => 'admin',
-            ]);
-            $this->dispatch('toast', message: __('ui.admins_add_success'));
-        }
-
-        $this->newName = '';
-        $this->newEmail = '';
-        $this->editingId = null;
-        $this->isModalOpen = false;
-        $this->dispatch('$refresh');
-    }
-
-    public function cancelModal(): void
-    {
-        $this->isModalOpen = false;
-        $this->newName = '';
-        $this->newEmail = '';
-        $this->editingId = null;
-        $this->resetValidation();
-    }
-
-    public function confirmDelete(int $id): void
-    {
-        if ($id === auth()->id()) {
-            return;
-        }
-        $this->deleteConfirmId = $id;
-    }
-
-    public function deleteAdministrator(): void
-    {
-        if ($this->deleteConfirmId === null) {
-            return;
-        }
-        if ($this->deleteConfirmId === auth()->id()) {
-            $this->deleteConfirmId = null;
-            return;
-        }
-        User::where('id', $this->deleteConfirmId)->where('role', 'admin')->delete();
-        $this->deleteConfirmId = null;
-        $this->dispatch('$refresh');
-        $this->dispatch('toast', message: __('ui.admins_delete_success'));
-    }
-
-    public function cancelDelete(): void
-    {
-        $this->deleteConfirmId = null;
-    }
-}; ?>
-
 <div class="min-h-screen bg-[#000000] text-white">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="space-y-4">
@@ -282,6 +132,26 @@ new #[Layout('layouts.app')] class extends Component
                     <input id="admin-email" type="email" wire:model="newEmail" placeholder="{{ __('ui.admins_email_placeholder') }}"
                         class="w-full h-10 px-3 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white placeholder-[#666666] focus:outline-none" />
                     @error('newEmail')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="admin-password" class="block text-sm font-medium text-[#CCCCCC] mb-1">
+                        {{ $editingId ? __('ui.admins_temp_password_placeholder_edit') : __('ui.admins_temp_password') }}
+                    </label>
+                    <input id="admin-password" type="password" wire:model="newPassword"
+                        placeholder="{{ $editingId ? __('ui.admins_temp_password_placeholder_edit') : __('ui.admins_temp_password_placeholder') }}"
+                        class="w-full h-10 px-3 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white placeholder-[#666666] focus:outline-none" />
+                    @error('newPassword')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="admin-password-confirm" class="block text-sm font-medium text-[#CCCCCC] mb-1">{{ __('ui.admins_temp_password_confirm') }}</label>
+                    <input id="admin-password-confirm" type="password" wire:model="newPassword_confirmation"
+                        placeholder="{{ __('ui.admins_temp_password_confirm_placeholder') }}"
+                        class="w-full h-10 px-3 bg-[#000000] border-2 border-[#333333] rounded-xl text-sm text-white placeholder-[#666666] focus:outline-none" />
+                    @error('newPassword_confirmation')
                         <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
                     @enderror
                 </div>

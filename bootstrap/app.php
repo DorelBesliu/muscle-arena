@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn (Request $request) => route('signin', ['locale' => app()->getLocale()]));
         $middleware->web(append: [SetLocale::class]);
+        $middleware->alias([
+            'ensure.password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

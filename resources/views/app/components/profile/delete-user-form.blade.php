@@ -1,31 +1,3 @@
-<?php
-
-use App\Livewire\Actions\Logout;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
-
-use function Livewire\Volt\rules;
-use function Livewire\Volt\state;
-
-state(['password' => '', 'showModal' => false]);
-
-rules(['password' => ['required', 'string', 'current_password']]);
-
-$deleteUser = function (Logout $logout) {
-    try {
-        $this->validate();
-    } catch (ValidationException $e) {
-        $this->showModal = true;
-        throw $e;
-    }
-
-    tap(Auth::user(), $logout(...))->delete();
-
-    $this->redirect('/', navigate: true);
-};
-
-?>
-
 <div>
     <button
         type="button"

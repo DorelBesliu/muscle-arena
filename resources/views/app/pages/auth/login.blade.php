@@ -1,12 +1,3 @@
-<?php
-
-use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
-
-new #[Layout('layouts.public')] class extends Component
-{
-}; ?>
-
 <div>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />

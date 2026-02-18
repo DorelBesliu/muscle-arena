@@ -44,7 +44,7 @@ $maxWidthClass = match($maxWidth) {
             {{ $slot }}
 
             @if(isset($footer))
-                <div class="flex justify-end gap-2 mt-6">{{ $footer }}</div>
+                <div class="flex justify-between items-center gap-2 mt-6">{{ $footer }}</div>
             @endif
         </div>
     </div>

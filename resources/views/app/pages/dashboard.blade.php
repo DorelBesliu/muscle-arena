@@ -1,18 +1,3 @@
-<?php
-
-use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
-
-new #[Layout('layouts.app')] class extends Component
-{
-    public function getTotalUsersProperty(): int
-    {
-        // TODO: Replace with actual database query
-        // Example: return User::count();
-        return 0;
-    }
-}; ?>
-
 <div class="min-h-screen bg-[#000000] text-white">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="space-y-5">

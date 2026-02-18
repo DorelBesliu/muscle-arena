@@ -1,8 +1,17 @@
 <?php
 
 use App\Http\Middleware\SetLocale;
+use App\Livewire\Administrators;
+use App\Livewire\Auth\ForceChangePassword;
+use App\Livewire\Clients;
+use App\Livewire\Dashboard;
+use App\Livewire\Profile;
+use App\Livewire\SiteContent\AboutProject;
+use App\Livewire\SiteContent\ContactContent;
+use App\Livewire\SiteContent\PrivacyContent;
+use App\Livewire\SiteContent\RoadmapContent;
+use App\Livewire\SiteContent\TermsContent;
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
 
 // Redirect root to default locale (SEO: one canonical home URL)
 Route::redirect('/', '/'.config('locales.default', 'ro'), 302);
@@ -31,36 +40,40 @@ Route::get('/{locale}/signin', fn () => view('signin'))
     ->middleware([SetLocale::class, 'guest'])
     ->name('signin');
 
-Volt::route('dashboard', 'pages.dashboard')
-    ->middleware(['auth', 'verified'])
+Route::get('password/change', ForceChangePassword::class)
+    ->middleware(['auth'])
+    ->name('password.change');
+
+Route::get('dashboard', Dashboard::class)
+    ->middleware(['auth', 'verified', 'ensure.password.changed'])
     ->name('dashboard');
 
-Volt::route('clients', 'pages.clients')
-    ->middleware(['auth'])
+Route::get('clients', Clients::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('clients');
 
-Volt::route('administrators', 'pages.administrators')
-    ->middleware(['auth'])
+Route::get('administrators', Administrators::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('administrators');
 
-Volt::route('content/about', 'pages.site-content.about-project')
-    ->middleware(['auth'])
+Route::get('content/about', AboutProject::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.about');
 
-Volt::route('content/roadmap', 'pages.site-content.roadmap')
-    ->middleware(['auth'])
+Route::get('content/roadmap', RoadmapContent::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.roadmap');
 
-Volt::route('content/contact', 'pages.site-content.contact')
-    ->middleware(['auth'])
+Route::get('content/contact', ContactContent::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.contact');
 
-Volt::route('content/privacy', 'pages.site-content.privacy')
-    ->middleware(['auth'])
+Route::get('content/privacy', PrivacyContent::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.privacy');
 
-Volt::route('content/terms', 'pages.site-content.terms')
-    ->middleware(['auth'])
+Route::get('content/terms', TermsContent::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.terms');
 
 Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Request $request) {
@@ -83,7 +96,7 @@ Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Re
     return response()->view('components.about-feature-icon-list-fragment', [
         'icons' => $icons,
     ]);
-})->middleware(['auth'])->name('content.about.icon-dropdown-fragment');
+})->middleware(['auth', 'ensure.password.changed'])->name('content.about.icon-dropdown-fragment');
 
 Route::get('clients/export', function (\Illuminate\Http\Request $request) {
     $query = \App\Models\Member::query();
@@ -125,15 +138,15 @@ Route::get('clients/export', function (\Illuminate\Http\Request $request) {
         'members-' . now()->format('Y-m-d') . '.csv',
         ['Content-Type' => 'text/csv; charset=UTF-8']
     );
-})->middleware(['auth'])->name('clients.export');
+})->middleware(['auth', 'ensure.password.changed'])->name('clients.export');
 
-Volt::route('profile', 'pages.profile')
-    ->middleware(['auth'])
+Route::get('profile', Profile::class)
+    ->middleware(['auth', 'ensure.password.changed'])
     ->name('profile');
 
 Route::post('/user/locale', function (\Illuminate\Http\Request $request, \App\Actions\UpdateUserLocale $updateUserLocale) {
     $updateUserLocale(auth()->user(), $request);
     return redirect()->back();
-})->middleware(['auth', 'web'])->name('user.locale.update');
+})->middleware(['auth', 'web', 'ensure.password.changed'])->name('user.locale.update');
 
 require __DIR__.'/auth.php';
