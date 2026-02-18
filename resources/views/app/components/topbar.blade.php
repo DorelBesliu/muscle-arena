@@ -28,6 +28,12 @@ new class extends Component
         if (request()->routeIs('content.contact')) {
             return __('ui.sidebar_content_contact');
         }
+        if (request()->routeIs('content.privacy')) {
+            return __('ui.sidebar_privacy');
+        }
+        if (request()->routeIs('content.terms')) {
+            return __('ui.sidebar_terms');
+        }
         if (request()->routeIs('profile')) {
             return __('Profile');
         }

@@ -7,7 +7,9 @@
     $isContentAbout = request()->routeIs('content.about');
     $isContentRoadmap = request()->routeIs('content.roadmap');
     $isContentContact = request()->routeIs('content.contact');
-    $isContentActive = $isContentAbout || $isContentRoadmap || $isContentContact;
+    $isContentPrivacy = request()->routeIs('content.privacy');
+    $isContentTerms = request()->routeIs('content.terms');
+    $isContentActive = $isContentAbout || $isContentRoadmap || $isContentContact || $isContentPrivacy || $isContentTerms;
     $isAdmin = auth()->user()?->role === 'admin';
 @endphp
 
@@ -108,6 +110,22 @@
                 >
                     <x-lucide-phone class="w-3.5 h-3.5 shrink-0" />
                     <span class="font-medium text-xs">{{ __('ui.sidebar_content_contact') }}</span>
+                </a>
+                <a
+                    href="{{ route('content.privacy') }}"
+                    wire:navigate
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentPrivacy ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                >
+                    <x-lucide-shield-check class="w-3.5 h-3.5 shrink-0" />
+                    <span class="font-medium text-xs">{{ __('ui.sidebar_privacy') }}</span>
+                </a>
+                <a
+                    href="{{ route('content.terms') }}"
+                    wire:navigate
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentTerms ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                >
+                    <x-lucide-file-text class="w-3.5 h-3.5 shrink-0" />
+                    <span class="font-medium text-xs">{{ __('ui.sidebar_terms') }}</span>
                 </a>
             </div>
         </div>
@@ -238,6 +256,24 @@
                         >
                             <x-lucide-phone class="w-3.5 h-3.5 shrink-0" />
                             <span class="font-medium text-xs">{{ __('ui.sidebar_content_contact') }}</span>
+                        </a>
+                        <a
+                            href="{{ route('content.privacy') }}"
+                            wire:navigate
+                            @click="sidebarOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentPrivacy ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                        >
+                            <x-lucide-shield-check class="w-3.5 h-3.5 shrink-0" />
+                            <span class="font-medium text-xs">{{ __('ui.sidebar_privacy') }}</span>
+                        </a>
+                        <a
+                            href="{{ route('content.terms') }}"
+                            wire:navigate
+                            @click="sidebarOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isContentTerms ? 'bg-[#333333] text-white' : 'text-[#CCCCCC] hover:bg-[#222222] hover:text-white' }}"
+                        >
+                            <x-lucide-file-text class="w-3.5 h-3.5 shrink-0" />
+                            <span class="font-medium text-xs">{{ __('ui.sidebar_terms') }}</span>
                         </a>
                     </div>
                 </div>

@@ -39,7 +39,7 @@
 
                     <p class="text-sm md:text-lg text-secondary leading-snug max-w-4xl mb-6">
                         {{ __('ui.hero_timeline_prefix') }}
-                        <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#timeline" class="text-[#F97316] hover:text-[#EF4444] font-medium underline underline-offset-2 transition-colors">{{ __('ui.menu_timeline') }}</a>.
+                        <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#timeline" class="text-[#F97316] hover:text-[#EF4444] font-medium underline underline-offset-2 transition-colors">{{ __('ui.hero_timeline_link') }}</a>.
                     </p>
 
                     <p class="text-sm md:text-lg text-[#CCCCCC] leading-snug max-w-3xl mb-3">
@@ -424,11 +424,11 @@
 
         <div class="container mx-auto px-4 relative z-10">
             <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-16">
-                    <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
+                <div class="text-center mb-10 md:mb-16">
+                    <h2 class="text-xl md:text-[36px] font-black text-white mb-4">
                         {{ __('ui.projectTimelineTitle') }}
                     </h2>
-                    <p class="text-base md:text-xl text-[#CCCCCC]">
+                    <p class="text-sm md:text-xl text-[#CCCCCC]">
                         {{ __('ui.projectTimelineDescription') }}
                     </p>
                 </div>
@@ -456,7 +456,7 @@
                     }
                 @endphp
                 <div class="max-w-4xl mx-auto">
-                    <div class="space-y-8">
+                    <div class="space-y-6 md:space-y-8">
                         @foreach ($timelineSteps as $index => $step)
                             @php
                                 $status = $step['status'] ?? 'upcoming';
@@ -488,35 +488,36 @@
                             <div class="relative">
                                 {{-- Timeline line --}}
                                 @if($index !== count($timelineSteps) - 1)
-                                    <div class="absolute left-6 top-14 w-0.5 h-full bg-[#333333]"></div>
+                                    <div class="absolute left-5 md:left-6 top-12 md:top-14 w-0.5 h-full bg-[#333333]"></div>
                                 @endif
 
-                                <div class="flex gap-6">
+                                <div class="flex gap-4 md:gap-6">
                                     {{-- Icon --}}
                                     <div class="flex-shrink-0">
-                                        <div class="w-12 h-12 rounded-full flex items-center justify-center {{ $iconClass }}">
+                                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center {{ $iconClass }}">
                                             @if($status === 'completed')
-                                                <x-lucide-check-circle-2 class="w-6 h-6" />
+                                                <x-lucide-check-circle-2 class="w-5 h-5 md:w-6 md:h-6" />
                                             @elseif($status === 'current')
-                                                <x-lucide-clock class="w-6 h-6" />
+                                                <x-lucide-clock class="w-5 h-5 md:w-6 md:h-6" />
                                             @else
-                                                <x-lucide-circle class="w-6 h-6" />
+                                                <x-lucide-circle class="w-5 h-5 md:w-6 md:h-6" />
                                             @endif
                                         </div>
                                     </div>
 
                                     {{-- Content --}}
-                                    <div class="flex-1 bg-[#111111] border border-[#333333] rounded-xl p-6 shadow-sm hover:border-[#F97316] transition-colors">
-                                        <div class="flex items-start justify-between gap-4 mb-2">
-                                            <h3 class="text-xl font-bold text-white">{{ $title }}</h3>
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
+                                    <div class="flex-1 bg-[#111111] border border-[#333333] rounded-xl p-4 md:p-6 shadow-sm hover:border-[#F97316] transition-colors">
+                                        <div class="flex items-start justify-between gap-2 md:gap-4 mb-2">
+                                            <h3 class="text-base md:text-xl font-bold text-white">{{ $title }}</h3>
+                                            {{-- Status doar pe desktop; pe mobile e deja vizibil din stânga (iconița) --}}
+                                            <span class="hidden md:inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
                                                 {{ $badgeText }}
                                             </span>
                                         </div>
                                         @if($date)
-                                        <p class="text-sm text-[#CCCCCC] mb-3">{{ $date }}</p>
+                                        <p class="text-xs md:text-sm text-[#CCCCCC] mb-2 md:mb-3">{{ $date }}</p>
                                         @endif
-                                        <div class="text-[#CCCCCC] leading-relaxed">
+                                        <div class="text-sm md:text-base text-[#CCCCCC] leading-relaxed">
                                             {!! nl2br(e($description)) !!}
                                         </div>
                                     </div>
@@ -543,7 +544,7 @@
     <section id="contact" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]">
         <div class="container mx-auto px-4">
             <div class="max-w-5xl mx-auto">
-                <div class="text-center mb-16">
+                <div class="text-center mb-8 md:mb-16">
                     <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
                         {{ __('ui.contactTitle') }}
                     </h2>
@@ -605,8 +606,8 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <h3 class="text-lg md:text-xl font-bold text-white mb-1">{{ __('ui.contactPhone') }}</h3>
-                                    <a href="tel:{{ $contactPhone ?: '+37368097384' }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
-                                        {{ $contactPhone ?: '+373 68 097 384' }}
+                                    <a href="tel:{{ $contactPhone }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
+                                        {{ $contactPhone }}
                                     </a>
                                 </div>
                             </div>
@@ -618,8 +619,8 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <h3 class="text-lg md:text-xl font-bold text-white mb-1">{{ __('ui.contactEmail') }}</h3>
-                                    <a href="mailto:{{ $contactEmail ?: 'support@muscle-arena.md' }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
-                                        {{ $contactEmail ?: 'support@muscle-arena.md' }}
+                                    <a href="mailto:{{ $contactEmail }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">
+                                        {{ $contactEmail }}
                                     </a>
                                 </div>
                             </div>

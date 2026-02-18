@@ -98,6 +98,7 @@ return [
     'hero_title_line2' => 'CREŞTEM ÎMPREUNĂ.',
     'hero_description' => 'Suntem o echipă de pasionați de fitness și antreprenori locali dedicați să aducem un centru de fitness accesibil, modern și confortabil.',
     'hero_timeline_prefix' => 'Mai jos poți vedea pașii de realizare a proiectului în secțiunea',
+    'hero_timeline_link' => 'drumul spre deschidere',
     'hero_proposal_intro' => 'Dacă ai vreo propunere, idee sau un feedback care ne poate ajuta să ne îmbunătățim.',
     'hero_image_alt' => 'Bărbat și femeie făcând exerciții cu kettlebell în sală.',
 

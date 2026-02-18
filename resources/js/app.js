@@ -388,10 +388,12 @@ if (isPublicLayout) {
     import('alpinejs').then(({ default: Alpine }) => {
         window.Alpine = Alpine;
 
+        const pathname = window.location.pathname;
+        const isHomePage = /^\/(ro|en|ru)\/?$/.test(pathname);
         Alpine.store('public', {
             mobileMenuOpen: false,
             langOpen: false,
-            activeSection: 'hero',
+            activeSection: isHomePage ? 'hero' : '',
         });
 
         Alpine.store('gym3d', {
@@ -584,26 +586,42 @@ if (isPublicLayout) {
 
             const updateActiveSection = () => {
                 const navHeight = 72;
-                // Trigger line: ~100px below nav; active section = whose center is closest to this line (same for all items including Contact)
                 const triggerLine = window.scrollY + navHeight + 100;
-                let activeId = store.activeSection || 'hero';
-                let minDistance = Infinity;
+                const viewportTop = window.scrollY + navHeight;
+                const viewportBottom = window.scrollY + window.innerHeight;
+                let activeId = 'hero';
 
-                ids.forEach((id) => {
+                // Hero, about, timeline: active = section that contains the trigger line
+                const sectionIds = ['hero', 'about', 'timeline'];
+                for (let i = 0; i < sectionIds.length; i++) {
+                    const id = sectionIds[i];
                     const el = document.getElementById(id);
-                    if (!el) return;
+                    if (!el) continue;
                     const rect = el.getBoundingClientRect();
                     const elementTop = rect.top + window.scrollY;
-                    const sectionMid = elementTop + rect.height / 2;
-                    const hasReached = elementTop <= triggerLine;
-                    const stillVisible = rect.bottom > navHeight;
-                    if (!hasReached || !stillVisible) return;
-                    const distance = Math.abs(sectionMid - triggerLine);
-                    if (distance < minDistance) {
-                        minDistance = distance;
+                    const elementBottom = elementTop + rect.height;
+                    if (triggerLine >= elementTop && triggerLine <= elementBottom) {
                         activeId = id;
+                        break;
                     }
-                });
+                    if (triggerLine < elementTop) break;
+                    activeId = id;
+                }
+
+                // Contact: active when at least 100px of the section is visible in viewport (below nav)
+                const contactEl = document.getElementById('contact');
+                if (contactEl) {
+                    const rect = contactEl.getBoundingClientRect();
+                    const contactTop = rect.top + window.scrollY;
+                    const contactBottom = contactTop + rect.height;
+                    const visibleTop = Math.max(contactTop, viewportTop);
+                    const visibleBottom = Math.min(contactBottom, viewportBottom);
+                    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+                    if (visibleHeight >= 200) {
+                        activeId = 'contact';
+                    }
+                }
+
                 store.activeSection = activeId;
             };
 
@@ -640,7 +658,7 @@ if (isPublicLayout) {
 
         function revealBody() {
             if (document.body) document.body.removeAttribute('x-cloak');
-            observeSections();
+            if (isHomePage) observeSections();
             initGym3dIfPresent();
         }
         if (document.readyState === 'loading') {

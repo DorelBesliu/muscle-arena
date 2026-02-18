@@ -55,6 +55,14 @@ Volt::route('content/contact', 'pages.site-content.contact')
     ->middleware(['auth'])
     ->name('content.contact');
 
+Volt::route('content/privacy', 'pages.site-content.privacy')
+    ->middleware(['auth'])
+    ->name('content.privacy');
+
+Volt::route('content/terms', 'pages.site-content.terms')
+    ->middleware(['auth'])
+    ->name('content.terms');
+
 Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Request $request) {
     $iconsConfig = config('icons', []);
     // Etichetele iconițelor în limba setată în profil (nu din query)

@@ -98,6 +98,7 @@ return [
     'hero_title_line2' => 'GROW TOGETHER.',
     'hero_description' => 'We are a team of fitness enthusiasts and local entrepreneurs dedicated to bringing an accessible, modern and comfortable fitness centre.',
     'hero_timeline_prefix' => 'Below you can see the project steps in the section',
+    'hero_timeline_link' => 'path to opening',
     'hero_proposal_intro' => 'If you have a proposal, idea or feedback we could improve on.',
     'hero_image_alt' => 'Man and woman doing kettlebell exercises in the gym.',
 

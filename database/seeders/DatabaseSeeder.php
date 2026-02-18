@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             AboutProjectSeeder::class,
             PathToOpeningSeeder::class,
             ContactSeeder::class,
+            PrivacyContentSeeder::class,
+            TermsContentSeeder::class,
         ]);
     }
 }
