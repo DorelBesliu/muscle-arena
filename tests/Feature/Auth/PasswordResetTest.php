@@ -17,7 +17,8 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_screen_can_be_rendered(): void
     {
-        $response = $this->get('/forgot-password');
+        $locale = config('locales.default', 'ro');
+        $response = $this->get('/'.$locale.'/forgot-password');
 
         $response->assertOk();
     }
@@ -73,7 +74,7 @@ class PasswordResetTest extends TestCase
             $component->call('resetPassword');
 
             $component
-                ->assertRedirect('/login')
+                ->assertRedirect(route('signin', ['locale' => config('locales.default', 'ro')]))
                 ->assertHasNoErrors();
 
             return true;

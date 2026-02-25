@@ -1,51 +1,46 @@
-<div>
-    <form wire:submit="register">
-        @csrf
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+<main class="min-h-[calc(100vh-72px)] pt-[72px] flex flex-col items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="bg-[#111111] border-2 border-[#333333] rounded-3xl p-8 md:p-10">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-black text-white mb-2">{{ __('ui.register_title') }}</h1>
+                <p class="text-[#CCCCCC] mt-2">{{ __('ui.register_subtitle') }}</p>
+            </div>
+
+            <form action="{{ route('register.store') }}" method="POST" class="space-y-6" x-data="{ loading: false }" x-on:submit="loading = true">
+                @csrf
+                <div>
+                    <label for="name" class="block text-sm font-medium text-white mb-2">{{ __('ui.register_name') }}</label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                        class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors" />
+                    @error('name')<p class="mt-1 text-sm text-red-400">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-white mb-2">{{ __('ui.register_email') }}</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                        class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors" />
+                    @error('email')<p class="mt-1 text-sm text-red-400">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-white mb-2">{{ __('ui.register_password') }}</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password"
+                        class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors" />
+                    @error('password')<p class="mt-1 text-sm text-red-400">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-white mb-2">{{ __('ui.register_confirm') }}</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
+                        class="w-full bg-[#000000] border-2 border-[#333333] rounded-xl py-3 px-4 text-white placeholder-[#666666] focus:border-[#F97316] focus:outline-none transition-colors" />
+                </div>
+                <button type="submit" x-bind:disabled="loading"
+                    class="w-full inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EF4444] disabled:opacity-70 text-white font-bold py-4 rounded-xl transition-all shadow-xl">
+                    <span x-show="!loading">{{ __('ui.register_button') }}</span>
+                    <span x-show="loading" x-cloak><x-lucide-loader-2 class="w-6 h-6 animate-spin" /></span>
+                </button>
+            </form>
+
+            <p class="mt-6 text-center text-sm text-[#CCCCCC]">
+                <a href="{{ route('signin', ['locale' => app()->getLocale()]) }}" wire:navigate class="text-[#F97316] hover:text-[#EF4444]">{{ __('ui.register_already') }}</a>
+            </p>
         </div>
-
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}" wire:navigate>
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</div>
+    </div>
+</main>

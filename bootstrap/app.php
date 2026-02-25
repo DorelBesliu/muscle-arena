@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Http\Middleware\TrustHosts;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn (Request $request) => route('signin', ['locale' => app()->getLocale()]));
-        $middleware->web(append: [SetLocale::class]);
+        $middleware->web(append: [SetLocale::class, TrustHosts::class]);
         $middleware->alias([
             'ensure.password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
         ]);

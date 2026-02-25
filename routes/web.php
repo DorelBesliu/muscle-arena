@@ -16,6 +16,19 @@ use Illuminate\Support\Facades\Route;
 // Redirect root to default locale (SEO: one canonical home URL)
 Route::redirect('/', '/'.config('locales.default', 'ro'), 302);
 
+// Redirect Fortify-style auth URLs to locale-prefixed routes (POST /login, POST /forgot-password stay with Fortify)
+Route::get('login', function () {
+    $locale = session('locale') ?: app()->getLocale() ?: config('locales.default', 'ro');
+    $locale = in_array($locale, ['ro', 'en', 'ru'], true) ? $locale : config('locales.default', 'ro');
+    return redirect()->route('signin', ['locale' => $locale], 302);
+})->name('login')->middleware('guest');
+
+Route::get('forgot-password', function () {
+    $locale = session('locale') ?: app()->getLocale() ?: config('locales.default', 'ro');
+    $locale = in_array($locale, ['ro', 'en', 'ru'], true) ? $locale : config('locales.default', 'ro');
+    return redirect()->route('password.request', ['locale' => $locale], 302);
+})->middleware('guest');
+
 // Locale-prefixed home (SEO-friendly: /ro, /ru, /en)
 Route::get('/{locale}', fn () => view('home'))
     ->where('locale', 'ro|ru|en')
@@ -39,6 +52,12 @@ Route::get('/{locale}/signin', fn () => view('signin'))
     ->where('locale', 'ro|ru|en')
     ->middleware([SetLocale::class, 'guest'])
     ->name('signin');
+
+// Forgot password (locale-prefixed: /ro/forgot-password, /en/forgot-password, etc.)
+Route::get('/{locale}/forgot-password', \App\Livewire\Auth\ForgotPassword::class)
+    ->where('locale', 'ro|ru|en')
+    ->middleware([SetLocale::class, 'guest'])
+    ->name('password.request');
 
 Route::get('password/change', ForceChangePassword::class)
     ->middleware(['auth'])
@@ -76,69 +95,13 @@ Route::get('content/terms', TermsContent::class)
     ->middleware(['auth', 'ensure.password.changed'])
     ->name('content.terms');
 
-Route::get('content/about/icon-dropdown-fragment', function (\Illuminate\Http\Request $request) {
-    $iconsConfig = config('icons', []);
-    // Etichetele iconițelor în limba setată în profil (nu din query)
-    $locale = $request->user()?->locale ?? config('locales.default', 'ro');
+Route::get('content/about/icon-dropdown-fragment', \App\Http\Controllers\Content\AboutIconDropdownFragmentController::class)
+    ->middleware(['auth', 'ensure.password.changed'])
+    ->name('content.about.icon-dropdown-fragment');
 
-    app('log')->info('locale', ['locale' => $locale]);
-
-    $icons = [];
-    foreach ($iconsConfig as $key => $defaultLabel) {
-        if ($key === 'default') continue;
-
-        $label = __('icons.' . $key);
-        if ($label === 'icons.' . $key) {
-            $label = $defaultLabel;
-        }
-        $icons[$key] = $label;
-    }
-    return response()->view('components.about-feature-icon-list-fragment', [
-        'icons' => $icons,
-    ]);
-})->middleware(['auth', 'ensure.password.changed'])->name('content.about.icon-dropdown-fragment');
-
-Route::get('clients/export', function (\Illuminate\Http\Request $request) {
-    $query = \App\Models\Member::query();
-    $search = $request->string('q')->trim()->toString();
-    if ($search !== '') {
-        $searchLower = strtolower($search);
-        $query->where(function ($q) use ($searchLower, $search) {
-            $q->whereRaw('LOWER(first_name) LIKE ?', ['%' . $searchLower . '%'])
-                ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . $searchLower . '%'])
-                ->orWhereRaw('LOWER(email) LIKE ?', ['%' . $searchLower . '%'])
-                ->orWhere('phone', 'like', '%' . $search . '%');
-        });
-    }
-    $statusFilter = $request->string('status')->toString();
-    if (in_array($statusFilter, ['active', 'inactive'], true)) {
-        $query->where('status', $statusFilter);
-    }
-    $sortBy = $request->string('sort')->toString();
-    $sortDir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
-    $orderDir = $sortDir === 'asc' ? 'asc' : 'desc';
-    match ($sortBy) {
-        'name' => $query->orderBy('last_name', $orderDir)->orderBy('first_name', $orderDir),
-        'expiry' => $query->orderBy('subscription_expiry', $orderDir === 'asc' ? 'asc' : 'desc'),
-        default => $query->orderBy('created_at', $orderDir),
-    };
-    $members = $query->get();
-    $headers = ['Name', 'Email', 'Phone', 'Status', 'Registration Date', 'Subscription Expiry'];
-    $rows = $members->map(fn (\App\Models\Member $m) => [
-        $m->full_name,
-        $m->email,
-        $m->phone,
-        $m->status ?? 'active',
-        $m->created_at->format('Y-m-d'),
-        $m->subscription_expiry ? $m->subscription_expiry->format('Y-m-d') : '',
-    ]);
-    $csv = implode("\n", [implode(',', $headers), ...$rows->map(fn ($row) => implode(',', $row))]);
-    return response()->streamDownload(
-        fn () => print($csv),
-        'members-' . now()->format('Y-m-d') . '.csv',
-        ['Content-Type' => 'text/csv; charset=UTF-8']
-    );
-})->middleware(['auth', 'ensure.password.changed'])->name('clients.export');
+Route::get('clients/export', \App\Http\Controllers\Clients\ExportMembersController::class)
+    ->middleware(['auth', 'ensure.password.changed'])
+    ->name('clients.export');
 
 Route::get('profile', Profile::class)
     ->middleware(['auth', 'ensure.password.changed'])

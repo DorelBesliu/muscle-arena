@@ -104,7 +104,7 @@
                     </label>
                     @if (Route::has('password.request'))
                         <a
-                            href="{{ route('password.request') }}"
+                            href="{{ route('password.request', ['locale' => app()->getLocale()]) }}"
                             class="text-sm text-[#F97316] hover:text-[#EF4444] transition-colors"
                         >
                             {{ __('ui.sign_in_forgot_password') }}

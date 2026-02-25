@@ -135,7 +135,11 @@
             </div>
         </nav>
 
-        @yield('content')
+        @isset($slot)
+            {{ $slot }}
+        @else
+            @yield('content')
+        @endisset
 
         @stack('scripts')
     </body>

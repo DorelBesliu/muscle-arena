@@ -9,24 +9,12 @@ use Livewire\Component;
 
 class DeleteUserForm extends Component
 {
-    public string $password = '';
-
-    public bool $showModal = false;
-
-    public function rules(): array
-    {
-        return [
-            'password' => ['required', 'string', 'current_password'],
-        ];
-    }
-
     public function deleteUser(Logout $logout): void
     {
-        try {
-            $this->validate();
-        } catch (ValidationException $e) {
-            $this->showModal = true;
-            throw $e;
+        if (! Auth::user()->hasRecentlyConfirmedPassword()) {
+            throw ValidationException::withMessages([
+                'password' => [__('ui.confirm_password_title')],
+            ]);
         }
 
         tap(Auth::user(), $logout(...))->delete();

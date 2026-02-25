@@ -7,9 +7,9 @@ This directory contains modular JavaScript files for the 3D gym representation u
 - **`constants.js`** - Shared constants (dimensions, colors) used across all modules
 - **`floor.js`** - Main gym floor
 - **`walls.js`** - Gym walls with entrance door
-- **`reception.js`** - 1) Camera de înregistrare (registration)
-- **`hall.js`** - Hol între vestiare
-- **`vestiaries.js`** - 2) Vestiare cu hol între ele [Vestiar1] [Hol] [Vestiar2]
+- **`reception.js`** - 1) Registration room
+- **`hall.js`** - Hallway between locker rooms
+- **`vestiaries.js`** - 2) Locker rooms with a hallway between them [Vestiar1] [Hol] [Vestiar2]
 - **`bench.js`** - Vulcan TB43 workout bench with detailed geometry
 - **`carpet.js`** - Orange running track with meter markings
 - **`toilet.js`** - **NEW** Toilet/WC room with fixtures (toilet, sink, mirror)

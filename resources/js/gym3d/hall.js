@@ -1,5 +1,5 @@
 /**
- * 2b) Hol între vestiare (hall between vestiaries). Fills space between the two vestiaries.
+ * 2b) Hall between vestiaries (hall between vestiaries). Fills space between the two vestiaries.
  */
 import * as THREE from 'three';
 import { WIDTH, VESTIARY_HALL_START_Z, VESTIARY_HALL_END_Z, VESTIARY_WIDTH } from './constants.js';

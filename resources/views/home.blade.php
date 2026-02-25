@@ -386,7 +386,7 @@
             </div>
         </div>
 
-        {{-- Caracteristici (din admin) --}}
+        {{-- Features (from admin) --}}
         @if(count($aboutFeatures) > 0)
         <div class="container mx-auto px-4 mt-12">
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -432,7 +432,7 @@
                         {{ __('ui.projectTimelineDescription') }}
                     </p>
                 </div>
-                {{-- Timeline steps (din panela de administrare – Drumul spre deschidere) --}}
+                {{-- Timeline steps (from the admin panel – Road to opening) --}}
                 @php
                     $pathToOpeningSteps = \App\Models\PagePathToOpeningStep::with([
                         'translations' => fn ($q) => $q->where('locale', $locale),
@@ -509,7 +509,7 @@
                                     <div class="flex-1 bg-[#111111] border border-[#333333] rounded-xl p-4 md:p-6 shadow-sm hover:border-[#F97316] transition-colors">
                                         <div class="flex items-start justify-between gap-2 md:gap-4 mb-2">
                                             <h3 class="text-base md:text-xl font-bold text-white">{{ $title }}</h3>
-                                            {{-- Status doar pe desktop; pe mobile e deja vizibil din stânga (iconița) --}}
+                                            {{-- Status only on desktop; on mobile it is already visible on the left (icon) --}}
                                             <span class="hidden md:inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
                                                 {{ $badgeText }}
                                             </span>
@@ -531,7 +531,7 @@
     </section>
     {{-- End Timeline Section --}}
 
-    {{-- Start Contact Section (date din Conținut site → Contacte) --}}
+    {{-- Start Contact Section (data from Site Content → Contacts) --}}
     @php
         $contactData = \App\Models\SiteContent::get('contact_' . $locale);
         $contactCards = is_array($contactData) && isset($contactData['cards']) && is_array($contactData['cards'])
@@ -597,7 +597,6 @@
                         @endforeach
                     </div>
                 @else
-                    {{-- Fallback: phone + email (vechi) --}}
                     <div class="grid md:grid-cols-2 gap-8">
                         <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
                             <div class="flex items-center gap-3">

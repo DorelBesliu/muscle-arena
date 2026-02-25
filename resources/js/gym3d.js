@@ -352,7 +352,7 @@ export function initGym3d(container, options = {}) {
   const floorMesh = createFloor(scene);
   const { backWall, leftWall, rightWall, frontWall } = createWalls(scene);
 
-  // ---- 1) Camera de înregistrare  2) Vestiare + hol  3) Sala principală (usa de intrare în walls) ----
+  // ---- 1) Registration room  2) Vestiaries with hall between them  3) Main gym (entrance door in walls) ----
   const receptionGroup = createReception(scene);
   createHall(scene);
   const { boysVestiaryGroup, girlsVestiaryGroup } = createVestiaries(scene);

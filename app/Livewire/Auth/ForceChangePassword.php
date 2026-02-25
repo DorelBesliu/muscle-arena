@@ -2,53 +2,32 @@
 
 namespace App\Livewire\Auth;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 #[Layout('layouts.app')]
 class ForceChangePassword extends Component
 {
-    public string $current_password = '';
+    public $password = '';
+    public $password_confirmation = '';
 
-    public string $password = '';
-
-    public string $password_confirmation = '';
-
-    public function rules(): array
+    public function updatePassword()
     {
-        return [
-            'current_password' => ['required', 'string', 'current_password'],
-            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
-        ];
-    }
+        app('log')->info('Updating password', ['password' => $this->password, 'password_confirmation' => $this->password_confirmation]);
 
-    public function savePassword(): void
-    {
-        try {
-            $validated = $this->validate();
-        } catch (ValidationException $e) {
-            return;
-        }
-
-        Auth::user()->update([
-            'password' => Hash::make($validated['password']),
-            'must_change_password' => false,
+        $this->validate([
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $this->reset('current_password', 'password', 'password_confirmation');
-        $this->redirect(route('dashboard'), navigate: true);
-    }
+        $user = auth()->user();
 
-    public function logout(): void
-    {
-        Auth::guard('web')->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        $this->redirect(route('signin', ['locale' => app()->getLocale()]), navigate: true);
+        $user->password = Hash::make($this->password);
+        $user->must_change_password = false;
+        $user->save();
+
+        return redirect()->route('dashboard');
     }
 
     public function render()

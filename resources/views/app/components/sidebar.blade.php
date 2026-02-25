@@ -73,7 +73,7 @@
         </a>
         @endif
 
-        {{-- Conținut site – Expandable --}}
+        {{-- Site Content – Expandable --}}
         <div x-data="{ contentExpanded: {{ $isContentActive ? 'true' : 'false' }} }">
             <button
                 type="button"

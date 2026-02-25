@@ -137,7 +137,7 @@
                 </div>
                 <div>
                     <label for="admin-password" class="block text-sm font-medium text-[#CCCCCC] mb-1">
-                        {{ $editingId ? __('ui.admins_temp_password_placeholder_edit') : __('ui.admins_temp_password') }}
+                        {{ __('ui.admins_temp_password') }}
                     </label>
                     <input id="admin-password" type="password" wire:model="newPassword"
                         placeholder="{{ $editingId ? __('ui.admins_temp_password_placeholder_edit') : __('ui.admins_temp_password_placeholder') }}"
@@ -159,7 +159,7 @@
             <x-slot:footer>
                 <button type="button" wire:click="cancelModal"
                     class="h-9 px-4 rounded-xl border-2 border-[#333333] text-sm font-medium text-[#CCCCCC] hover:text-white">{{ __('ui.admins_cancel') }}</button>
-<x-app.components.loading-button
+            <x-app.components.loading-button
                 type="button"
                 wire-target="saveAdministrator"
                 wire:click="saveAdministrator"

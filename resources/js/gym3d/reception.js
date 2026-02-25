@@ -1,5 +1,5 @@
 /**
- * 1) Camera de înregistrare – first room (registration, pay abonament, wait for manager).
+ * 1) Registration room – first room (registration, pay abonament, wait for manager).
  * 10m width x 5m length, in front of vestiaries (no overlap).
  */
 import * as THREE from 'three';

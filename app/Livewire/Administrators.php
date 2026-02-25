@@ -87,7 +87,7 @@ class Administrators extends Component
             $data = ['name' => $this->newName, 'email' => $this->newEmail];
             if ($this->newPassword !== '') {
                 $data['password'] = Hash::make($this->newPassword);
-                $data['must_change_password'] = false;
+                $data['must_change_password'] = true;
             }
             User::where('id', $this->editingId)->where('role', 'admin')->update($data);
             $this->dispatch('toast', message: __('ui.admins_update_success'));
