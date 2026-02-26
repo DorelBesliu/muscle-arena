@@ -54,14 +54,10 @@ jobs:
             rm -rf storage/framework/sessions/*
             rm -rf bootstrap/cache/*.php
 
-            echo "=== Fix permissions ==="
-            chown -R bt:www-data storage bootstrap/cache
-            chmod -R 775 storage bootstrap/cache
-
             echo "=== Laravel clean ==="
-            sudo -u www-data php artisan optimize:clear
+            php artisan optimize:clear
 
             echo "=== Laravel config cache ==="
-            sudo -u www-data php artisan config:cache
+            php artisan config:cache
 
           EOF
