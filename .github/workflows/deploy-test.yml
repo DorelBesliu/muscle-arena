@@ -42,7 +42,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H -p 48221 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-       - name: Finalize on server
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -p 48221" \
+            --exclude=".git" \
+            --exclude=".env" \
+            --exclude="storage" \
+            --exclude="node_modules" \
+            --exclude="tests" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
+
+      - name: Finalize on server
         run: |
           ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
@@ -54,9 +66,13 @@ jobs:
             rm -rf storage/framework/sessions/*
             rm -f bootstrap/cache/*.php
 
+            echo "=== Fix permissions (safe fallback) ==="
+            chmod -R 775 storage bootstrap/cache || true
+
             echo "=== Laravel ==="
             umask 002
             php artisan optimize:clear
             php artisan config:cache
 
           EOF
+
