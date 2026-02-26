@@ -48,12 +48,13 @@ jobs:
             set -e
             cd /var/www/muscle-arena-test
 
+            echo "=== Force clean broken cache ==="
+            rm -f storage/framework/cache/facade-*.php
+            rm -f bootstrap/cache/*.php
+
+            echo "=== Laravel ==="
             umask 002
-
-            echo "=== Laravel clean ==="
             php artisan optimize:clear
-
-            echo "=== Laravel config cache ==="
             php artisan config:cache
 
           EOF
