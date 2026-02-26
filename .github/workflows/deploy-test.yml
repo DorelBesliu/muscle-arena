@@ -42,14 +42,16 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H -p 48221 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Finalize on server
+       - name: Finalize on server
         run: |
           ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd /var/www/muscle-arena-test
 
-            echo "=== Force clean broken cache ==="
-            rm -f storage/framework/cache/facade-*.php
+            echo "=== HARD CLEAN (before Laravel boots) ==="
+            rm -rf storage/framework/cache/*
+            rm -rf storage/framework/views/*
+            rm -rf storage/framework/sessions/*
             rm -f bootstrap/cache/*.php
 
             echo "=== Laravel ==="
