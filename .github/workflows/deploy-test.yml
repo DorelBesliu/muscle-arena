@@ -53,16 +53,3 @@ jobs:
             --exclude="tests" \
             ./ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
-
-      - name: Finalize on server
-        run: |
-          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            set -e
-            cd /var/www/muscle-arena-test
-
-            php artisan optimize:clear
-
-            sudo -u www-data php artisan config:cache
-            sudo -u www-data php artisan route:cache
-            sudo -u www-data php artisan view:cache
-          EOF
