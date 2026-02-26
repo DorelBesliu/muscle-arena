@@ -31,7 +31,7 @@
                     </div>
                 @else
                 <h1 class="text-4xl md:text-5xl font-bold text-white mb-8">{{ __('ui.terms_title') }}</h1>
-                
+
                 <h2 class="text-2xl md:text-3xl font-semibold text-white mt-8 mb-4">{{ __('ui.terms_section_1_title') }}</h2>
                 <p class="text-[#CCCCCC] text-base md:text-lg leading-relaxed mb-6">
                     {{ __('ui.terms_section_1_text') }}
@@ -104,7 +104,7 @@
                 <p class="text-sm text-[#CCCCCC]">
                     {{ __('ui.footerText') }}
                 </p>
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-6" x-data>
                     <a
                         href="{{ route('privacy', ['locale' => app()->getLocale()]) }}"
                         class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
@@ -117,6 +117,15 @@
                     >
                         {{ __('ui.termsConditions') }}
                     </a>
+                    @if(config('services.google_analytics.measurement_id'))
+                        <button
+                            type="button"
+                            @click="$store.cookieConsent.showBanner = true"
+                            class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
+                        >
+                            {{ __('ui.cookie_consent_settings') }}
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

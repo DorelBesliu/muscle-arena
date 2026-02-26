@@ -34,39 +34,22 @@ class TermsContentSeeder extends Seeder
 <h1>Termeni și Condiții</h1>
 
 <h2>1. Acceptarea Termenilor</h2>
-<p>Prin accesarea și utilizarea site-ului web MUSCLE ARENA, acceptați și sunteți de acord să fiți legați de termenii și prevederile acestui acord. Dacă nu sunteți de acord cu acești termeni, vă rugăm să nu utilizați site-ul nostru web.</p>
+<p>Prin accesarea site-ului MUSCLE ARENA, acceptați acești Termeni și Condiții. Dacă nu sunteți de acord, vă rugăm să nu utilizați site-ul.</p>
 
-<h2>2. Conturi de Utilizator</h2>
-<p>Când creați un cont, sunteți de acord să:</p>
-<ul>
-<li>Furnizați informații precise și complete</li>
-<li>Mențineți securitatea datelor de autentificare ale contului dvs.</li>
-<li>Acceptați responsabilitatea pentru toate activitățile din contul dvs.</li>
-<li>Ne notificați imediat despre orice utilizare neautorizată</li>
-</ul>
+<h2>2. Scopul site-ului</h2>
+<p>Site-ul are scop informativ și prezintă detalii despre proiectul MUSCLE ARENA. Informațiile publicate nu constituie o ofertă contractuală și pot fi modificate fără notificare prealabilă.</p>
 
-<h2>3. Cronologia Proiectului</h2>
-<p>Deși ne propunem să urmăm cronologia publicată, datele efective de finalizare pot varia din cauza:</p>
-<ul>
-<li>Întârzierilor în construcție și aprobărilor de permise</li>
-<li>Disponibilității echipamentelor și programelor de livrare</li>
-<li>Circumstanțelor neprevăzute sau evenimentelor de forță majoră</li>
-</ul>
+<h2>3. Proprietate intelectuală</h2>
+<p>Conținutul site-ului (texte, imagini, logo-uri, elemente grafice) aparține MUSCLE ARENA și este protejat conform legislației aplicabile. Este interzisă reproducerea sau distribuirea fără acord scris.</p>
 
-<h2>4. Limitarea Răspunderii</h2>
-<p>MUSCLE ARENA și fondatorii săi nu vor fi responsabili pentru:</p>
-<ul>
-<li>Întârzieri în finalizarea proiectului sau deschiderea sălii</li>
-<li>Modificări ale facilităților, echipamentelor sau serviciilor sălii față de planurile inițiale</li>
-<li>Imposibilitatea de a deschide sala din cauza unor circumstanțe dincolo de controlul nostru</li>
-<li>Orice daune indirecte, accidentale sau consecvențiale</li>
-</ul>
+<h2>4. Limitarea răspunderii</h2>
+<p>Nu garantăm că informațiile sunt complet lipsite de erori sau că site-ul va funcționa neîntrerupt. Utilizarea site-ului se face pe propria răspundere.</p>
 
-<h2>5. Modificări ale Termenilor</h2>
-<p>Ne rezervăm dreptul de a modifica acești termeni în orice moment. Modificările vor intra în vigoare imediat după publicarea pe site. Utilizarea continuă a serviciilor noastre după modificări constituie acceptarea termenilor modificați.</p>
+<h2>5. Cookie-uri și date</h2>
+<p>Utilizarea cookie-urilor este descrisă în Politica de Confidențialitate.</p>
 
-<h2>6. Legea Aplicabilă</h2>
-<p>Acești termeni vor fi guvernați și interpretați în conformitate cu legile Republicii Moldova. Orice dispute care decurg din acești termeni vor fi supuse jurisdicției exclusive a instanțelor din Sîngerei, Moldova.</p>
+<h2>6. Legea aplicabilă</h2>
+<p>Acești termeni sunt guvernați de legislația Republicii Moldova. Orice litigiu va fi soluționat de instanțele competente din Republica Moldova.</p>
 HTML;
     }
 
@@ -76,39 +59,22 @@ HTML;
 <h1>Terms and Conditions</h1>
 
 <h2>1. Acceptance of Terms</h2>
-<p>By accessing and using the MUSCLE ARENA website, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree with these terms, please do not use our website.</p>
+<p>By accessing the MUSCLE ARENA website, you accept these Terms and Conditions. If you do not agree, please do not use the site.</p>
 
-<h2>2. User Accounts</h2>
-<p>When you create an account, you agree to:</p>
-<ul>
-<li>Provide accurate and complete information</li>
-<li>Maintain the security of your account login credentials</li>
-<li>Accept responsibility for all activities under your account</li>
-<li>Notify us immediately of any unauthorized use</li>
-</ul>
+<h2>2. Purpose of the site</h2>
+<p>The site is for informational purposes and presents details about the MUSCLE ARENA project. The information published does not constitute a contractual offer and may be modified without prior notice.</p>
 
-<h2>3. Project Timeline</h2>
-<p>Although we aim to follow the published timeline, actual completion dates may vary due to:</p>
-<ul>
-<li>Construction delays and permit approvals</li>
-<li>Equipment availability and delivery schedules</li>
-<li>Unforeseen circumstances or force majeure events</li>
-</ul>
+<h2>3. Intellectual property</h2>
+<p>The content of the site (texts, images, logos, graphic elements) belongs to MUSCLE ARENA and is protected under applicable law. Reproduction or distribution without written consent is prohibited.</p>
 
-<h2>4. Limitation of Liability</h2>
-<p>MUSCLE ARENA and its founders shall not be liable for:</p>
-<ul>
-<li>Delays in project completion or gym opening</li>
-<li>Changes to facilities, equipment or gym services compared to initial plans</li>
-<li>Inability to open the gym due to circumstances beyond our control</li>
-<li>Any indirect, incidental or consequential damages</li>
-</ul>
+<h2>4. Limitation of liability</h2>
+<p>We do not guarantee that the information is completely error-free or that the site will operate without interruption. Use of the site is at your own risk.</p>
 
-<h2>5. Changes to Terms</h2>
-<p>We reserve the right to modify these terms at any time. Changes will take effect immediately upon publication on the site. Continued use of our services after changes constitutes acceptance of the modified terms.</p>
+<h2>5. Cookies and data</h2>
+<p>The use of cookies is described in the Privacy Policy.</p>
 
-<h2>6. Governing Law</h2>
-<p>These terms shall be governed by and construed in accordance with the laws of the Republic of Moldova. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts of Sîngerei, Moldova.</p>
+<h2>6. Governing law</h2>
+<p>These terms are governed by the legislation of the Republic of Moldova. Any dispute shall be resolved by the competent courts of the Republic of Moldova.</p>
 HTML;
     }
 
@@ -118,39 +84,22 @@ HTML;
 <h1>Условия использования</h1>
 
 <h2>1. Принятие условий</h2>
-<p>Получая доступ к веб-сайту MUSCLE ARENA и используя его, вы принимаете и соглашаетесь соблюдать условия и положения данного соглашения. Если вы не согласны с этими условиями, пожалуйста, не используйте наш веб-сайт.</p>
+<p>Получая доступ к сайту MUSCLE ARENA, вы принимаете данные Условия использования. Если вы не согласны, пожалуйста, не используйте сайт.</p>
 
-<h2>2. Учётные записи пользователей</h2>
-<p>Создавая учётную запись, вы соглашаетесь:</p>
-<ul>
-<li>Предоставлять точную и полную информацию</li>
-<li>Обеспечивать безопасность данных для входа в учётную запись</li>
-<li>Нести ответственность за все действия в вашей учётной записи</li>
-<li>Немедленно уведомлять нас о любом несанкционированном использовании</li>
-</ul>
+<h2>2. Назначение сайта</h2>
+<p>Сайт носит информационный характер и содержит сведения о проекте MUSCLE ARENA. Опубликованная информация не является договорным предложением и может быть изменена без предварительного уведомления.</p>
 
-<h2>3. Хронология проекта</h2>
-<p>Хотя мы стремимся следовать опубликованному графику, фактические сроки завершения могут меняться из-за:</p>
-<ul>
-<li>Задержек в строительстве и согласовании разрешений</li>
-<li>Доступности оборудования и графиков поставок</li>
-<li>Непредвиденных обстоятельств или форс-мажорных событий</li>
-</ul>
+<h2>3. Интеллектуальная собственность</h2>
+<p>Контент сайта (тексты, изображения, логотипы, графические элементы) принадлежит MUSCLE ARENA и охраняется в соответствии с применимым законодательством. Воспроизведение или распространение без письменного согласия запрещено.</p>
 
 <h2>4. Ограничение ответственности</h2>
-<p>MUSCLE ARENA и её основатели не несут ответственности за:</p>
-<ul>
-<li>Задержки в завершении проекта или открытии зала</li>
-<li>Изменения в оборудовании, объектах или услугах зала по сравнению с первоначальными планами</li>
-<li>Невозможность открыть зал из-за обстоятельств, не зависящих от нас</li>
-<li>Любой косвенный, случайный или последующий ущерб</li>
-</ul>
+<p>Мы не гарантируем полное отсутствие ошибок в информации или бесперебойную работу сайта. Использование сайта осуществляется на ваш собственный риск.</p>
 
-<h2>5. Изменение условий</h2>
-<p>Мы оставляем за собой право изменять эти условия в любое время. Изменения вступают в силу немедленно после публикации на сайте. Продолжение использования наших услуг после изменений означает принятие изменённых условий.</p>
+<h2>5. Cookie и данные</h2>
+<p>Использование cookie описано в Политике конфиденциальности.</p>
 
 <h2>6. Применимое право</h2>
-<p>Эти условия регулируются и толкуются в соответствии с законодательством Республики Молдова. Любые споры, возникающие из этих условий, подлежат исключительной юрисдикции судов Сынгерей, Молдова.</p>
+<p>Эти условия регулируются законодательством Республики Молдова. Любой спор будет разрешён компетентными судами Республики Молдова.</p>
 HTML;
     }
 }

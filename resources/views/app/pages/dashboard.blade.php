@@ -27,13 +27,24 @@
             <div>
                 <h3 class="text-lg font-black text-white mb-3">{{ __('ui.dashboard_analytics') }}</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    @php
+                        $analytics = $this->analyticsData;
+                        $avgSessionFormatted = null;
+                        if (isset($analytics['avgSessionDuration']) && $analytics['avgSessionDuration'] !== null) {
+                            $sec = (int) round($analytics['avgSessionDuration']);
+                            $avgSessionFormatted = sprintf('%d:%02d', (int) floor($sec / 60), $sec % 60);
+                        }
+                        $bounceRateFormatted = isset($analytics['bounceRate']) && $analytics['bounceRate'] !== null
+                            ? round($analytics['bounceRate'] * 100, 1) . '%'
+                            : '—';
+                    @endphp
                     {{-- Page Views --}}
                     <div class="bg-[#111111] border-2 border-[#333333] rounded-xl p-4 hover:border-[#F97316] transition-all">
                         <div class="flex items-center gap-3 mb-2">
                             <x-lucide-eye class="w-6 h-6 text-blue-500" />
                             <p class="text-[#CCCCCC] text-xs">{{ __('ui.dashboard_page_views') }}</p>
                         </div>
-                        <p class="text-white text-2xl font-black">12,547</p>
+                        <p class="text-white text-2xl font-black">{{ number_format($analytics['pageViews']) }}</p>
                     </div>
 
                     {{-- Unique Visitors --}}
@@ -42,7 +53,7 @@
                             <x-lucide-mouse-pointer class="w-6 h-6 text-green-500" />
                             <p class="text-[#CCCCCC] text-xs">{{ __('ui.dashboard_unique_visitors') }}</p>
                         </div>
-                        <p class="text-white text-2xl font-black">8,934</p>
+                        <p class="text-white text-2xl font-black">{{ number_format($analytics['visitors']) }}</p>
                     </div>
 
                     {{-- Avg Session Duration --}}
@@ -51,7 +62,7 @@
                             <x-lucide-clock class="w-6 h-6 text-[#F97316]" />
                             <p class="text-[#CCCCCC] text-xs">{{ __('ui.dashboard_avg_session_duration') }}</p>
                         </div>
-                        <p class="text-white text-2xl font-black">3:42</p>
+                        <p class="text-white text-2xl font-black">{{ $avgSessionFormatted ?? '—' }}</p>
                     </div>
 
                     {{-- Bounce Rate --}}
@@ -60,7 +71,7 @@
                             <x-lucide-globe class="w-6 h-6 text-purple-500" />
                             <p class="text-[#CCCCCC] text-xs">{{ __('ui.dashboard_bounce_rate') }}</p>
                         </div>
-                        <p class="text-white text-2xl font-black">42.3%</p>
+                        <p class="text-white text-2xl font-black">{{ $bounceRateFormatted }}</p>
                     </div>
                 </div>
 

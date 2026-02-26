@@ -313,6 +313,13 @@ return [
     'privacy_contact_address' => 'Address:',
     'privacy_updated' => 'Last updated: February 4, 2026',
 
+    // Cookie / Analytics consent banner
+    'cookie_consent_message' => 'We use analytics cookies (Google Analytics) to understand how the site is used and to improve user experience. Data may be processed by Google. You can accept or decline these cookies. See ',
+    'cookie_consent_accept' => 'Accept',
+    'cookie_consent_decline' => 'Decline',
+    'cookie_consent_privacy' => 'Privacy policy',
+    'cookie_consent_settings' => 'Cookie settings',
+
     // Terms & Conditions
     'terms_title' => 'Terms & Conditions',
     'terms_meta_description' => 'MUSCLE ARENA Terms & Conditions - Terms of use and website policies.',

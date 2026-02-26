@@ -112,4 +112,5 @@ Route::post('/user/locale', function (\Illuminate\Http\Request $request, \App\Ac
     return redirect()->back();
 })->middleware(['auth', 'web', 'ensure.password.changed'])->name('user.locale.update');
 
+
 require __DIR__.'/auth.php';

@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $locale) }}">
     <head>
+        {{-- Google Analytics is loaded only after user consent (see cookie-consent-banner) --}}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -140,6 +141,10 @@
         @else
             @yield('content')
         @endisset
+
+        @if(config('services.google_analytics.measurement_id'))
+            <x-cookie-consent-banner />
+        @endif
 
         @stack('scripts')
     </body>

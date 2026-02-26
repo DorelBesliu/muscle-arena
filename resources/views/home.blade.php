@@ -33,17 +33,8 @@
                         <div class="h-1 w-24 bg-[#F97316] mb-2"></div>
                     </div>
 
-                    <p class="text-sm md:text-xl text-secondary leading-snug max-w-4xl mb-2">
+                    <p class="text-sm md:text-xl text-secondary leading-snug max-w-4xl mb-2 mb-6">
                         {{ __('ui.hero_description') }}
-                    </p>
-
-                    <p class="text-sm md:text-lg text-secondary leading-snug max-w-4xl mb-6">
-                        {{ __('ui.hero_timeline_prefix') }}
-                        <a href="{{ route('home', ['locale' => app()->getLocale()]) }}#timeline" class="text-[#F97316] hover:text-[#EF4444] font-medium underline underline-offset-2 transition-colors">{{ __('ui.hero_timeline_link') }}</a>.
-                    </p>
-
-                    <p class="text-sm md:text-lg text-[#CCCCCC] leading-snug max-w-3xl mb-3">
-                        {{ __('ui.hero_proposal_intro') }}
                     </p>
 
                     {{-- Proposal button (hero CTA) --}}
@@ -719,7 +710,7 @@
                 <p class="text-sm text-[#CCCCCC]">
                     {{ __('ui.footerText') }}
                 </p>
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-6" x-data>
                     <a
                         href="{{ route('privacy', ['locale' => app()->getLocale()]) }}"
                         class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
@@ -732,6 +723,15 @@
                     >
                         {{ __('ui.termsConditions') }}
                     </a>
+                    @if(config('services.google_analytics.measurement_id'))
+                        <button
+                            type="button"
+                            @click="$store.cookieConsent.showBanner = true"
+                            class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
+                        >
+                            {{ __('ui.cookie_consent_settings') }}
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

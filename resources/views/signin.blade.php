@@ -146,7 +146,7 @@
             <p class="text-sm text-[#CCCCCC]">
                 {{ __('ui.footerText') }}
             </p>
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-6" x-data>
                 <a
                     href="{{ route('privacy', ['locale' => app()->getLocale()]) }}"
                     class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
@@ -159,6 +159,15 @@
                 >
                     {{ __('ui.termsConditions') }}
                 </a>
+                @if(config('services.google_analytics.measurement_id'))
+                    <button
+                        type="button"
+                        @click="$store.cookieConsent.showBanner = true"
+                        class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"
+                    >
+                        {{ __('ui.cookie_consent_settings') }}
+                    </button>
+                @endif
             </div>
         </div>
     </div>

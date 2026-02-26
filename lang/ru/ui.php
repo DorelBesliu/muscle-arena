@@ -313,6 +313,13 @@ return [
     'privacy_contact_address' => 'Адрес:',
     'privacy_updated' => 'Обновлено: 4 февраля 2026',
 
+    // Cookie / Analytics consent banner
+    'cookie_consent_message' => 'Мы используем аналитические cookie (Google Analytics), чтобы понимать, как используется сайт, и улучшать пользовательский опыт. Данные могут обрабатываться Google. Вы можете принять или отклонить эти cookie. См. ',
+    'cookie_consent_accept' => 'Принять',
+    'cookie_consent_decline' => 'Отклонить',
+    'cookie_consent_privacy' => 'Политика конфиденциальности',
+    'cookie_consent_settings' => 'Настройки cookie',
+
     // Terms & Conditions
     'terms_title' => 'Условия использования',
     'terms_meta_description' => 'Условия использования MUSCLE ARENA - Условия использования и политика веб-сайта.',

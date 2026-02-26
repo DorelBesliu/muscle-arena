@@ -313,6 +313,13 @@ return [
     'privacy_contact_address' => 'Adresă:',
     'privacy_updated' => 'Actualizat la: 4 februarie 2026',
 
+    // Cookie / Analytics consent banner
+    'cookie_consent_message' => 'Folosim cookie-uri de analiză (Google Analytics) pentru a înțelege cum este utilizat site-ul și pentru a îmbunătăți experiența utilizatorilor. Datele pot fi procesate de Google. Poți accepta sau refuza aceste cookie-uri. Vezi ',
+    'cookie_consent_accept' => 'Accept',
+    'cookie_consent_decline' => 'Refuz',
+    'cookie_consent_privacy' => 'Politica de confidențialitate',
+    'cookie_consent_settings' => 'Setări cookie',
+
     // Terms & Conditions
     'terms_title' => 'Termeni și Condiții',
     'terms_meta_description' => 'Termeni și Condiții MUSCLE ARENA - Termeni de utilizare și politici ale site-ului.',

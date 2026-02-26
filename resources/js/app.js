@@ -378,6 +378,10 @@ if (isPublicLayout) {
             helpOpen: false,
         });
 
+        Alpine.store('cookieConsent', {
+            showBanner: false,
+        });
+
         // Detect iOS - ALWAYS use CSS-based fullscreen for iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
