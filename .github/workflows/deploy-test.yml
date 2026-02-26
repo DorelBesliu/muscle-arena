@@ -42,14 +42,26 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H -p 48221 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy via rsync
+      - name: Finalize on server
         run: |
-          rsync -avz --delete \
-            -e "ssh -p 48221" \
-            --exclude=".git" \
-            --exclude=".env" \
-            --exclude="storage" \
-            --exclude="node_modules" \
-            --exclude="tests" \
-            ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
+          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+            cd /var/www/muscle-arena-test
+
+            echo "=== Clean old cache (no Laravel) ==="
+            rm -rf storage/framework/cache/*
+            rm -rf storage/framework/views/*
+            rm -rf storage/framework/sessions/*
+            rm -rf bootstrap/cache/*.php
+
+            echo "=== Fix permissions ==="
+            chown -R bt:www-data storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+
+            echo "=== Laravel clean ==="
+            sudo -u www-data php artisan optimize:clear
+
+            echo "=== Laravel config cache ==="
+            sudo -u www-data php artisan config:cache
+
+          EOF
