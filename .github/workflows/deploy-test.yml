@@ -48,6 +48,8 @@ jobs:
             set -e
             cd /var/www/muscle-arena-test
 
+            umask 002
+
             echo "=== Laravel clean ==="
             php artisan optimize:clear
 
@@ -55,4 +57,3 @@ jobs:
             php artisan config:cache
 
           EOF
-
