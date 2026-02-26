@@ -48,12 +48,6 @@ jobs:
             set -e
             cd /var/www/muscle-arena-test
 
-            echo "=== Clean old cache (no Laravel) ==="
-            rm -rf storage/framework/cache/*
-            rm -rf storage/framework/views/*
-            rm -rf storage/framework/sessions/*
-            rm -rf bootstrap/cache/*.php
-
             echo "=== Laravel clean ==="
             php artisan optimize:clear
 
