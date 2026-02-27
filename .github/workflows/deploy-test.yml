@@ -60,6 +60,6 @@ jobs:
             set -e
             cd /var/www/muscle-arena-test
 
-            sudo -u www-data php artisan optimize:clear
-            sudo -u www-data php artisan optimize
+            php artisan optimize:clear
+            php artisan optimize
           EOF
