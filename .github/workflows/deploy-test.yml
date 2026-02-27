@@ -44,12 +44,7 @@ jobs:
 
       - name: Deploy via rsync
         run: |
-          rsync -rlvz --delete \
-            --no-perms \
-            --no-owner \
-            --no-group \
-            --omit-dir-times \
-            --no-times \
+          rsync -avz --delete \
             -e "ssh -p 48221" \
             --exclude=".git" \
             --exclude=".env" \
@@ -58,26 +53,3 @@ jobs:
             --exclude="tests" \
             ./ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
-
-      - name: Finalize on server
-        run: |
-          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            set -e
-            cd /var/www/muscle-arena-test
-
-            echo "=== HARD CLEAN (before Laravel boots) ==="
-            rm -rf storage/framework/cache/*
-            rm -rf storage/framework/views/*
-            rm -rf storage/framework/sessions/*
-            rm -f bootstrap/cache/*.php
-
-            echo "=== Fix permissions (safe fallback) ==="
-            chmod -R 775 storage bootstrap/cache || true
-
-            echo "=== Laravel ==="
-            umask 002
-            php artisan optimize:clear
-            php artisan config:cache
-
-          EOF
-
