@@ -44,8 +44,9 @@ jobs:
 
       - name: Deploy via rsync
         run: |
-          rsync -avz --delete \
+          rsync -rvz --delete \
             -e "ssh -p 48221" \
+             --no-perms --no-owner --no-group \
             --no-times --omit-dir-times \
             --exclude=".git" \
             --exclude=".env" \
