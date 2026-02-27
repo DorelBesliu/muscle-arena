@@ -53,3 +53,13 @@ jobs:
             --exclude="tests" \
             ./ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
+
+      - name: Run optimization commands on server
+        run: |
+          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+            cd /var/www/muscle-arena-test
+
+            php artisan optimize:clear
+            php artisan optimize
+          EOF
