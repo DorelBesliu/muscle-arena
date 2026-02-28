@@ -62,6 +62,10 @@ jobs:
             set -e
             cd /var/www/muscle-arena-test
 
+            umask 002
+
             php artisan optimize:clear
             php artisan optimize
+
+            chmod -R g+rw storage bootstrap/cache
           EOF
