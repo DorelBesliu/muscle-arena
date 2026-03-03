@@ -56,16 +56,12 @@ jobs:
             ./ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena-test
 
-      - name: Run optimization commands on server
-        run: |
-          ssh -p 48221 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            set -e
-            cd /var/www/muscle-arena-test
-
-            umask 002
-
-            php artisan optimize:clear
+      - name: Execute remote SSH commands
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: 48221
+          script: |
+            cd /var/www/muscle-arena-test\
             php artisan optimize
-
-            chmod -R g+rw storage bootstrap/cache
-          EOF
