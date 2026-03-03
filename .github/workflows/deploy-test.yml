@@ -64,5 +64,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 48221
           script: |
-            cd /var/www/muscle-arena-test\
+            cd /var/www/muscle-arena-test
             php artisan optimize
