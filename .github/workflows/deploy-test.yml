@@ -67,3 +67,4 @@ jobs:
             cd /var/www/muscle-arena-test
             php artisan optimize:clear
             php artisan optimize
+            php artisan reload
