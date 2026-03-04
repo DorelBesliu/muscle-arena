@@ -65,4 +65,5 @@ jobs:
           port: 48221
           script: |
             cd /var/www/muscle-arena-test
+            php artisan optimize:clear
             php artisan optimize
