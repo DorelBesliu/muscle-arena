@@ -242,6 +242,16 @@ span.flatpickr-weekday {
 .gym3d-dialog-container {
     @apply relative flex flex-col bg-[#111111] border-2 border-[#F97316] rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden;
 }
+
+/* iOS fullscreen: keep dialog within visible viewport and safe areas */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-dialog-container {
+    max-height: min(80dvh, 80svh, 80vh) !important;
+}
+/* iOS fullscreen: dialog overlay padding so content stays inside safe area */
+#gym3d-container.gym3d-ios-fullscreen div:has(> .gym3d-dialog-container) {
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    box-sizing: border-box;
+}
 .gym3d-dialog-container .gym3d-dialog-header {
     @apply flex-shrink-0 flex items-center justify-between gap-4 p-6 pb-4 border-b border-[#333333] bg-[#111111];
 }
@@ -343,6 +353,22 @@ span.flatpickr-weekday {
     pointer-events: auto;
     width: calc(100% - 2rem);
     max-width: 100%;
+}
+
+/* iOS fullscreen: keep controls above safe area (home indicator) */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-mobile {
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* iOS fullscreen: keep top action buttons (info, fullscreen) below notch/safe area */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="top-4"] {
+    top: max(1rem, env(safe-area-inset-top, 0px));
+}
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="left-4"] {
+    left: max(1rem, env(safe-area-inset-left, 0px));
+}
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="right-4"] {
+    right: max(1rem, env(safe-area-inset-right, 0px));
 }
 
 /* Arrange buttons in 2 rows on mobile (5 buttons per row = 20% width each) */

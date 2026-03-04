@@ -263,6 +263,23 @@ export function initGym3d(container, options = {}) {
 
 
   // Listen for fullscreen changes to update renderer size
+  let iosFullscreenViewportCleanup = null;
+
+  const applyVisualViewportSize = () => {
+    const container = document.getElementById('gym3d-container');
+    if (!container || !container.classList.contains('gym3d-ios-fullscreen')) return;
+    const vp = window.visualViewport;
+    const w = Math.round(vp.width);
+    const h = Math.round(vp.height);
+    container.style.top = vp.offsetTop + 'px';
+    container.style.left = vp.offsetLeft + 'px';
+    container.style.width = w + 'px';
+    container.style.height = h + 'px';
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  };
+
   const handleFullscreenChange = () => {
     const container = document.getElementById('gym3d-container');
     if (!container) return;
@@ -279,10 +296,37 @@ export function initGym3d(container, options = {}) {
     // Check if mobile (screen width < 768px)
     const isMobile = window.innerWidth < 768;
 
+    // On iOS, use Visual Viewport so the 3D view fills the visible area (hides browser chrome)
+    if (isIOSFullscreen) {
+      if (isFullscreen) {
+        applyVisualViewportSize();
+        const onViewportResize = () => {
+          applyVisualViewportSize();
+        };
+        window.visualViewport.addEventListener('resize', onViewportResize);
+        window.visualViewport.addEventListener('scroll', onViewportResize);
+        iosFullscreenViewportCleanup = () => {
+          window.visualViewport.removeEventListener('resize', onViewportResize);
+          window.visualViewport.removeEventListener('scroll', onViewportResize);
+          container.style.top = '';
+          container.style.left = '';
+          container.style.width = '';
+          container.style.height = '';
+          iosFullscreenViewportCleanup = null;
+        };
+      } else if (iosFullscreenViewportCleanup) {
+        iosFullscreenViewportCleanup();
+      }
+    }
+
     // Update renderer size when fullscreen changes
     if (isFullscreen) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const width = isIOSFullscreen && window.visualViewport
+        ? window.visualViewport.width
+        : window.innerWidth;
+      const height = isIOSFullscreen && window.visualViewport
+        ? window.visualViewport.height
+        : window.innerHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
