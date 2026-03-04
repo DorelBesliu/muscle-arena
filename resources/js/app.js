@@ -307,6 +307,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Proposal form (hero + dialog): on window so Alpine can resolve x-data="proposalFormData()".
+// proposalError and proposalSubmitting live in Alpine.store('proposalForm') so they are always in scope in templates.
 window.proposalFormData = function () {
     return {
         proposalDialogOpen: false,
@@ -314,11 +315,43 @@ window.proposalFormData = function () {
         init() {
             this._successMessage = this.$el?.dataset?.successMessage || '';
         },
-        submitProposal() {
-            console.log('Proposal submitted:', this.proposalFormData);
-            alert(this._successMessage || 'Sent.');
-            this.proposalFormData = { title: '', message: '' };
-            this.proposalDialogOpen = false;
+        async submitProposal() {
+            const store = window.Alpine?.store?.('proposalForm');
+            if (store?.proposalSubmitting) return;
+            if (store) {
+                store.proposalError = null;
+                store.proposalSubmitting = true;
+            }
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            console.log('submitProposal', this.proposalFormData);
+            try {
+                const res = await fetch('/proposals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        title: this.proposalFormData.title || '',
+                        message: this.proposalFormData.message || '',
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    const msg = data.message || (data.errors ? Object.values(data.errors).flat().join(' ') : null) || 'Request failed.';
+                    if (store) store.proposalError = msg;
+                    return;
+                }
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: this._successMessage || 'Sent.', type: 'success' } }));
+                this.proposalFormData = { title: '', message: '' };
+                this.proposalDialogOpen = false;
+            } catch (e) {
+                if (store) store.proposalError = e.message || 'Request failed.';
+            } finally {
+                if (store) store.proposalSubmitting = false;
+            }
         },
     };
 };
@@ -380,6 +413,11 @@ if (isPublicLayout) {
 
         Alpine.store('cookieConsent', {
             showBanner: false,
+        });
+
+        Alpine.store('proposalForm', {
+            proposalError: null,
+            proposalSubmitting: false,
         });
 
         // Detect iOS - ALWAYS use CSS-based fullscreen for iOS

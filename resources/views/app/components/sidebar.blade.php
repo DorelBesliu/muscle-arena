@@ -2,6 +2,7 @@
     $locale = app()->getLocale();
     $isDashboard = request()->routeIs('dashboard');
     $isClients = request()->routeIs('clients');
+    $isProposals = request()->routeIs('proposals');
     $isProfile = request()->routeIs('profile');
     $isAdministrators = request()->routeIs('administrators');
     $isContentAbout = request()->routeIs('content.about');
@@ -129,6 +130,16 @@
                 </a>
             </div>
         </div>
+
+        {{-- Proposals (last) --}}
+        <a
+            href="{{ route('proposals') }}"
+            wire:navigate
+            class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isProposals ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
+        >
+            <x-lucide-message-square-plus class="w-4 h-4 shrink-0" />
+            <span class="font-medium">{{ __('ui.sidebar_proposals') }}</span>
+        </a>
     </nav>
 </aside>
 
@@ -277,6 +288,17 @@
                         </a>
                     </div>
                 </div>
+
+                {{-- Proposals (last) --}}
+                <a
+                    href="{{ route('proposals') }}"
+                    wire:navigate
+                    @click="sidebarOpen = false"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all {{ $isProposals ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white' }}"
+                >
+                    <x-lucide-message-square-plus class="w-4 h-4 shrink-0" />
+                    <span class="font-medium">{{ __('ui.sidebar_proposals') }}</span>
+                </a>
             </nav>
         </aside>
     </div>

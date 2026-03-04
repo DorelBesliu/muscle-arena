@@ -33,6 +33,29 @@
         @stack('styles')
     </head>
     <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak data-layout="public">
+        {{-- Toast container (top center) --}}
+        <div
+            class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+            x-data="toastContainer(@js(__('ui.proposalFormSuccess')))"
+            x-on:toast.window="addToast($event.detail?.message ?? $event.detail ?? savedMessage, $event.detail?.type ?? 'success')"
+        >
+            <template x-for="toast in toasts" :key="toast.id">
+                <div
+                    x-show="true"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-2"
+                    class="pointer-events-auto px-4 py-3 rounded-lg bg-[#1e1e1e] border border-[#444444] shadow-lg text-sm text-white flex items-center gap-2"
+                >
+                    <span class="w-2 h-2 rounded-full shrink-0" :class="toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'"></span>
+                    <span x-text="toast.message"></span>
+                </div>
+            </template>
+        </div>
+
         {{-- Topbar --}}
         <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-[70]" aria-label="Principal">
             <div class="container mx-auto px-4">
@@ -51,10 +74,10 @@
                     </a>
 
                     <div class="hidden lg:flex items-center gap-1" x-data>
-                        <a href="{{ route('home', ['locale' => $locale]) }}#hero" data-scroll-section :class="$store.public.activeSection === 'hero' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_home') }}</a>
-                        <a href="{{ route('home', ['locale' => $locale]) }}#about" data-scroll-section :class="$store.public.activeSection === 'about' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_about') }}</a>
-                        <a href="{{ route('home', ['locale' => $locale]) }}#timeline" data-scroll-section :class="$store.public.activeSection === 'timeline' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_timeline') }}</a>
-                        <a href="{{ route('home', ['locale' => $locale]) }}#contact" data-scroll-section :class="$store.public.activeSection === 'contact' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#111111]'" class="px-4 py-2 text-sm font-medium rounded-lg transition-all">{{ __('ui.menu_contact') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#hero" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_home') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#about" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_about') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#timeline" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_timeline') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#contact" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_contact') }}</a>
                     </div>
 
                     <div class="flex items-center gap-2 md:gap-4" x-data>

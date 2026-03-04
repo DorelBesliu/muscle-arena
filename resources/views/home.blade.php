@@ -95,7 +95,7 @@
                         <h2 class="text-2xl md:text-[36px] font-black text-white mb-6 leading-tight">
                             {{ __('ui.section_about_title') }}
                         </h2>
-                        <div class="about-description text-sm md:text-lg text-secondary leading-relaxed w-full mb-12 prose prose-invert prose-p:text-secondary max-w-none">
+                        <div class="about-description text-sm md:text-lg text-secondary leading-relaxed w-full mb-4 prose prose-invert prose-p:text-secondary max-w-none">
                             @if($aboutDescriptionIsPlain)
                                 {!! nl2br(e($aboutDescription)) !!}
                             @else
@@ -144,14 +144,14 @@
                                 x-cloak
                                 type="button"
                                 @click.stop="$store.gym3d.helpOpen = !$store.gym3d.helpOpen"
-                                class="gym3d-control-btn md:hidden absolute top-4 left-4 z-[60]"
+                                class="gym3d-control-btn md:hidden absolute top-4 left-4 z-[10]"
                                 aria-label="{{ __('ui.gym3d_drag_hint') }}">
                             <x-lucide-info class="w-5 h-5" />
                         </button>
                         {{-- Expand/Minimize icon: toggles fullscreen (all devices) --}}
                         <button type="button"
                                 @click="toggleFullscreen()"
-                                class="gym3d-control-btn absolute top-4 right-4 z-[60]"
+                                class="gym3d-control-btn absolute top-4 right-4 z-[50]"
                                 :aria-label="gym3dFullscreen ? '{{ __('ui.gym3d_exit_fullscreen') }}' : '{{ __('ui.gym3d_expand_fullscreen') }}'">
                             <x-lucide-maximize x-show="!gym3dFullscreen" class="w-5 h-5" />
                             <x-lucide-minimize-2 x-show="gym3dFullscreen" x-cloak class="w-5 h-5" />
@@ -222,7 +222,7 @@
                              @click.self="$store.gym3d.helpOpen = false">
                             <div class="absolute inset-0" aria-hidden="true"></div>
                             <div class="gym3d-dialog-container" @click.stop>
-                            <div class="flex items-center justify-between gap-4 mb-4">
+                            <div class="gym3d-dialog-header">
                                 <h3 id="gym3d-help-title-mobile" class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
                                     <x-lucide-info class="w-5 h-5 shrink-0" />
                                     {{ __('ui.about_3d_preview') }}
@@ -231,7 +231,7 @@
                                     <x-lucide-x class="w-5 h-5" />
                                 </button>
                             </div>
-                            <div class="space-y-4">
+                            <div class="gym3d-dialog-body space-y-4">
                                 <div>
                                     <p class="text-secondary text-sm leading-relaxed">{{ __('ui.gym3d_drag_hint') }}</p>
                                 </div>
@@ -301,7 +301,7 @@
                  @click.self="$store.gym3d.helpOpen = false">
                 <div class="absolute inset-0" aria-hidden="true"></div>
                 <div class="gym3d-dialog-container" @click.stop>
-                    <div class="flex items-center justify-between gap-4 mb-4">
+                    <div class="gym3d-dialog-header">
                         <h3 id="gym3d-help-title-desktop" class="text-lg font-semibold text-[#F97316] flex items-center gap-2">
                             <x-lucide-info class="w-5 h-5 shrink-0" />
                             {{ __('ui.about_3d_preview') }}
@@ -310,7 +310,7 @@
                             <x-lucide-x class="w-5 h-5" />
                         </button>
                     </div>
-                    <div class="space-y-4">
+                    <div class="gym3d-dialog-body space-y-4">
                         <div>
                             <p class="text-secondary text-sm leading-relaxed">{{ __('ui.gym3d_drag_hint') }}</p>
                         </div>
@@ -445,8 +445,15 @@
                             'status' => $status,
                         ];
                     }
+                    $timelineOpenIndex = null;
+                    foreach ($timelineSteps as $idx => $s) {
+                        if (($s['status'] ?? '') === 'current') {
+                            $timelineOpenIndex = $idx;
+                            break;
+                        }
+                    }
                 @endphp
-                <div class="max-w-4xl mx-auto">
+                <div class="max-w-4xl mx-auto" x-data="{ openIndex: @json($timelineOpenIndex) }">
                     <div class="space-y-6 md:space-y-8">
                         @foreach ($timelineSteps as $index => $step)
                             @php
@@ -496,20 +503,36 @@
                                         </div>
                                     </div>
 
-                                    {{-- Content --}}
-                                    <div class="flex-1 bg-[#111111] border border-[#333333] rounded-xl p-4 md:p-6 shadow-sm hover:border-[#F97316] transition-colors">
-                                        <div class="flex items-start justify-between gap-2 md:gap-4 mb-2">
+                                    {{-- Content: title always visible; description on click --}}
+                                    <div
+                                        class="flex-1 bg-[#111111] border border-[#333333] rounded-xl overflow-hidden shadow-sm hover:border-[#F97316] transition-colors cursor-pointer"
+                                        @click="openIndex = openIndex === {{ $index }} ? null : {{ $index }}"
+                                        role="button"
+                                        tabindex="0"
+                                        @keydown.enter.prevent="openIndex = openIndex === {{ $index }} ? null : {{ $index }}"
+                                        @keydown.space.prevent="openIndex = openIndex === {{ $index }} ? null : {{ $index }}"
+                                    >
+                                        {{-- Title row (always visible): title left, status right --}}
+                                        <div class="flex items-center justify-between gap-2 md:gap-4 p-2 md:p-4">
                                             <h3 class="text-base md:text-xl font-bold text-white">{{ $title }}</h3>
-                                            {{-- Status only on desktop; on mobile it is already visible on the left (icon) --}}
                                             <span class="hidden md:inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
                                                 {{ $badgeText }}
                                             </span>
                                         </div>
-                                        @if($date)
-                                        <p class="text-xs md:text-sm text-[#CCCCCC] mb-2 md:mb-3">{{ $date }}</p>
-                                        @endif
-                                        <div class="text-sm md:text-base text-[#CCCCCC] leading-relaxed">
-                                            {!! nl2br(e($description)) !!}
+                                        {{-- Description (expandable, no animation) --}}
+                                        <div
+                                            x-show="openIndex === {{ $index }}"
+                                            x-cloak
+                                            class="border-t border-[#333333]"
+                                        >
+                                            <div class="p-4 md:p-6">
+                                                @if($date)
+                                                <p class="text-xs md:text-sm text-[#CCCCCC] mb-2 md:mb-3">{{ $date }}</p>
+                                                @endif
+                                                <div class="text-sm md:text-base text-[#CCCCCC] leading-relaxed">
+                                                    {!! nl2br(e($description)) !!}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -624,20 +647,20 @@
         <div
             x-show="proposalDialogOpen"
             x-cloak
-            class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-0 md:p-4"
+            class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-[100] p-0 md:p-4"
             role="dialog"
             aria-modal="true"
             style="display: none;"
         >
-            <div class="bg-[#111111] border-2 border-[#333333] rounded-none md:rounded-3xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+            <div class="bg-[#111111] border-2 border-[#333333] rounded-none md:rounded-3xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" @click.stop>
                 {{-- Header --}}
-                <div class="sticky top-0 bg-[#111111] border-b border-[#333333] p-6 flex items-center justify-between">
+                <div class="flex-shrink-0 bg-[#111111] border-b border-[#333333] py-2 px-6 flex items-center justify-between">
                     <h2 class="text-xl md:text-3xl font-black text-white">
                         {{ __('ui.proposalDialogTitle') }}
                     </h2>
                     <button
                         type="button"
-                        @click="proposalDialogOpen = false; proposalFormData = { title: '', message: '' }"
+                        @click="proposalDialogOpen = false; proposalFormData = { title: '', message: '' }; if ($store?.proposalForm) $store.proposalForm.proposalError = null"
                         class="text-[#CCCCCC] hover:text-white transition-colors p-2 hover:bg-[#333333] rounded-full"
                         aria-label="{{ __('ui.close') }}"
                     >
@@ -647,13 +670,14 @@
                     </button>
                 </div>
 
-                {{-- Form --}}
-                <div class="p-6">
-                    <form
-                        @submit.prevent="submitProposal()"
-                        class="space-y-6"
-                    >
-                        {{-- Title Field --}}
+                <form
+                    id="proposal-form"
+                    @submit.prevent="submitProposal()"
+                    class="flex flex-col flex-1 min-h-0 overflow-hidden"
+                >
+                    {{-- Form body (scrollable) --}}
+                    <div class="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
+                        <p x-show="$store?.proposalForm?.proposalError" x-cloak class="text-sm text-red-400" x-text="$store?.proposalForm?.proposalError || ''"></p>
                         <div>
                             <label
                                 for="proposalTitle"
@@ -670,8 +694,6 @@
                                 required
                             />
                         </div>
-
-                        {{-- Message Field --}}
                         <div>
                             <label
                                 for="proposalMessage"
@@ -688,16 +710,29 @@
                                 required
                             ></textarea>
                         </div>
+                    </div>
 
-                        {{-- Submit Button --}}
+                    {{-- Dialog footer: Cancel (left) + Submit (right) --}}
+                    <div class="flex-shrink-0 bg-[#111111] border-t border-[#333333] p-4 md:p-6 flex items-center justify-between gap-4 rounded-b-none md:rounded-b-3xl">
+                        <button
+                            type="button"
+                            @click="proposalDialogOpen = false; proposalFormData = { title: '', message: '' }; if ($store?.proposalForm) $store.proposalForm.proposalError = null"
+                            class="text-[#CCCCCC] hover:text-white font-medium px-4 py-2.5 rounded-xl hover:bg-[#333333] transition-colors"
+                        >
+                            {{ __('ui.members_cancel') }}
+                        </button>
                         <button
                             type="submit"
-                            class="w-full bg-[#F97316] hover:bg-[#EF4444] text-white font-bold py-4 rounded-xl transition-all hover:scale-105 shadow-xl"
+                            :disabled="$store?.proposalForm?.proposalSubmitting === true"
+                            class="inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EF4444] disabled:opacity-70 disabled:cursor-wait text-white font-bold px-6 py-3 rounded-xl transition-all hover:scale-105 shadow-xl min-w-[10rem]"
                         >
-                            {{ __('ui.proposalFormSubmit') }}
+                            <span x-show="$store?.proposalForm?.proposalSubmitting === true" class="shrink-0" x-cloak>
+                                <x-lucide-loader-2 class="w-5 h-5 animate-spin" />
+                            </span>
+                            <span x-show="$store?.proposalForm?.proposalSubmitting !== true">{{ __('ui.proposalFormSubmit') }}</span>
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </section>
@@ -710,7 +745,7 @@
                 <p class="text-sm text-[#CCCCCC]">
                     {{ __('ui.footerText') }}
                 </p>
-                <div class="flex items-center gap-6" x-data>
+                <div class="flex flex-col md:flex-row md:items-center items-start gap-2 md:gap-6" x-data>
                     <a
                         href="{{ route('privacy', ['locale' => app()->getLocale()]) }}"
                         class="text-sm text-[#CCCCCC] hover:text-[#F97316] transition-colors underline underline-offset-2"

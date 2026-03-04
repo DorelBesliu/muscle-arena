@@ -29,6 +29,9 @@ Route::get('forgot-password', function () {
     return redirect()->route('password.request', ['locale' => $locale], 302);
 })->middleware('guest');
 
+Route::post('proposals', \App\Http\Controllers\Proposal\StoreProposalController::class)
+    ->name('proposals.store');
+
 // Locale-prefixed home (SEO-friendly: /ro, /ru, /en)
 Route::get('/{locale}', fn () => view('home'))
     ->where('locale', 'ro|ru|en')
@@ -70,6 +73,10 @@ Route::get('dashboard', Dashboard::class)
 Route::get('clients', Clients::class)
     ->middleware(['auth', 'ensure.password.changed'])
     ->name('clients');
+
+Route::get('proposals', \App\Livewire\Proposals::class)
+    ->middleware(['auth', 'ensure.password.changed'])
+    ->name('proposals');
 
 Route::get('administrators', Administrators::class)
     ->middleware(['auth', 'ensure.password.changed'])
