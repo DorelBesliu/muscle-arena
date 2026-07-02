@@ -319,19 +319,43 @@ span.flatpickr-weekday {
     padding: 0.5rem 0;
 }
 
-/* Desktop: controls bar below canvas (static position) */
-.gym3d-controls-bar-desktop {
-    position: static;
+/* Desktop: controls bar inside container, at bottom (visible in normal and fullscreen) */
+#gym3d-container .gym3d-controls-bar-desktop {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
     padding: 0.75rem 0;
     background: transparent;
     border-radius: 0;
     backdrop-filter: none;
 }
 
-/* Ensure desktop controls are hidden on mobile */
+/* Ensure desktop controls are hidden on mobile when NOT fullscreen */
 @media (max-width: 767px) {
-    .gym3d-controls-bar-desktop {
+    #gym3d-container .gym3d-controls-bar-desktop {
         display: none !important;
+    }
+    #gym3d-container:fullscreen .gym3d-controls-bar-desktop,
+    #gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-desktop {
+        display: flex !important;
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        background: rgba(17, 17, 17, 0.95);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        backdrop-filter: blur(8px);
+        width: calc(100% - 2rem);
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 100%;
+    }
+    #gym3d-container:fullscreen .gym3d-controls-bar-desktop button,
+    #gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-desktop button {
+        flex: 0 0 calc(20% - 0.4rem);
+        min-width: calc(20% - 0.4rem);
+        max-width: calc(20% - 0.4rem);
+        box-sizing: border-box;
     }
 }
 

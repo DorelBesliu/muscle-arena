@@ -120,21 +120,6 @@
                                 </div>
                             </div>
                         </template>
-                        {{-- Mobile controls bar: inside container, positioned absolutely, only visible in fullscreen --}}
-                        <template x-if="gym3dFullscreen">
-                            <div class="gym3d-controls-bar gym3d-controls-bar-mobile md:hidden">
-                                <button type="button" id="btn-zoom-in" title="{{ __('ui.gym3d_btn_zoom_in') }}"><x-lucide-zoom-in class="w-5 h-5" /></button>
-                                <button type="button" id="btn-zoom-out" title="{{ __('ui.gym3d_btn_zoom_out') }}"><x-lucide-zoom-out class="w-5 h-5" /></button>
-                                <button type="button" id="btn-rotate-left" title="{{ __('ui.gym3d_btn_rotate_left') }}"><x-lucide-rotate-ccw class="w-5 h-5" /></button>
-                                <button type="button" id="btn-rotate-right" title="{{ __('ui.gym3d_btn_rotate_right') }}"><x-lucide-rotate-cw class="w-5 h-5" /></button>
-                                <button type="button" id="btn-tilt-up" title="{{ __('ui.gym3d_btn_tilt_up') }}"><x-lucide-chevron-up class="w-5 h-5" /></button>
-                                <button type="button" id="btn-tilt-down" title="{{ __('ui.gym3d_btn_tilt_down') }}"><x-lucide-chevron-down class="w-5 h-5" /></button>
-                                <button type="button" id="btn-move-forward" title="{{ __('ui.gym3d_btn_move_forward') }}"><x-lucide-arrow-up class="w-5 h-5" /></button>
-                                <button type="button" id="btn-move-back" title="{{ __('ui.gym3d_btn_move_back') }}"><x-lucide-arrow-down class="w-5 h-5" /></button>
-                                <button type="button" id="btn-move-left" title="{{ __('ui.gym3d_btn_move_left') }}"><x-lucide-arrow-left class="w-5 h-5" /></button>
-                                <button type="button" id="btn-move-right" title="{{ __('ui.gym3d_btn_move_right') }}"><x-lucide-arrow-right class="w-5 h-5" /></button>
-                            </div>
-                        </template>
                         {{-- Info icon: opens dialog with drag hint (desktop only) --}}
                         <button type="button" @click="$store.gym3d.helpOpen = true" class="gym3d-control-btn hidden md:flex absolute top-4 left-4 z-20" aria-label="{{ __('ui.gym3d_drag_hint') }}">
                             <x-lucide-info class="w-5 h-5" />
@@ -156,6 +141,19 @@
                             <x-lucide-maximize x-show="!gym3dFullscreen" class="w-5 h-5" />
                             <x-lucide-minimize-2 x-show="gym3dFullscreen" x-cloak class="w-5 h-5" />
                         </button>
+                        {{-- Desktop controls bar: inside container so visible in fullscreen --}}
+                        <div class="gym3d-controls-bar gym3d-controls-bar-desktop hidden md:flex">
+                            <button type="button" id="btn-zoom-in" title="{{ __('ui.gym3d_btn_zoom_in') }}"><x-lucide-zoom-in class="w-5 h-5" /></button>
+                            <button type="button" id="btn-zoom-out" title="{{ __('ui.gym3d_btn_zoom_out') }}"><x-lucide-zoom-out class="w-5 h-5" /></button>
+                            <button type="button" id="btn-rotate-left" title="{{ __('ui.gym3d_btn_rotate_left') }}"><x-lucide-rotate-ccw class="w-5 h-5" /></button>
+                            <button type="button" id="btn-rotate-right" title="{{ __('ui.gym3d_btn_rotate_right') }}"><x-lucide-rotate-cw class="w-5 h-5" /></button>
+                            <button type="button" id="btn-tilt-up" title="{{ __('ui.gym3d_btn_tilt_up') }}"><x-lucide-chevron-up class="w-5 h-5" /></button>
+                            <button type="button" id="btn-tilt-down" title="{{ __('ui.gym3d_btn_tilt_down') }}"><x-lucide-chevron-down class="w-5 h-5" /></button>
+                            <button type="button" id="btn-move-forward" title="{{ __('ui.gym3d_btn_move_forward') }}"><x-lucide-arrow-up class="w-5 h-5" /></button>
+                            <button type="button" id="btn-move-back" title="{{ __('ui.gym3d_btn_move_back') }}"><x-lucide-arrow-down class="w-5 h-5" /></button>
+                            <button type="button" id="btn-move-left" title="{{ __('ui.gym3d_btn_move_left') }}"><x-lucide-arrow-left class="w-5 h-5" /></button>
+                            <button type="button" id="btn-move-right" title="{{ __('ui.gym3d_btn_move_right') }}"><x-lucide-arrow-right class="w-5 h-5" /></button>
+                        </div>
                         <div id="floor-info" class="absolute" aria-live="polite">
                             <div class="title">{{ __('ui.gym3d_floor_title') }}</div>
                             <dl>
@@ -361,19 +359,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            {{-- Controls bar: visible permanently on desktop (below canvas), only in fullscreen on mobile (overlay) --}}
-            <div class="gym3d-controls-bar gym3d-controls-bar-desktop hidden md:flex">
-                <button type="button" id="btn-zoom-in" title="{{ __('ui.gym3d_btn_zoom_in') }}"><x-lucide-zoom-in class="w-5 h-5" /></button>
-                <button type="button" id="btn-zoom-out" title="{{ __('ui.gym3d_btn_zoom_out') }}"><x-lucide-zoom-out class="w-5 h-5" /></button>
-                <button type="button" id="btn-rotate-left" title="{{ __('ui.gym3d_btn_rotate_left') }}"><x-lucide-rotate-ccw class="w-5 h-5" /></button>
-                <button type="button" id="btn-rotate-right" title="{{ __('ui.gym3d_btn_rotate_right') }}"><x-lucide-rotate-cw class="w-5 h-5" /></button>
-                <button type="button" id="btn-tilt-up" title="{{ __('ui.gym3d_btn_tilt_up') }}"><x-lucide-chevron-up class="w-5 h-5" /></button>
-                <button type="button" id="btn-tilt-down" title="{{ __('ui.gym3d_btn_tilt_down') }}"><x-lucide-chevron-down class="w-5 h-5" /></button>
-                <button type="button" id="btn-move-forward" title="{{ __('ui.gym3d_btn_move_forward') }}"><x-lucide-arrow-up class="w-5 h-5" /></button>
-                <button type="button" id="btn-move-back" title="{{ __('ui.gym3d_btn_move_back') }}"><x-lucide-arrow-down class="w-5 h-5" /></button>
-                <button type="button" id="btn-move-left" title="{{ __('ui.gym3d_btn_move_left') }}"><x-lucide-arrow-left class="w-5 h-5" /></button>
-                <button type="button" id="btn-move-right" title="{{ __('ui.gym3d_btn_move_right') }}"><x-lucide-arrow-right class="w-5 h-5" /></button>
             </div>
         </div>
 
