@@ -10,37 +10,37 @@ import { WIDTH, HEIGHT, WALL_H, WALL_DEPTH, COLORS } from './constants.js';
  * @returns {Object} Object containing all wall meshes
  */
 export function createWalls(scene) {
-  const wallMat = new THREE.MeshStandardMaterial({ 
-    color: COLORS.wall, 
-    roughness: 0.8, 
-    metalness: 0.08 
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: COLORS.wall,
+    roughness: 0.8,
+    metalness: 0.08
   });
-  
+
   // Back wall
   const backWall = new THREE.Mesh(
-    new THREE.BoxGeometry(WIDTH + WALL_DEPTH * 2, WALL_H, WALL_DEPTH), 
+    new THREE.BoxGeometry(WIDTH + WALL_DEPTH * 2, WALL_H, WALL_DEPTH),
     wallMat
   );
   backWall.position.set(WIDTH / 2, WALL_H / 2, HEIGHT + WALL_DEPTH / 2);
   backWall.receiveShadow = true;
   scene.add(backWall);
-  
+
   // Left wall
   const leftWall = new THREE.Mesh(
-    new THREE.BoxGeometry(WALL_DEPTH, WALL_H, HEIGHT + WALL_DEPTH * 2), 
+    new THREE.BoxGeometry(WALL_DEPTH, WALL_H, HEIGHT + WALL_DEPTH * 2),
     wallMat
   );
   leftWall.position.set(-WALL_DEPTH / 2, WALL_H / 2, HEIGHT / 2);
   scene.add(leftWall);
-  
+
   // Right wall
   const rightWall = new THREE.Mesh(
-    new THREE.BoxGeometry(WALL_DEPTH, WALL_H, HEIGHT + WALL_DEPTH * 2), 
+    new THREE.BoxGeometry(WALL_DEPTH, WALL_H, HEIGHT + WALL_DEPTH * 2),
     wallMat
   );
   rightWall.position.set(WIDTH + WALL_DEPTH / 2, WALL_H / 2, HEIGHT / 2);
   scene.add(rightWall);
-  
+
   // Front wall (door from hall into main gym) – DoubleSide so it's never culled when camera faces it
   const frontWallMat = new THREE.MeshStandardMaterial({
     color: COLORS.wall,
@@ -56,8 +56,8 @@ export function createWalls(scene) {
   frontWall.receiveShadow = true;
   frontWall.renderOrder = 0; // draw with walls so door entrance stays visible
   scene.add(frontWall);
-  
-  createFrontDoor(scene);
+
+  // createFrontDoor(scene);
 
   return { backWall, leftWall, rightWall, frontWall };
 }

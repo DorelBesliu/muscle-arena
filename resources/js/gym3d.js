@@ -10,12 +10,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { WIDTH, HEIGHT, WALL_H, VESTIARY_WIDTH, VESTIARY_DEPTH, VESTIARY_HALL_START_Z, RECEPTION_WIDTH, RECEPTION_DEPTH, RECEPTION_START_Z } from './gym3d/constants.js';
 import { createFloor } from './gym3d/floor.js';
 import { createWalls } from './gym3d/walls.js';
-import { createReception } from './gym3d/reception.js';
-import { createHall } from './gym3d/hall.js';
-import { createVestiaries } from './gym3d/vestiaries.js';
+// import { createReception } from './gym3d/reception.js';
+// import { createHall } from './gym3d/hall.js';
+// import { createVestiaries } from './gym3d/vestiaries.js';
 import { createBench } from './gym3d/bench.js';
 import { createCarpet } from './gym3d/carpet.js';
-import { createToilet } from './gym3d/toilet.js';
+// import { createToilet } from './gym3d/toilet.js';
 // import { createDining } from './gym3d/dining.js';
 
 /**
@@ -397,9 +397,9 @@ export function initGym3d(container, options = {}) {
   const { backWall, leftWall, rightWall, frontWall } = createWalls(scene);
 
   // ---- 1) Registration room  2) Vestiaries with hall between them  3) Main gym (entrance door in walls) ----
-  const receptionGroup = createReception(scene);
-  createHall(scene);
-  const { boysVestiaryGroup, girlsVestiaryGroup } = createVestiaries(scene);
+  // const receptionGroup = createReception(scene);
+  // createHall(scene);
+  // const { boysVestiaryGroup, girlsVestiaryGroup } = createVestiaries(scene);
 
   const vestiaryZ = VESTIARY_HALL_START_Z + VESTIARY_DEPTH / 2;
   const vestiaryBoysX = VESTIARY_WIDTH / 2;
@@ -408,7 +408,7 @@ export function initGym3d(container, options = {}) {
   const receptionCenterZ = RECEPTION_START_Z + RECEPTION_DEPTH / 2;
 
   // ---- New Rooms ----
-  createToilet(scene);
+  // createToilet(scene);
   // createDining(scene);
 
   // ---- Back wall: MUSCLE ARENA text ----
