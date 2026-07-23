@@ -1,0 +1,59 @@
+name: Deploy production
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, zip
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+      - name: Install NPM dependencies
+        run: npm ci
+      - name: Build assets
+        run: npm run build
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H -p 48221 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy via rsync
+        run: |
+          rsync -rvz --delete \
+            -e "ssh -p 48221" \
+             --no-perms --no-owner --no-group \
+            --no-times --omit-dir-times \
+            --exclude=".git" \
+            --exclude=".env" \
+            --exclude="storage" \
+            --exclude="node_modules" \
+            --exclude="tests" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/muscle-arena
+      - name: Execute remote SSH commands
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: 48221
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/muscle-arena
+            php artisan optimize:clear
+            php artisan optimize
+            php artisan reload
