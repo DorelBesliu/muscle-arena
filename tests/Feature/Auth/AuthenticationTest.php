@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Livewire\Auth\Login;
+use App\Livewire\Components\Topbar;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -15,16 +17,14 @@ class AuthenticationTest extends TestCase
     {
         $response = $this->get('/login');
 
-        $response
-            ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+        $response->assertOk();
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Livewire::test(Login::class)
             ->set('form.email', $user->email)
             ->set('form.password', 'password');
 
@@ -41,7 +41,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Livewire::test(Login::class)
             ->set('form.email', $user->email)
             ->set('form.password', 'wrong-password');
 
@@ -64,7 +64,7 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('layout.navigation');
+            ->assertSeeLivewire(Topbar::class);
     }
 
     public function test_users_can_logout(): void
@@ -73,13 +73,13 @@ class AuthenticationTest extends TestCase
 
         $this->actingAs($user);
 
-        $component = Volt::test('layout.navigation');
+        $component = Livewire::test(Topbar::class);
 
         $component->call('logout');
 
         $component
             ->assertHasNoErrors()
-            ->assertRedirect('/');
+            ->assertRedirect(route('signin', ['locale' => config('locales.default', 'ro')]));
 
         $this->assertGuest();
     }

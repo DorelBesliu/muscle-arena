@@ -5,32 +5,64 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $locale) }}">
     <head>
+        {{-- Google Analytics is loaded only after user consent (see cookie-consent-banner) --}}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>@yield('title', __('ui.meta_title'))</title>
 
-        @stack('meta')
+        {{-- Favicon --}}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|oswald:500,600,700&display=swap" rel="stylesheet" />
+        {{-- PWA Manifest --}}
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <meta name="theme-color" content="#F97316">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Muscle Arena 3D">
+
+        @stack('meta')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
-            body { font-family: 'Inter', sans-serif; }
             .font-arena { font-family: 'Oswald', sans-serif; }
         </style>
         @stack('styles')
     </head>
-    <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-['Inter']" x-cloak>
+    <body class="antialiased bg-[#0c0c0c] text-white min-h-screen font-sans" x-cloak data-layout="public">
+        {{-- Toast container (top center) --}}
+        <div
+            class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+            x-data="toastContainer(@js(__('ui.proposalFormSuccess')))"
+            x-on:toast.window="addToast($event.detail?.message ?? $event.detail ?? savedMessage, $event.detail?.type ?? 'success')"
+        >
+            <template x-for="toast in toasts" :key="toast.id">
+                <div
+                    x-show="true"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-2"
+                    class="pointer-events-auto px-4 py-3 rounded-lg bg-[#1e1e1e] border border-[#444444] shadow-lg text-sm text-white flex items-center gap-2"
+                >
+                    <span class="w-2 h-2 rounded-full shrink-0" :class="toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'"></span>
+                    <span x-text="toast.message"></span>
+                </div>
+            </template>
+        </div>
+
         {{-- Topbar --}}
-        <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-50" aria-label="Principal">
+        <nav class="bg-[#000000]/95 backdrop-blur-md border-b border-[#333333] fixed top-0 left-0 right-0 z-[70]" aria-label="Principal">
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between h-[72px]">
                     <a href="{{ route('home', ['locale' => $locale]) }}" class="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity">
                         <div class="w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            <img src="{{ asset('storage/logo-white.svg') }}" alt="{{ __('ui.site_name') }} Logo" class="w-full h-full object-contain" />
+                            <img src="{{ asset('images/logo-white.svg') }}" alt="{{ __('ui.site_name') }} Logo" class="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h1 class="text-[16px] md:text-[20px] font-bold text-white tracking-tight">{{ __('ui.site_name') }}</h1>
@@ -41,12 +73,11 @@
                         </div>
                     </a>
 
-                    <div class="hidden lg:flex items-center gap-1">
-                        <a href="#hero" data-scroll-section class="px-4 py-2 text-sm font-medium text-[#CCCCCC] hover:text-white hover:bg-[#111111] rounded-lg transition-all">{{ __('ui.menu_home') }}</a>
-                        <a href="#about" data-scroll-section class="px-4 py-2 text-sm font-medium text-[#CCCCCC] hover:text-white hover:bg-[#111111] rounded-lg transition-all">{{ __('ui.menu_about') }}</a>
-                        <a href="#investment" data-scroll-section class="px-4 py-2 text-sm font-medium text-[#CCCCCC] hover:text-white hover:bg-[#111111] rounded-lg transition-all">{{ __('ui.menu_investment') }}</a>
-                        <a href="#timeline" data-scroll-section class="px-4 py-2 text-sm font-medium text-[#CCCCCC] hover:text-white hover:bg-[#111111] rounded-lg transition-all">{{ __('ui.menu_timeline') }}</a>
-                        <a href="#contact" data-scroll-section class="px-4 py-2 text-sm font-medium text-[#CCCCCC] hover:text-white hover:bg-[#111111] rounded-lg transition-all">{{ __('ui.menu_contact') }}</a>
+                    <div class="hidden lg:flex items-center gap-1" x-data>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#hero" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_home') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#about" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_about') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#timeline" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_timeline') }}</a>
+                        <a href="{{ route('home', ['locale' => $locale]) }}#contact" data-scroll-section class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-[#CCCCCC] hover:text-white hover:bg-[#111111]">{{ __('ui.menu_contact') }}</a>
                     </div>
 
                     <div class="flex items-center gap-2 md:gap-4" x-data>
@@ -55,21 +86,21 @@
                             <button type="button" @click="$store.public.langOpen = !$store.public.langOpen" class="flex items-center gap-1 bg-[#111111] border border-[#333333] rounded-full px-3 py-1.5 text-xs font-medium text-white cursor-pointer">
                                 {{ strtoupper($locale) }} <x-lucide-chevron-down class="w-3 h-3 shrink-0" />
                             </button>
-                            <div x-show="$store.public.langOpen" x-cloak x-transition class="absolute right-0 top-full mt-2 bg-[#111111] border border-[#333333] rounded-lg shadow-lg overflow-hidden min-w-[80px] z-50" style="display: none;">
+                            <div x-show="$store.public.langOpen" x-transition class="absolute right-0 top-full mt-2 bg-[#111111] border border-[#333333] rounded-lg shadow-lg overflow-hidden min-w-[80px] z-50" style="display: none;">
                                 @foreach ($supportedLocales as $loc)
                                     <a href="{{ route('home', ['locale' => $loc]) }}" class="block w-full px-4 py-2 text-left text-xs font-medium {{ $locale === $loc ? 'bg-[#F97316] text-white' : 'text-[#CCCCCC] hover:bg-[#333333] hover:text-white transition-colors' }}">{{ strtoupper($loc) }}</a>
                                 @endforeach
                             </div>
                         </div>
 
-                        @if (Route::has('login'))
+                        @if (Route::has('signin'))
                             @auth
                                 <a href="{{ url('/dashboard') }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
                                     <x-lucide-user class="w-4 h-4 shrink-0" />
                                     <span class="hidden md:inline">{{ __('ui.dashboard') }}</span>
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
+                                <a href="{{ route('signin', ['locale' => $locale]) }}" class="hidden md:flex text-[#CCCCCC] hover:text-white transition-colors items-center gap-2 text-sm font-medium">
                                     <x-lucide-log-in class="w-4 h-4 shrink-0" />
                                     <span class="hidden md:inline">{{ __('ui.sign_in') }}</span>
                                 </a>
@@ -89,10 +120,10 @@
                         {{-- Hamburger menu button (mobile only) – Alpine.js --}}
                         <div class="lg:hidden" data-mobile-menu>
                             <button type="button" @click="$store.public.mobileMenuOpen = !$store.public.mobileMenuOpen" class="lg:hidden text-[#CCCCCC] hover:text-white transition-colors p-2" aria-label="{{ __('ui.menu_label') }}">
-                                <span x-show="!$store.public.mobileMenuOpen" x-cloak><x-lucide-menu class="w-6 h-6 shrink-0" /></span>
-                                <span x-show="$store.public.mobileMenuOpen" x-cloak style="display: none;"><x-lucide-x class="w-6 h-6 shrink-0" /></span>
+                                <span x-show="!$store.public.mobileMenuOpen"><x-lucide-menu class="w-6 h-6 shrink-0" /></span>
+                                <span x-show="$store.public.mobileMenuOpen" style="display: none;"><x-lucide-x class="w-6 h-6 shrink-0" /></span>
                             </button>
-                            <div x-show="$store.public.mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed top-[72px] left-0 right-0 bg-[#111111] border-b border-[#333333] shadow-xl z-40 lg:hidden" style="display: none;">
+                            <div x-show="$store.public.mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed top-[72px] left-0 right-0 bg-[#111111] border-b border-[#333333] shadow-xl z-40 lg:hidden" style="display: none;">
                                 <div class="container mx-auto px-4 py-4">
                                     <div class="flex flex-col gap-2">
                                         <button type="button" @click="$store.public.mobileMenuOpen = false; setTimeout(() => window.scrollToSection('hero'), 100)" :class="$store.public.activeSection === 'hero' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#333333]'" class="w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-all">
@@ -100,9 +131,6 @@
                                         </button>
                                         <button type="button" @click="$store.public.mobileMenuOpen = false; setTimeout(() => window.scrollToSection('about'), 100)" :class="$store.public.activeSection === 'about' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#333333]'" class="w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-all">
                                             {{ __('ui.menu_about') }}
-                                        </button>
-                                        <button type="button" @click="$store.public.mobileMenuOpen = false; setTimeout(() => window.scrollToSection('investment'), 100)" :class="$store.public.activeSection === 'investment' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#333333]'" class="w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-all">
-                                            {{ __('ui.menu_investment') }}
                                         </button>
                                         <button type="button" @click="$store.public.mobileMenuOpen = false; setTimeout(() => window.scrollToSection('timeline'), 100)" :class="$store.public.activeSection === 'timeline' ? 'text-white bg-[#333333]' : 'text-[#CCCCCC] hover:text-white hover:bg-[#333333]'" class="w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-all">
                                             {{ __('ui.menu_timeline') }}
@@ -112,7 +140,7 @@
                                         </button>
                                         <div class="h-px bg-[#333333] my-2"></div>
                                         @guest
-                                            <a href="{{ route('login') }}" @click="$store.public.mobileMenuOpen = false" class="w-full px-4 py-3 text-left text-base font-medium text-[#F97316] hover:text-white hover:bg-[#333333] rounded-lg transition-all flex items-center gap-3">
+                                            <a href="{{ route('signin', ['locale' => $locale]) }}" @click="$store.public.mobileMenuOpen = false" class="w-full px-4 py-3 text-left text-base font-medium text-[#F97316] hover:text-white hover:bg-[#333333] rounded-lg transition-all flex items-center gap-3">
                                                 <x-lucide-log-in class="w-5 h-5 shrink-0" />
                                                 {{ __('ui.sign_in') }}
                                             </a>
@@ -131,7 +159,15 @@
             </div>
         </nav>
 
-        @yield('content')
+        @isset($slot)
+            {{ $slot }}
+        @else
+            @yield('content')
+        @endisset
+
+        @if(config('services.google_analytics.measurement_id'))
+            <x-cookie-consent-banner />
+        @endif
 
         @stack('scripts')
     </body>

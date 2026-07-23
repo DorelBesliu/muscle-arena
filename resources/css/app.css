@@ -1,8 +1,648 @@
+/* Local fonts – Inter & Oswald (from public/fonts) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter/inter-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/oswald/oswald-latin-700-normal.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Remove red/blue highlight on form fields: invalid state and focus outline/ring */
+input,
+select,
+textarea {
+    outline: none;
+}
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+input:invalid,
+input:focus:invalid,
+select:invalid,
+select:focus:invalid,
+textarea:invalid,
+textarea:focus:invalid {
+    outline: none;
+    box-shadow: none;
+    border-color: #333333;
+}
+
+/* Admin panel: keep neutral border on member form and search (override any Livewire/error border) */
+.app-members-page input,
+.app-members-page select,
+.app-members-page textarea {
+    border-color: #333333;
+}
+.app-members-page input:focus,
+.app-members-page select:focus,
+.app-members-page textarea:focus {
+    box-shadow: none;
+}
+
+/* Flatpickr – dark gray background, rounded corners, brand accent */
+.flatpickr-calendar {
+    background: #111111 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 2px #333333 !important;
+}
+.flatpickr-calendar.arrowTop:before {
+    border-bottom-color: #333333 !important;
+}
+.flatpickr-calendar.arrowTop:after {
+    border-bottom-color: #111111 !important;
+}
+.flatpickr-calendar.arrowBottom:before {
+    border-top-color: #333333 !important;
+}
+.flatpickr-calendar.arrowBottom:after {
+    border-top-color: #111111 !important;
+}
+.flatpickr-months .flatpickr-month {
+    background: #111111 !important;
+}
+span.flatpickr-weekday {
+    background: #111111 !important;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: #CCCCCC !important;
+    fill: #CCCCCC !important;
+}
+.dayContainer + .dayContainer {
+    box-shadow: -1px 0 0 #333333 !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: #111111 !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    background-color: #111111 !important;
+}
+.flatpickr-calendar.hasTime .flatpickr-time {
+    border-top-color: #333333 !important;
+}
+.flatpickr-weekwrapper .flatpickr-weeks {
+    box-shadow: 1px 0 0 #333333 !important;
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus,
+.flatpickr-day.inRange,
+.flatpickr-day.prevMonthDay:hover,
+.flatpickr-day.nextMonthDay:hover {
+    background: rgba(249, 115, 22, 0.25) !important;
+    border-color: rgba(249, 115, 22, 0.4) !important;
+}
+.flatpickr-day.today {
+    border-color: #F97316 !important;
+}
+.flatpickr-day.today:hover,
+.flatpickr-day.today:focus {
+    background: rgba(249, 115, 22, 0.35) !important;
+    border-color: #F97316 !important;
+    color: #fff !important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange {
+    background: #F97316 !important;
+    border-color: #F97316 !important;
+    color: #fff !important;
+}
+.flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #F97316 !important;
+}
+.flatpickr-day.inRange {
+    box-shadow: -5px 0 0 rgba(249, 115, 22, 0.3), 5px 0 0 rgba(249, 115, 22, 0.3) !important;
+}
+.flatpickr-day.week.selected {
+    box-shadow: -5px 0 0 #F97316, 5px 0 0 #F97316 !important;
+}
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+    fill: #F97316 !important;
+}
+.flatpickr-time input:hover,
+.flatpickr-time .flatpickr-am-pm:hover,
+.flatpickr-time input:focus,
+.flatpickr-time .flatpickr-am-pm:focus {
+    background: rgba(249, 115, 22, 0.25) !important;
+}
+
 /* Hide until Alpine.js is ready (prevents jump on init) */
 [x-cloak] {
     display: none !important;
+}
+
+/* iOS Install Banner - ensure proper stacking */
+.ios-install-banner {
+    z-index: 9999;
+    animation: slideUpBanner 0.3s ease-out;
+}
+
+@keyframes slideUpBanner {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Gym3D control button - reusable style for icon buttons */
+.gym3d-control-btn {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg bg-[#111111]/90 border border-[#333333] text-[#F97316] hover:border-[#F97316] hover:bg-[#1a1a1a] transition-colors cursor-pointer;
+}
+
+/* Ensure hidden/md:flex works correctly - override flex when hidden */
+.gym3d-control-btn.hidden {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .gym3d-control-btn.hidden.md\:flex {
+        display: flex !important;
+    }
+}
+
+/* Ensure md:hidden works correctly - override flex on desktop */
+@media (min-width: 768px) {
+    .gym3d-control-btn.md\:hidden {
+        display: none !important;
+    }
+}
+
+/* Common text color - gray secondary text */
+.text-secondary {
+    @apply text-[#CCCCCC];
+}
+
+/* Dialog container - dark background with orange border; flex so header stays fixed at top */
+.gym3d-dialog-container {
+    @apply relative flex flex-col bg-[#111111] border-2 border-[#F97316] rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden;
+}
+
+/* iOS fullscreen: keep dialog within visible viewport and safe areas */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-dialog-container {
+    max-height: min(80dvh, 80svh, 80vh) !important;
+}
+/* iOS fullscreen: dialog overlay padding so content stays inside safe area */
+#gym3d-container.gym3d-ios-fullscreen div:has(> .gym3d-dialog-container) {
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    box-sizing: border-box;
+}
+.gym3d-dialog-container .gym3d-dialog-header {
+    @apply flex-shrink-0 flex items-center justify-between gap-4 p-6 pb-4 border-b border-[#333333] bg-[#111111];
+}
+.gym3d-dialog-container .gym3d-dialog-body {
+    @apply flex-1 min-h-0 overflow-y-auto p-6 pt-4;
+}
+
+/* Close button style */
+.gym3d-close-btn {
+    @apply p-1.5 rounded-lg text-[#CCCCCC] hover:text-white hover:bg-[#333333] transition-colors;
+}
+
+/* Help dialog item layout */
+.gym3d-help-item {
+    @apply flex items-start gap-3;
+}
+
+/* Help dialog icon style */
+.gym3d-help-icon {
+    @apply w-4 h-4 shrink-0 text-[#F97316] mt-0.5;
+}
+
+/* Gym3D wrapper container */
+.gym3d-wrapper {
+    @apply bg-[#111111] border-2 border-[#333333] rounded-3xl overflow-hidden hover:border-[#F97316] transition-all relative;
+}
+
+/* Overlay card style */
+.gym3d-overlay-card {
+    @apply bg-[#111111]/90 border border-[#F97316] rounded-lg px-4 py-3 mx-4 text-center max-w-sm pointer-events-none;
+}
+
+/* Ensure overlay is visible by default on mobile (before Alpine processes x-show) */
+#gym3d-overlay {
+    display: flex;
+}
+
+/* Hide on desktop */
+@media (min-width: 768px) {
+    #gym3d-overlay {
+        display: none !important;
+    }
+}
+
+/* Hide overlay when in iOS fullscreen */
+#gym3d-container.gym3d-ios-fullscreen #gym3d-overlay {
+    display: none !important;
+}
+
+/* Gym 3D viewer (About section) */
+#canvas-container {
+    width: 100%;
+    height: 100%;
+    min-height: 50vh;
+}
+#canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.gym3d-controls-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+/* Desktop: controls bar inside container, at bottom (visible in normal and fullscreen) */
+#gym3d-container .gym3d-controls-bar-desktop {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 0.75rem 0;
+    background: transparent;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+/* Ensure desktop controls are hidden on mobile when NOT fullscreen */
+@media (max-width: 767px) {
+    #gym3d-container .gym3d-controls-bar-desktop {
+        display: none !important;
+    }
+    #gym3d-container:fullscreen .gym3d-controls-bar-desktop,
+    #gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-desktop {
+        display: flex !important;
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        background: rgba(17, 17, 17, 0.95);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        backdrop-filter: blur(8px);
+        width: calc(100% - 2rem);
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 100%;
+    }
+    #gym3d-container:fullscreen .gym3d-controls-bar-desktop button,
+    #gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-desktop button {
+        flex: 0 0 calc(20% - 0.4rem);
+        min-width: calc(20% - 0.4rem);
+        max-width: calc(20% - 0.4rem);
+        box-sizing: border-box;
+    }
+}
+
+/* Mobile: controls bar as overlay in fullscreen */
+.gym3d-controls-bar-mobile {
+    display: flex;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    background: rgba(17, 17, 17, 0.95);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    backdrop-filter: blur(8px);
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    pointer-events: auto;
+    width: calc(100% - 2rem);
+    max-width: 100%;
+}
+
+/* iOS fullscreen: keep controls above safe area (home indicator) */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-controls-bar-mobile {
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* iOS fullscreen: keep top action buttons (info, fullscreen) below notch/safe area */
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="top-4"] {
+    top: max(1rem, env(safe-area-inset-top, 0px));
+}
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="left-4"] {
+    left: max(1rem, env(safe-area-inset-left, 0px));
+}
+#gym3d-container.gym3d-ios-fullscreen .gym3d-control-btn[class*="right-4"] {
+    right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+/* Arrange buttons in 2 rows on mobile (5 buttons per row = 20% width each) */
+.gym3d-controls-bar-mobile button {
+    flex: 0 0 calc(20% - 0.4rem);
+    min-width: calc(20% - 0.4rem);
+    max-width: calc(20% - 0.4rem);
+    box-sizing: border-box;
+}
+.gym3d-controls-bar button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background: #333;
+    border: 1px solid #F97316;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+}
+.gym3d-controls-bar button:hover {
+    background: #444;
+}
+.gym3d-controls-bar button:active {
+    transform: scale(0.98);
+}
+
+/* Fullscreen mode for mobile 3D viewer */
+#gym3d-container:fullscreen,
+#gym3d-container:-webkit-fullscreen,
+#gym3d-container:-moz-full-screen,
+#gym3d-container:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a;
+    position: relative;
+}
+
+#gym3d-container:fullscreen #canvas-container,
+#gym3d-container:-webkit-fullscreen #canvas-container,
+#gym3d-container:-moz-full-screen #canvas-container,
+#gym3d-container:-ms-fullscreen #canvas-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* iOS fullscreen mode (CSS-based, since iOS doesn't support Fullscreen API) */
+#gym3d-container.gym3d-ios-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    width: 100dvw !important; /* Dynamic viewport for iOS */
+    height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport for iOS */
+    height: -webkit-fill-available !important; /* Safari specific */
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    z-index: 9999 !important;
+    background: #1a1a1a;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 0 !important; /* Remove rounded corners in fullscreen */
+    border: none !important;
+    /* Prevent iOS Safari address bar and bottom bar from overlaying content */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    /* Prevent bouncing/rubber-banding */
+    overscroll-behavior: none;
+}
+
+#gym3d-container.gym3d-ios-fullscreen #canvas-container {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport for iOS */
+    min-height: -webkit-fill-available; /* Safari specific */
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Prevent body scroll when iOS fullscreen is active */
+body:has(#gym3d-container.gym3d-ios-fullscreen) {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+
+/* Fallback for older browsers without :has() support */
+body.gym3d-fullscreen-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+#floor-info,
+#bench-info,
+#vestiary-boys-info,
+#vestiary-girls-info,
+#reception-info {
+    display: none;
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #F97316;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+#floor-info { min-width: 280px; }
+#bench-info { min-width: 340px; }
+#vestiary-boys-info,
+#vestiary-girls-info { min-width: 340px; }
+#reception-info { min-width: 280px; }
+#floor-info.visible,
+#bench-info.visible,
+#vestiary-boys-info.visible,
+#vestiary-girls-info.visible,
+#reception-info.visible { display: block; }
+#floor-info .title,
+#bench-info .title,
+#vestiary-boys-info .title,
+#vestiary-girls-info .title,
+#reception-info .title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #F97316;
+}
+#floor-info dl,
+#bench-info dl,
+#vestiary-boys-info dl,
+#vestiary-girls-info dl,
+#reception-info dl { margin: 0; }
+#floor-info dt,
+#bench-info dt,
+#vestiary-boys-info dt,
+#vestiary-girls-info dt,
+#reception-info dt { float: left; margin-right: 0.5rem; font-weight: 600; }
+#floor-info dd,
+#bench-info dd,
+#vestiary-boys-info dd,
+#vestiary-girls-info dd,
+#reception-info dd { margin: 0 0 0.25rem 0; }
+.gym3d-bench-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: #F97316;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.gym3d-bench-link:hover { text-decoration: underline; }
+.gym3d-drag-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #aaa;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.gym3d-drag-info strong { color: #ccc; }
+
+/* Tiptap WYSIWYG – dark theme (app panel) */
+.tiptap-wrapper-dark .tiptap-editor-wrapper {
+    min-height: 160px;
+}
+.tiptap-wrapper-dark .tiptap-content {
+    color: #e5e5e5;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+.tiptap-wrapper-dark .tiptap-content:focus {
+    outline: none;
+}
+.tiptap-wrapper-dark .tiptap-content p {
+    margin-bottom: 0.5em;
+}
+.tiptap-wrapper-dark .tiptap-content p:last-child {
+    margin-bottom: 0;
+}
+.tiptap-wrapper-dark .tiptap-content h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 0.75em;
+    margin-bottom: 0.5em;
+}
+.tiptap-wrapper-dark .tiptap-content ul,
+.tiptap-wrapper-dark .tiptap-content ol {
+    padding-left: 1.5rem;
+    margin: 0.5em 0;
+}
+.tiptap-wrapper-dark .tiptap-content blockquote {
+    border-left: 3px solid #333333;
+    padding-left: 1rem;
+    margin: 0.5em 0;
+    color: #999999;
+}
+.tiptap-wrapper-dark .tiptap-content pre {
+    background: #111111;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+.tiptap-wrapper-dark .tiptap-content code {
+    background: #1a1a1a;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+}
+.tiptap-wrapper-dark .tiptap-content pre code {
+    background: none;
+    padding: 0;
+}
+.tiptap-wrapper-dark .tiptap-content a {
+    color: #F97316;
+    text-decoration: underline;
+}
+.tiptap-wrapper-dark .tiptap-content a:hover {
+    color: #ea580c;
+}
+.tiptap-wrapper-dark .tiptap-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: #666666;
+    float: left;
+    height: 0;
+    pointer-events: none;
 }

@@ -1,31 +1,22 @@
 <?php
 
-use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Livewire\Auth\ConfirmPassword;
+use App\Livewire\Auth\Register;
+use App\Livewire\Auth\ResetPassword;
+use App\Livewire\Auth\VerifyEmail;
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
 
 Route::middleware('guest')->group(function () {
-    Volt::route('register', 'pages.auth.register')
-        ->name('register');
-
-    Volt::route('login', 'pages.auth.login')
-        ->name('login');
-
-    Volt::route('forgot-password', 'pages.auth.forgot-password')
-        ->name('password.request');
-
-    Volt::route('reset-password/{token}', 'pages.auth.reset-password')
-        ->name('password.reset');
+    Route::get('register', Register::class)->name('register');
+    Route::get('reset-password/{token}', ResetPassword::class)->name('password.reset');
 });
 
 Route::middleware('auth')->group(function () {
-    Volt::route('verify-email', 'pages.auth.verify-email')
-        ->name('verification.notice');
-
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
-    Volt::route('confirm-password', 'pages.auth.confirm-password')
-        ->name('password.confirm');
+    Route::get('verify-email', VerifyEmail::class)->name('verification.notice');
+    Route::get('confirm-password', ConfirmPassword::class)->name('password.confirm');
 });
+
+Route::get('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
+    ->middleware(['guest:'.config('fortify.guard')])
+    ->name('two-factor.login');

@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.staging
+.env.testing
 .env.test
 .phpactor.json
 .phpunit.result.cache
@@ -23,6 +25,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+error_log
+*/error_log
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .cursor/rules/snyk_rules.mdc
