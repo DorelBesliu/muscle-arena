@@ -542,7 +542,7 @@
     @endphp
     <section id="contact" class="bg-[#000000] py-8 md:py-16 relative scroll-mt-[72px]">
         <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto">
+            <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-8 md:mb-16">
                     <h2 class="text-2xl md:text-[36px] font-black text-white mb-4">
                         {{ __('ui.contactTitle') }}
@@ -553,7 +553,7 @@
                 </div>
 
                 @if($useCards)
-                    <div class="grid md:grid-cols-2 gap-8">
+                    <div class="grid md:grid-cols-3 gap-8">
                         @foreach($contactCards as $card)
                             @php
                                 $hasType = is_array($card) && isset($card['type']) && in_array($card['type'], ['phone', 'email'], true);
@@ -583,10 +583,6 @@
                                             <a href="mailto:{{ $description }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors break-all">{{ $description }}</a>
                                         @elseif($type === 'phone' && $description !== '')
                                             <a href="tel:{{ preg_replace('/\s+/', '', $description) }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">{{ $description }}</a>
-                                        @elseif($isEmail && $description !== '')
-                                            <a href="mailto:{{ $description }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors break-all">{{ $description }}</a>
-                                        @elseif($isPhone && $description !== '')
-                                            <a href="tel:{{ preg_replace('/\s+/', '', $description) }}" class="text-sm md:text-base text-[#CCCCCC] hover:text-[#F97316] transition-colors">{{ $description }}</a>
                                         @else
                                             <p class="text-sm md:text-base text-[#CCCCCC]">{{ $description ?: '—' }}</p>
                                         @endif
@@ -596,7 +592,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="grid md:grid-cols-2 gap-8">
+                    <div class="grid md:grid-cols-3 gap-8">
                         <div class="bg-[#000000] border border-[#333333] rounded-2xl p-6 md:p-8 hover:border-[#F97316] transition-all group">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 md:w-12 md:h-12 bg-[#F97316]/10 rounded-full flex items-center justify-center group-hover:bg-[#F97316] transition-colors flex-shrink-0">
